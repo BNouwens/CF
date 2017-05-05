@@ -9,10 +9,7 @@
         },
         "AWSKeyPairName": {
             "Description": "Select an existing key pair to use for connecting to your Instances",
-            "Type": "AWS::EC2::KeyPair::KeyName",
-            "MinLength": "1",
-            "MaxLength": "255",
-            "ConstraintDescription": "Select an existing EC2 Key Pair."
+            "Type": "String"            
         },
         "SecurityGroupIds": {
             "Description": "Security Group IDs for Pega Application",
