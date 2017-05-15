@@ -307,7 +307,7 @@
                 },
                 "SubnetId": {
                     "Ref": "Subnet"
-                },
+                }, 
                 "SecurityGroupIds": {
                     "Ref": "SecurityGroupIds"
                 },
