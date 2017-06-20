@@ -115,6 +115,13 @@
                 "SecurityGroupIds": {
                     "Ref": "SecurityGroupIds"
                 },
+                "SsmAssociations": [
+                    {
+                        "DocumentName": 
+                            "awsconfig_Domain_d-97673e7fe1_sandpit.local"
+                        
+                    }
+                ],
                 "IamInstanceProfile": "arn:aws:iam::419070736574:role/JoinDomain",
                 "Tags": [
                     {
