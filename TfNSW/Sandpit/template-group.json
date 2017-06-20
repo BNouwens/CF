@@ -1,0 +1,156 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Roles for Management Applications",
+    "Parameters": {
+        "SandpitName": {
+            "Type": "String"
+        },
+        "CostCentre": {
+            "Type": "String"
+        }
+    },
+    "Resources": {
+        "Group": {
+            "Type": "AWS::IAM::Group",
+            "Properties": {
+                "GroupName": {
+                    "Ref": "SandpitName"
+                },
+                "Policies": [
+                    {
+                        "PolicyName": {
+                            "Ref": "SandpitName"
+                        },
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "ec2:*"
+                                    ],
+                                    "Condition": {
+                                        "StringEquals": {
+                                            "ec2:ResourceTag/CostCentre": {
+                                                "Ref": "CostCentre"
+                                            },
+                                            "ec2:Region": "ap-southeast-2"
+                                        }
+                                    },
+                                    "Resource": [
+                                        "*"
+                                    ]
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "ec2:CopyImage",
+                                        "ec2:CopySnapshot",
+                                        "ec2:CreateImage",
+                                        "ec2:CreateKeyPair",
+                                        "ec2:CreateNetworkInterface",
+                                        "ec2:CreatePlacementGroup",
+                                        "ec2:CreateSecurityGroup",
+                                        "ec2:CreateSnapshot",
+                                        "ec2:CreateImage",
+                                        "ec2:DeregisterImage",
+                                        "ec2:DeleteSnapshot",
+                                        "ec2:ResetInstanceAttribute",
+                                        "ec2:ResetNetworkInterfaceAttribute",
+                                        "ec2:ResetSnapshotAttribute",
+                                        "ec2:AssignPrivateIpAddresses",
+                                        "ec2:CreateTags",
+                                        "ec2:CreateVolume",
+                                        "ec2:Authorize*",
+                                        "ec2:Describe*",
+                                        "ec2:ModifyInstanceAttribute",
+                                        "ec2:AttachNetworkInterface",
+                                        "ec2:DeleteNetworkInterface",
+                                        "ec2:DetachNetworkInterface",
+                                        "ec2:ModifyNetworkInterfaceAttribute",
+                                        "ec2:GetConsoleOutput",
+                                        "ec2:GetPasswordData",
+                                        "ec2:ImportImage",
+                                        "ec2:ImportInstance",
+                                        "ec2:ImportKeyPair",
+                                        "ec2:ImportSnapshot",
+                                        "ec2:ImportVolume",
+                                        "ec2:RunInstances"
+                                    ],
+                                    "Condition": {
+                                        "StringEquals": {
+                                            "ec2:Region": "ap-southeast-2"
+                                        }
+                                    },
+                                    "Resource": [
+                                        "*"
+                                    ]
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "ec2:RunInstances"
+                                    ],
+                                    "Resource": [
+                                        
+                                        "arn:aws:ec2:ap-southeast-2::image/ami-*"
+                                    ]
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "s3:GetBucketLocation",
+                                        "s3:ListAllMyBuckets"
+                                    ],
+                                    "Resource": "arn:aws:s3:::*"
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "s3:ListBucket"
+                                    ],
+                                    "Resource": [
+                                        {
+                                            "Fn::Join": [
+                                                "",
+                                                [
+                                                    "arn:aws:s3:::",
+                                                    {
+                                                        "Ref": "CostCentre"
+                                                    },
+                                                    "*"
+                                                ]
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "s3:PutObject",
+                                        "s3:GetObject",
+                                        "s3:DeleteObject"
+                                    ],
+                                    "Resource": [
+                                        {
+                                            "Fn::Join": [
+                                                "",
+                                                [
+                                                    "arn:aws:s3:::",
+                                                    {
+                                                        "Ref": "CostCentre"
+                                                    },
+                                                    "*/*"
+                                                ]
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    }
+}
