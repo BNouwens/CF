@@ -1,0 +1,531 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Creates an AWS WAF configuration that protects against common attacks",
+  "Metadata": {
+    "AWS::CloudFormation::Interface": {
+      "ParameterGroups": [
+        {
+          "Label": {
+            "default": "Web ACL Name for Common Attack Protection"
+          },
+          "Parameters": [
+            "WebACLName"
+          ]
+        }
+      ],
+      "ParameterLabels": {
+        "WebACLName": {
+          "default": "Name"
+        }
+      }
+    }
+  },
+  "Parameters": {
+    "WebACLName": {
+      "Type": "String",
+      "Default": "CommonAttackProtection",
+      "Description": "Enter the name you want to use for the WebACL. This value is also added as a prefix for the names of the rules, conditions, and CloudWatch metrics created by this template."
+    }
+  },
+  "Resources": {
+    "WebACL": {
+      "Properties": {
+        "Name": {
+          "Ref": "WebACLName"
+        },
+        "DefaultAction": {
+          "Type": "ALLOW"
+        },
+        "MetricName": {
+          "Ref": "WebACLName"
+        },
+        "Rules": [
+          {
+            "Action": {
+              "Type": "BLOCK"
+            },
+            "Priority": 1,
+            "RuleId": {
+              "Ref": "ManualIPBlockRule"
+            }
+          },
+          {
+            "Action": {
+              "Type": "BLOCK"
+            },
+            "Priority": 2,
+            "RuleId": {
+              "Ref": "RestrictAccessToPRServlet"
+            }
+          },
+          {
+            "Action": {
+              "Type": "BLOCK"
+            },
+            "Priority": 3,
+            "RuleId": {
+              "Ref": "RestrictAccessToPRSysMgmt"
+            }
+          },
+          {
+            "Action": {
+              "Type": "COUNT"
+            },
+            "Priority": 4,
+            "RuleId": {
+              "Ref": "SizeMatchRule"
+            }
+          },
+          {
+            "Action": {
+              "Type": "BLOCK"
+            },
+            "Priority": 5,
+            "RuleId": {
+              "Ref": "SqliRule"
+            }
+          },
+          {
+            "Action": {
+              "Type": "COUNT"
+            },
+            "Priority": 6,
+            "RuleId": {
+              "Ref": "XssRule"
+            }
+          }
+        ]
+      },
+      "Type": "AWS::WAF::WebACL"
+    },
+    "SqliRule": {
+      "Properties": {
+        "Name": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "WebACLName"
+              },
+              "SqliRule"
+            ]
+          ]
+        },
+        "MetricName": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "WebACLName"
+              },
+              "SqliRule"
+            ]
+          ]
+        },
+        "Predicates": [
+          {
+            "DataId": {
+              "Ref": "SqliMatchSet"
+            },
+            "Negated": false,
+            "Type": "SqlInjectionMatch"
+          }
+        ]
+      },
+      "Type": "AWS::WAF::Rule"
+    },
+    "XssRule": {
+      "Properties": {
+        "Name": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "WebACLName"
+              },
+              "XssRule"
+            ]
+          ]
+        },
+        "MetricName": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "WebACLName"
+              },
+              "XssRule"
+            ]
+          ]
+        },
+        "Predicates": [
+          {
+            "DataId": {
+              "Ref": "XssMatchSet"
+            },
+            "Negated": false,
+            "Type": "XssMatch"
+          }
+        ]
+      },
+      "Type": "AWS::WAF::Rule"
+    },
+    "SizeMatchRule": {
+      "Properties": {
+        "Name": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "WebACLName"
+              },
+              "LargeBodyMatchRule"
+            ]
+          ]
+        },
+        "MetricName": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "WebACLName"
+              },
+              "DetectLargeBody"
+            ]
+          ]
+        },
+        "Predicates": [
+          {
+            "DataId": {
+              "Ref": "SizeMatchSet"
+            },
+            "Negated": false,
+            "Type": "SizeConstraint"
+          }
+        ]
+      },
+      "Type": "AWS::WAF::Rule"
+    },
+    "ManualIPBlockRule": {
+      "Properties": {
+        "Name": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "WebACLName"
+              },
+              "ManualIPBlockRule"
+            ]
+          ]
+        },
+        "MetricName": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "WebACLName"
+              },
+              "ManualIPBlockRule"
+            ]
+          ]
+        },
+        "Predicates": [
+          {
+            "DataId": {
+              "Ref": "WAFManualIPBlockSet"
+            },
+            "Negated": false,
+            "Type": "IPMatch"
+          }
+        ]
+      },
+      "Type": "AWS::WAF::Rule"
+    },
+    "WAFManualIPBlockSet": {
+      "Properties": {
+        "Name": "Manual IP Block Set"
+      },
+      "Type": "AWS::WAF::IPSet"
+    },
+    "RestrictAccessToPRServlet": {
+      "Properties": {
+        "Name": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "WebACLName"
+              },
+              "RestrictAccessToPRServlet"
+            ]
+          ]
+        },
+        "MetricName": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "WebACLName"
+              },
+              "RestrictAccessToPRServlet"
+            ]
+          ]
+        },
+        "Predicates": [
+          {
+            "DataId": {
+              "Ref": "WAFWhitListTMCAccess"
+            },
+            "Negated": true,
+            "Type": "IPMatch"
+          },
+          {
+            "DataId": {
+              "Ref": "PRServlet"
+            },
+            "Negated": false,
+            "Type": "ByteMatch"
+          }
+        ]
+      },
+      "Type": "AWS::WAF::Rule"
+    },
+    "RestrictAccessToPRSysMgmt": {
+      "Properties": {
+        "Name": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "WebACLName"
+              },
+              "RestrictAccessToPRSysMgmt"
+            ]
+          ]
+        },
+        "MetricName": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "WebACLName"
+              },
+              "RestrictAccessToPRSysMgmt"
+            ]
+          ]
+        },
+        "Predicates": [
+          {
+            "DataId": {
+              "Ref": "WAFWhitListTMCAccess"
+            },
+            "Negated": true,
+            "Type": "IPMatch"
+          },
+          {
+            "DataId": {
+              "Ref": "prsysmgmt"
+            },
+            "Negated": false,
+            "Type": "ByteMatch"
+          }
+        ]
+      },
+      "Type": "AWS::WAF::Rule"
+    },
+    "PRServlet": {
+      "Type": "AWS::WAF::ByteMatchSet",
+      "Properties": {
+        "Name": "PRServlet Match",
+        "ByteMatchTuples": [
+          {
+            "FieldToMatch": {
+              "Type": "URI"
+            },
+            "TargetString": "/prweb/PRServlet",
+            "TextTransformation": "NONE",
+            "PositionalConstraint": "CONTAINS"
+          }
+        ]
+      }
+    },
+    "prsysmgmt": {
+      "Type": "AWS::WAF::ByteMatchSet",
+      "Properties": {
+        "Name": "prsysmgmt Match",
+        "ByteMatchTuples": [
+          {
+            "FieldToMatch": {
+              "Type": "URI"
+            },
+            "TargetString": "/prsysmgmt",
+            "TextTransformation": "NONE",
+            "PositionalConstraint": "CONTAINS"
+          }
+        ]
+      }
+    },
+    "WAFWhitListTMCAccess": {
+      "Properties": {
+        "Name": "TMC IP Block Set",
+        "IPSetDescriptors": [
+          {
+            "Type": "IPV4",
+            "Value": "163.189.7.40/32"
+          },
+          {
+            "Type": "IPV4",
+            "Value": "202.160.98.5/32"
+          },
+          {
+            "Type": "IPV4",
+            "Value": "147.200.41.115/32"
+          },
+          {
+            "Type": "IPV4",
+            "Value": "147.200.41.114/32"
+          },
+          {
+            "Type": "IPV4",
+            "Value": "163.189.217.40/32"
+          }
+        ]
+      },
+      "Type": "AWS::WAF::IPSet"
+    },
+    "SizeMatchSet": {
+      "Properties": {
+        "Name": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "WebACLName"
+              },
+              "LargeBodyMatch"
+            ]
+          ]
+        },
+        "SizeConstraints": [
+          {
+            "FieldToMatch": {
+              "Type": "BODY"
+            },
+            "ComparisonOperator": "GT",
+            "Size": "8192",
+            "TextTransformation": "NONE"
+          }
+        ]
+      },
+      "Type": "AWS::WAF::SizeConstraintSet"
+    },
+    "SqliMatchSet": {
+      "Properties": {
+        "Name": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "WebACLName"
+              },
+              "SqliMatch"
+            ]
+          ]
+        },
+        "SqlInjectionMatchTuples": [
+          {
+            "FieldToMatch": {
+              "Type": "QUERY_STRING"
+            },
+            "TextTransformation": "URL_DECODE"
+          },
+          {
+            "FieldToMatch": {
+              "Type": "QUERY_STRING"
+            },
+            "TextTransformation": "HTML_ENTITY_DECODE"
+          },
+          {
+            "FieldToMatch": {
+              "Type": "BODY"
+            },
+            "TextTransformation": "URL_DECODE"
+          },
+          {
+            "FieldToMatch": {
+              "Type": "BODY"
+            },
+            "TextTransformation": "HTML_ENTITY_DECODE"
+          },
+          {
+            "FieldToMatch": {
+              "Type": "URI"
+            },
+            "TextTransformation": "URL_DECODE"
+          }
+        ]
+      },
+      "Type": "AWS::WAF::SqlInjectionMatchSet"
+    },
+    "XssMatchSet": {
+      "Properties": {
+        "Name": {
+          "Fn::Join": [
+            "",
+            [
+              {
+                "Ref": "WebACLName"
+              },
+              "XssMatch"
+            ]
+          ]
+        },
+        "XssMatchTuples": [
+          {
+            "FieldToMatch": {
+              "Type": "QUERY_STRING"
+            },
+            "TextTransformation": "URL_DECODE"
+          },
+          {
+            "FieldToMatch": {
+              "Type": "QUERY_STRING"
+            },
+            "TextTransformation": "HTML_ENTITY_DECODE"
+          },
+          {
+            "FieldToMatch": {
+              "Type": "BODY"
+            },
+            "TextTransformation": "URL_DECODE"
+          },
+          {
+            "FieldToMatch": {
+              "Type": "BODY"
+            },
+            "TextTransformation": "HTML_ENTITY_DECODE"
+          },
+          {
+            "FieldToMatch": {
+              "Type": "URI"
+            },
+            "TextTransformation": "URL_DECODE"
+          }
+        ]
+      },
+      "Type": "AWS::WAF::XssMatchSet"
+    }
+  },
+  "Outputs": {
+    "WAF": {
+      "Description": "Web ACL ID",
+      "Value": {
+        "Ref": "WebACL"
+      },
+      "Export": {
+        "Name": "WebACL"
+      }
+    }
+  }
+}

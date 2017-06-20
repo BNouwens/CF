@@ -122,7 +122,7 @@
                         
                     }
                 ],
-                "IamInstanceProfile": "arn:aws:iam::419070736574:instance-profile/JoinDomain",
+                "IamInstanceProfile": "arn:aws:iam::419070736574:role/JoinDomain",
                 "Tags": [
                     {
                         "Key": "Name",

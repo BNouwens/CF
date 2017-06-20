@@ -1,0 +1,641 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Creates an AWS EC2 Instance For Pega",
+    "Parameters": {
+        "AppNumber": {
+            "Description": "AppNumber for Pega Application",
+            "Default": "ap0",
+            "Type": "String"
+        },
+        "AWSKeyPairName": {
+            "Description": "Select an existing key pair to use for connecting to your Instances",
+            "Type": "AWS::EC2::KeyPair::KeyName",
+            "MinLength": "1",
+            "MaxLength": "255",
+            "ConstraintDescription": "Select an existing EC2 Key Pair."
+        },
+        "SecurityGroupIds": {
+            "Description": "Security Group IDs for Pega Application",
+            "Default": "",
+            "Type": "List<AWS::EC2::SecurityGroup::Id>"
+        },
+        "PegaAMI": {
+            "Description": "AMI ID for Pega Application",
+            "Default": "ami-70a3ac13",
+            "Type": "String"
+        },
+        "Subnet": {
+            "Description": "Select a private subnet for the instance",
+            "Type": "AWS::EC2::Subnet::Id"
+        },
+        "Environment": {
+            "Description": "Environment Code",
+            "Default": "ppd",
+            "Type": "String"
+        },
+        "MediaBucket": {
+            "Description": "URL for Media Installation (must have trailing /)",
+            "Default": "https://s3-ap-southeast-2.amazonaws.com/shiftmgmtppdmedias3/",
+            "Type": "String"
+        },
+        "DBProductionLevel": {
+            "Description": "Database Production Level - 5 = production;\n4 = preproduction;\n3 = test;\n2 = development;\n1 = experimental\n",
+            "Default": "4",
+            "Type": "String"
+        }
+    },
+    "Resources": {
+        "PegaAppServer": {
+            "Type": "AWS::EC2::Instance",
+            "Metadata": {
+                "AWS::CloudFormation::Init": {
+                    "config": {
+                        "files": {
+                            "c:\\cfn\\cfn-hup.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "[main]\n",
+                                            "stack=",
+                                            {
+                                                "Ref": "AWS::StackId"
+                                            },
+                                            "\n",
+                                            "region=",
+                                            {
+                                                "Ref": "AWS::Region"
+                                            },
+                                            "\n"
+                                        ]
+                                    ]
+                                }
+                            },
+                            "d:\\Apache Software Foundation\\apache-tomcat-8.5.13-windows-x64.zip": {
+                                "source": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            {
+                                                "Ref": "MediaBucket"
+                                            },
+                                            "apache-tomcat-8.5.13-windows-x64.zip"
+                                        ]
+                                    ]
+                                }
+                            },
+                            "d:\\Apache Software Foundation\\jdk-8u121-windows-x64.exe": {
+                                "source": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            {
+                                                "Ref": "MediaBucket"
+                                            },
+                                            "jdk-8u121-windows-x64.exe"
+                                        ]
+                                    ]
+                                }
+                            },
+                            "c:\\cfn\\Source\\server.xml": {
+                                "source": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            {
+                                                "Ref": "MediaBucket"
+                                            },
+                                            "Server.xml"
+                                        ]
+                                    ]
+                                }
+                            },
+                            "c:\\cfn\\Source\\prhelp.war": {
+                                "source": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            {
+                                                "Ref": "MediaBucket"
+                                            },
+                                            "Pega+Product+War+Files/prhelp.war"
+                                        ]
+                                    ]
+                                }
+                            },
+                            "c:\\cfn\\Source\\prsysmgmt.war": {
+                                "source": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            {
+                                                "Ref": "MediaBucket"
+                                            },
+                                            "Pega+Product+War+Files/prsysmgmt.war"
+                                        ]
+                                    ]
+                                }
+                            },
+                            "c:\\cfn\\Source\\prweb.war": {
+                                "source": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            {
+                                                "Ref": "MediaBucket"
+                                            },
+                                            "Pega+Product+War+Files/prweb.war"
+                                        ]
+                                    ]
+                                }
+                            },
+                            "c:\\cfn\\Source\\sqljdbc42.jar": {
+                                "source": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            {
+                                                "Ref": "MediaBucket"
+                                            },
+                                            "Pega+Product+War+Files/sqljdbc42.jar"
+                                        ]
+                                    ]
+                                }
+                            },
+                            "c:\\cfn\\Source\\cacerts": {
+                                "source": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            {
+                                                "Ref": "MediaBucket"
+                                            },
+                                            "cacerts"
+                                        ]
+                                    ]
+                                }
+                            },
+                            "c:\\cfn\\Source\\context.xml": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n",
+                                            "<!--\n",
+                                            "  Licensed to the Apache Software Foundation (ASF) under one or more\n",
+                                            "  contributor license agreements.  See the NOTICE file distributed with\n",
+                                            "  this work for additional information regarding copyright ownership.\n",
+                                            "  The ASF licenses this file to You under the Apache License, Version 2.0\n",
+                                            "  (the \"License\"); you may not use this file except in compliance with\n",
+                                            "  the License.  You may obtain a copy of the License at\n",
+                                            "\n",
+                                            "      http://www.apache.org/licenses/LICENSE-2.0\n",
+                                            "\n",
+                                            "  Unless required by applicable law or agreed to in writing, software\n",
+                                            "  distributed under the License is distributed on an \"ASIS\" BASIS,\n",
+                                            "  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n",
+                                            "  See the License for the specific language governing permissions and\n",
+                                            "  limitations under the License.\n",
+                                            "-->\n",
+                                            "<!-- The contents of this file will be loaded for each web application -->\n",
+                                            "<Context>\n",
+                                            "\n",
+                                            "    <!-- Default set of monitored resources. If one of these changes, the    -->\n",
+                                            "    <!-- web application will be reloaded.                                   -->\n",
+                                            "    <WatchedResource>WEB-INF/web.xml</WatchedResource>\n",
+                                            "    <WatchedResource>${catalina.base}/conf/web.xml</WatchedResource>\n",
+                                            "\n",
+                                            "    <!-- Uncomment this to disable session persistence across Tomcat restarts -->\n",
+                                            "    <!-- -->\n",
+                                            "    <Manager pathname=\"\" />\n",
+                                            "       \n",
+                                            "\n",
+                                            "        <Environment name=\"url/initialization/explicittempdir\" value=\"D:\\Pega_Temp\" type=\"java.lang.String\" />\n",
+                                            "	<Environment name=\"prconfig/database/databases/PegaRULES/defaultSchema\" value=\"rules\" type=\"java.lang.String\" />\n",
+                                            "	<Environment name=\"prconfig/database/databases/PegaDATA/defaultSchema\"  value=\"data\" type=\"java.lang.String\" />\n",
+                                            "        <!--<Environment name=\"database/databases/PegaRULES/dataSourceAdmin\" value=\"java: comp/env/jdbc/AdminPegaRULES\" type=\"java.lang.String\"/>\n",
+                                            "	<Environment name=\"database/databases/PegaDATA/dataSourceAdmin\" value=\"java: comp/env/jdbc/AdminPegaRULES\" type=\"java.lang.String\"/>-->\n",
+
+                                            "	\n",
+                                            "	<Resource name=\"jdbc/PegaRULES\"	auth=\"Container\" type=\"javax.sql.DataSource\"\n",
+                                            "driverClassName=\"com.microsoft.sqlserver.jdbc.SQLServerDriver\"\n",
+                                            "url=\"jdbc:sqlserver://",
+                                            {
+                                                "Fn::ImportValue": "RDSEndpoint"
+                                            },
+                                            ":1433;database=PRPC7_",
+                                            {
+                                                "Ref": "Environment"
+                                            },
+                                            ";SelectMethod=cursor;SendStringParametersAsUnicode=false\"\n",
+                                            "		username=\"shiftmgmt\"\n",
+                                            "		password=\"Vegemite45#\"\n",
+
+
+
+                                            "		maxActive=\"100\"\n",
+                                            "		maxIdle=\"30\"\n",
+                                            "		maxWait=\"10000\" />\n",
+                                            "</Context>\n"
+                                        ]
+                                    ]
+                                }
+                            },
+                            "c:\\cfn\\Source\\Set-InstallEnvironmentVariables.ps1": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "#extract Tomcat Installation Media\n",
+                                            "$SourcePath = \"d:\\Apache Software Foundation\\apache-tomcat-8.5.13-windows-x64.zip\"\n",
+                                            "$Destination = \"d:\\Apache Software Foundation\"\n",
+                                            "Add-Type -assembly \"system.io.compression.filesystem\"\n",
+                                            "[io.compression.zipfile]::ExtractToDirectory($SourcePath, $Destination)\n",
+                                            "#Configure Environment Variables\n",
+                                            "[Environment]::SetEnvironmentVariable(\"JAVA_HOME\", \"C:\\Program Files\\Java\\jdk1.8.0_121\", \"Machine\")\n",
+                                            "$oldpath = Get-ChildItem Env:Path\n",
+                                            "$newpath = $oldpath.Value + \";%JAVA_HOME%\\bin\"\n",
+                                            "[environment]::SetEnvironmentVariable(\"Path\",$newpath,\"Machine\")\n",
+                                            "[Environment]::SetEnvironmentVariable(\"CATALINA_HOME\", \"D:\\Apache Software Foundation\\apache-tomcat-8.5.13\", \"Machine\")\n",
+                                            "copy-item \"c:\\cfn\\Source\\server.xml\" \"D:\\Apache Software Foundation\\apache-tomcat-8.5.13\\conf\"\n",
+                                            "copy-item \"c:\\cfn\\Source\\prhelp.war\" \"D:\\Apache Software Foundation\\apache-tomcat-8.5.13\\webapps\"\n",
+                                            "copy-item \"c:\\cfn\\Source\\prsysmgmt.war\" \"D:\\Apache Software Foundation\\apache-tomcat-8.5.13\\webapps\"\n",
+                                            "copy-item \"c:\\cfn\\Source\\prweb.war\" \"D:\\Apache Software Foundation\\apache-tomcat-8.5.13\\webapps\"\n",
+                                            "copy-item \"c:\\cfn\\Source\\sqljdbc42.jar\" \"D:\\Apache Software Foundation\\apache-tomcat-8.5.13\\lib\"\n",
+                                            "copy-item \"c:\\cfn\\Source\\context.xml\" \"D:\\Apache Software Foundation\\apache-tomcat-8.5.13\\conf\"\n"
+                                        ]
+                                    ]
+                                }
+                            },
+                            "c:\\cfn\\Source\\Tomcat_Deploy.ps1": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "#Install Java and Tomcat\n",
+                                            "& 'd:\\Apache Software Foundation\\jdk-8u121-windows-x64.exe' /s\n",
+                                            "pushd \"D:\\Apache Software Foundation\\apache-tomcat-8.5.13\\bin\"\n",
+                                            "\n",
+                                            ".\\service.bat install Tomcat8\n",
+                                            ".\\tomcat8 //US//Tomcat8 --DisplayName=\"Apache Tomcat\" --Description=\"Apache Tomcat Server - http://tomcat.apache.org/\" --Startup=auto -Classpath=%JAVA_HOME%\\lib\\tools.jar`;\"D:\\Apache Software Foundation\\apache-tomcat-8.5.13\\bin\\bootstrap.jar\"\n",
+                                            ".\\tomcat8 //US//Tomcat8  --JvmMs=4096  --JvmMx=8192  --JvmSs=512\n",
+                                            ".\\tomcat8 //US//Tomcat8 ++JvmOptions=-XX:PermSize=512m`;-XX:MaxPermSize=1024m`;-XX:NewSize=1024m`;-XX:MaxNewSize=1024m`;-XX:+HeapDumpOnOutOfMemoryError`;-XX:+UseCompressedOops`;-XX:ReservedCodeCacheSize=512m`;-XX:+UseCodeCacheFlushing`;-XX:TargetSurvivorRatio=90`;-XX:+UseParNewGC`;-XX:+UseConcMarkSweepGC`;-XX:+DisableExplicitGC`;-Djava.awt.headless=true`;-XX:+PrintGCDetails`;-XX:+PrintGCTimeStamps`;-XX:+PrintGCDateStamps`;-verbose:gc`;-Xloggc:'D:\\Apache Software Foundation\\apache-tomcat-8.5.13\\logs\\gc.log'\n",
+                                            ".\\tomcat8 //US//Tomcat8 ++JvmOptions=-Dpegarules.config=D:\\PRWEBConfigFiles\\prconfig.xml`;-Dpegarules.logging.configuration=D:\\PRWEBConfigFiles\\prlogging.xml\n",
+                                            "netsh advfirewall firewall add rule name=\"Apache Tomcat\" dir=in action=allow protocol=TCP localport=80\n",
+                                            "New-Item D:\\Pega_Temp -type directory\n"
+                                        ]
+                                    ]
+                                }
+                            },
+                            "c:\\cfn\\Source\\CertInstall.ps1": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "#Install Root Certificate\n",
+                                            "copy-item \"c:\\cfn\\Source\\cacerts\" \"C:\\Program Files\\Java\\jre1.8.0_121\\lib\\security\n\""
+                                        ]
+                                    ]
+                                }
+                            },
+                            "d:\\PRWEBConfigFiles\\prconfig.xml": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n",
+                                            "<pegarules>\n",
+"	<!-- This is a minimum format prconfig.xml file.  Only the settings which are required to access settings in the database are included.\n",
+"	All other settings which were formerly located only in this file are now Data-Admin-System-Settings.      -->\n",
+"	<env name=\"initialization/settingsource\" value=\"merged\" />\n",
+"	<env name=\"database/databases/PegaRULES/dataSource\" value=\"java:comp/env/jdbc/PegaRULES\"/>\n",
+"	<env name=\"database/databases/PegaDATA/dataSource\" value=\"java:comp/env/jdbc/PegaRULES\"/>\n",
+"	\n",
+"	<!-- Most nodes have a 'default' classification and for these nodes, no additional changes need to be made to this file.  However, \n",
+"	if this is node has a non-general purpose, for example: 'Agent', then the node classification setting should be added to this file. -->\n",
+"	<!--env name=\"initialization/nodeclassification\" value=\"Agent\" /  -->\n",
+"	\n",
+"	\n",
+"	<!-- Settings can still be put in this file.  If they are, then the value in this file will override the value in the database\n",
+"	for this node.  This is useful for settings which are specific to this node and should not be shared by multiple nodes on this\n",
+"	system. -->\n",
+"	\n",
+"	\n",
+"	<!--\n",
+"	Pegasystems recommends that you use Application Server connection pooling to the database for Websphere and \n",
+"		Weblogic.  These examples are provided if you need to use Pega Connection Pooling for Tomcat or for testing purposes.\n",
+"		If you are using Application server connection pooling, there is no longer a need to edit this file.  \n",
+"		\n",
+"		****The new format for this file is only valid if you are using Application Server connection pooling. If you are not, please replace\n",
+"		this file with an older version. ***\n",
+"		\n",
+"	\n",
+"	Oracle 10g (Type 4) oracle.jdbc.OracleDriver                jdbc:oracle:thin:@serverName:1521:db  \n",
+"	IBM DB/2 Type 4     com.ibm.db2.jcc.DB2Driver               jdbc:db2://serverName:port/dbName\n",
+"	SQL Server 2005     com.microsoft.sqlserver.jdbc.SQLServerDriver jdbc:sqlserver://serverName:1433;SelectMethod=cursor;SendStringParametersAsUnicode=false\n",
+"	-->\n",
+"	\n",
+"	<!--\n",
+"	<env name=\"database/drivers\" value=\"com.microsoft.sqlserver.jdbc.SQLServerDriver;oracle.jdbc.OracleDriver\" />\n",
+"	<env name=\"database/databases/PegaRULES/url\" value=\"jdbc:sqlserver: //serverName:1433;SelectMethod=cursor;SendStringParametersAsUnicode=false\" />\n",
+"	<env name=\"database/databases/PegaRULES/userName\" value=\"a_username\" />\n",
+"	<env name=\"database/databases/PegaRULES/password\" value=\"a_password\" />\n",
+"	\n",
+"	<env name=\"database/databases/PegaDATA/url\" value=\"jdbc:sqlserver: //serverName:1433;SelectMethod=cursor;SendStringParametersAsUnicode=false\" />\n",
+"	<env name=\"database/databases/PegaDATA/userName\" value=\"a_username\" />\n",
+"	<env name=\"database/databases/PegaDATA/password\" value=\"a_password\" />\n",
+"	-->\n",
+                                            "<env name=\"/initialization/ErrorOnInvalidThreadName\" value=\"true\" />",
+                                            "</pegarules>\n"
+                                        ]
+                                    ]
+                                }
+                            },
+                            "d:\\PRWEBConfigFiles\\prlogging.xml": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n",
+                                            "<!DOCTYPE log4j:configuration SYSTEM \"log4j.dtd\">\n",
+                                            "<log4j:configuration xmlns:log4j=\"http://jakarta.apache.org/log4j/\" debug=\"false\">\n",
+                                            "\n",
+"	<appender name=\"ASYNC\" class=\"com.pega.apache.log4j.AsyncAppender\">\n",
+"		<param name=\"BufferSize\" value=\"512\"/>\n",
+"		<param name=\"Blocking\" value=\"false\"/>\n",
+"		<filter class=\"com.pega.apache.log4j.varia.LevelMatchFilter\">\n",
+"			<param name=\"LevelToMatch\" value=\"ALERT\"/>\n",
+"			<param name=\"AcceptOnMatch\" value=\"false\"/>\n",
+"		</filter>\n",
+"		<appender-ref ref=\"CONSOLE\"/>\n",
+"		<appender-ref ref=\"PEGA\"/>\n",
+"	</appender>\n",
+                                            "\n",
+"	<appender name=\"ALERT-ASYNC\" class=\"com.pega.apache.log4j.AsyncAppender\">\n",
+"		<param name=\"BufferSize\" value=\"512\"/>\n",
+"		<param name=\"Blocking\" value=\"false\"/>\n",
+"		<filter class=\"com.pega.apache.log4j.varia.LevelMatchFilter\">\n",
+"			<param name=\"LevelToMatch\" value=\"ALERT\"/>\n",
+"			<param name=\"AcceptOnMatch\" value=\"true\"/>\n",
+"		</filter>\n",
+"		<filter class=\"com.pega.apache.log4j.varia.DenyAllFilter\"/>\n",
+"	 	<appender-ref ref=\"ALERT-PERFORMANCE\"/>\n",
+"		<appender-ref ref=\"ALERT-SECURITY\"/>\n",
+"	</appender> \n",
+                                            "\n",
+"	<appender name=\"ALERT-PERFORMANCE\" class=\"com.pega.apache.log4j.AsyncAppender\">\n",
+"		<param name=\"BufferSize\" value=\"512\"/>\n",
+"		<param name=\"Blocking\" value=\"false\"/>\n",
+"		<filter class=\"com.pega.pegarules.priv.MDCMatchFilter\">\n",
+"			<param name=\"TagToMatch\" value=\"alertType\" />\n",
+"			<param name=\"StringToMatch\" value=\"security\" />\n",
+"			<param name=\"AcceptOnMatch\" value=\"false\"/>\n",
+"		</filter>\n",
+"		<appender-ref ref=\"ALERT\"/>\n",
+"	</appender> \n",
+                                            "\n",
+"	<appender name=\"ALERT-SECURITY\" class=\"com.pega.apache.log4j.AsyncAppender\">\n",
+"		<param name=\"BufferSize\" value=\"512\"/>\n",
+"		<param name=\"Blocking\" value=\"false\"/>\n",
+"		<filter class=\"com.pega.pegarules.priv.MDCMatchFilter\">\n",
+"			<param name=\"TagToMatch\" value=\"alertType\" />\n",
+"			<param name=\"StringToMatch\" value=\"security\" />\n",
+"			<param name=\"AcceptOnMatch\" value=\"true\"/>\n",
+"		</filter>\n",
+"		<filter class=\"com.pega.apache.log4j.varia.DenyAllFilter\"/>\n",
+"		<appender-ref ref=\"ALERTSECURITY\"/>\n",
+"	</appender> \n",
+"	\n",
+"	<appender name=\"CONSOLE\" class=\"com.pega.apache.log4j.ConsoleAppender\">\n",
+"		<layout class=\"com.pega.apache.log4j.PatternLayout\">\n",
+"			<param name=\"ConversionPattern\" value=\"%d [%20.20t] [%10.10X{pegathread}] [%20.20X{tenantid}] [%20.20X{app}] (%30.30c{3}) %-5p %X{stack} %X{userid} - %m%n\"/>\n",
+"		</layout>\n",
+"	</appender>\n",
+"	\n",
+"	<appender name=\"PEGA\" class=\"com.pega.pegarules.priv.util.DailySizeRollingFileAppenderPega\">\n",
+"	  <param name=\"FileNamePattern\" value=\"'@{web.tmpdir}/PegaRULES-'yyyy-MMM-dd'.log'\"/>\n",
+"	  <param name=\"MaxFileSize\" value=\"500MB\" />\n",
+"	  <layout class=\"com.pega.apache.log4j.PatternLayout\">\n",
+"	   <param name=\"ConversionPattern\" value=\"%d [%20.20t] [%10.10X{pegathread}] [%20.20X{tenantid}] [%20.20X{app}] (%30.30c{3}) %-5p %X{stack} %X{userid} - %m%n\"/>\n",
+"	  </layout>\n",
+"	 </appender>\n",
+                                            " \n",
+"	<appender name=\"ALERT\" class=\"com.pega.pegarules.priv.util.DailySizeRollingFileAppenderPega\">\n",
+"	  <param name=\"FileNamePattern\" value=\"'@{web.tmpdir}/PegaRULES-ALERT-'yyyy-MMM-dd'.log'\"/>\n",
+"	  <param name=\"MaxFileSize\" value=\"500MB\" />\n",
+"	  <layout class=\"com.pega.apache.log4j.PatternLayout\">\n",
+"		<param name=\"ConversionPattern\" value=\"%m%n\" />\n",
+"	  </layout>\n",
+"	</appender>\n",
+"	\n",
+"	<appender name=\"ALERTSECURITY\" class=\"com.pega.pegarules.priv.util.DailySizeRollingFileAppenderPega\">\n",
+"	  <param name=\"FileNamePattern\" value=\"'@{web.tmpdir}/PegaRULES-ALERTSECURITY-'yyyy-MMM-dd'.log'\"/>\n",
+"	  <param name=\"MaxFileSize\" value=\"500MB\" />\n",
+"	  <layout class=\"com.pega.apache.log4j.PatternLayout\">\n",
+"		<param name=\"ConversionPattern\" value=\"%m%n\" />\n",
+"	  </layout>\n",
+"	</appender>\n",
+"	\n",
+"	<appender name=\"BIX\" class=\"com.pega.pegarules.priv.util.DailySizeRollingFileAppenderPega\">\n",
+"	  <param name=\"FileNamePattern\" value=\"'@{web.tmpdir}/PegaBIX-'yyyy-MMM-dd'.log'\"/>\n",
+"	  <param name=\"MaxFileSize\" value=\"500MB\" />\n",
+"	  <layout class=\"com.pega.apache.log4j.PatternLayout\">\n",
+"	  	<param name=\"ConversionPattern\" value=\"%d [%20.20t] [%20.20X{tenantid}] [%20.20X{app}] (%30.30c{3}) %-5p %X{stack} %X{userid} - %m%n\"/>\n",
+"	  </layout>\n",
+"	</appender>\n",
+"	\n",
+"	<appender name=\"CLUSTER\" class=\"com.pega.pegarules.priv.util.DailySizeRollingFileAppenderPega\">\n",
+"	  <param name=\"FileNamePattern\" value=\"'@{web.tmpdir}/PegaCLUSTER-'yyyy-MMM-dd'.log'\"/>\n",
+"	  <param name=\"MaxFileSize\" value=\"50MB\" />\n",
+"	  <layout class=\"com.pega.apache.log4j.PatternLayout\">\n",
+"	  	<param name=\"ConversionPattern\" value=\"%d [%20.20t] [%20.20X{tenantid}] [%20.20X{app}] (%30.30c{3}) %-5p %X{stack} %X{userid} - %m%n\"/>\n",
+"	  </layout>\n",
+"	</appender>\n",
+"	\n",
+"	<category name=\"com.pega.pegarules.data.internal.access.ExtractImpl\" additivity=\"false\">\n",
+"		<priority value=\"info\"/>\n",
+"		<appender-ref ref=\"BIX\"/>\n",
+"	</category>\n",
+"	\n",
+"	<category name=\"com.pega.pegarules.data.internal.access.ExtractParameters\" additivity=\"false\">\n",
+"		<priority value=\"info\"/>\n",
+"		<appender-ref ref=\"BIX\"/>\n",
+"	</category>\n",
+"	\n",
+"	<category name=\"com.pega.pegarules.data.internal.access.DatabaseUtilsCommonImpl\" additivity=\"false\">\n",
+"		<priority value=\"info\"/>\n",
+"		<appender-ref ref=\"BIX\"/>\n",
+"	</category>\n",
+                                            "\n",
+"	<category name=\"com.hazelcast\">\n",
+"		<priority value=\"info\"/>\n",
+"		<appender-ref ref=\"CLUSTER\"/>\n",
+"	</category>\n",
+"	\n",
+"	<category name=\"org.apache.ignite\">\n",
+"		<priority value=\"info\"/>\n",
+"		<appender-ref ref=\"CLUSTER\"/>\n",
+"	</category>\n",
+"	\n",
+                                            "<!--  Provided as an example for how to enable messaging for PRPC or java class.\n",
+"	<category name=\"Rule_Obj_Activity\">\n",
+"		<priority value=\"info\"/>\n",
+"	</category>\n",
+                                            "\n",
+"	<category name=\"com.pega.pegarules.engine.context.InitialConfiguration\">\n",
+"		<priority value=\"info\"/>\n",
+"	</category>\n",
+                                            "-->\n",
+                                            "\n",
+                                            "<!-- Provided as an example for how to enable logging for LookupLists in a separate file \n",
+"	<appender name=\"LOOKUPLIST-STAT\" class=\"com.pega.pegarules.priv.util.FileAppenderPega\">\n",
+"		<param name=\"FileNamePattern\" value=\"'PegaRULES-LLCSTAT-'yyyy-MMM-dd'.csv'\" />\n",
+"		<layout class=\"com.pega.apache.log4j.PatternLayout\">\n",
+"			<param name=\"ConversionPattern\" value=\"%m%n\" />\n",
+"		</layout>\n",
+"	</appender>\n",
+                                            "\n",
+"	<category\n",
+"		name=\"com.pega.pegarules.session.internal.stats.lookuplist.LookupListStats\">\n",
+"		<priority value=\"info\" />\n",
+"		<appender-ref ref=\"LOOKUPLIST-STAT\" />\n",
+"	</category>	\n",
+                                            "-->\n",
+"	<root>\n",
+"		<priority value=\"alert\"/>\n",
+"		<appender-ref ref=\"ASYNC\"/>\n",
+"		<appender-ref ref=\"ALERT-ASYNC\"/>\n",
+"	</root>\n",
+                                            "\n",
+                                            "</log4j:configuration>\n"
+                                        ]
+                                    ]
+                                }
+                            }
+                        },
+                        "commands": {
+                            "a-setexecutionpolicy": {
+                                "command": "powershell -Command Set-ExecutionPolicy Unrestricted -Force"
+                            },
+                            "b-set-install-environment": {
+                                "command": "powershell -file c:\\cfn\\Source\\Set-InstallEnvironmentVariables.ps1",
+                                "waitAfterCompletion": "1"
+                            },
+                            "c-install-java-tomcat": {
+                                "command": "powershell -file c:\\cfn\\Source\\Tomcat_Deploy.ps1",
+                                "waitAfterCompletion": "1"
+                            },
+                            "d-cert-install": {
+                                "command": "powershell -file c:\\cfn\\Source\\CertInstall.ps1",
+                                "waitAfterCompletion": "1"
+                            },
+                            "e-rename-computer": {
+                                "command": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "powershell.exe -Command Rename-Computer -NewName shiftmgmt",
+                                            {
+                                                "Ref": "Environment"
+                                            },
+                                            {
+                                                "Ref": "AppNumber"
+                                            },
+                                            " -Force -Restart"
+                                        ]
+                                    ]
+                                },
+                                "waitAfterCompletion": "0"
+                            }
+                        }
+                    }
+                }
+            },
+            "Properties": {
+                "ImageId": {
+                    "Ref": "PegaAMI"
+                },
+                "InstanceType": "t2.large",
+                "KeyName": {
+                    "Ref": "AWSKeyPairName"
+                },
+                "SubnetId": {
+                    "Ref": "Subnet"
+                },
+                "SecurityGroupIds": {
+                    "Ref": "SecurityGroupIds"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "shiftmgmt",
+                                    {
+                                        "Ref": "Environment"
+                                    },
+                                    {
+                                        "Ref": "AppNumber"
+                                    }
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "Key": "CostCentre",
+                        "Value": "P.0004332.03.502.003"
+                    },
+                    {
+                        "Key": "PurchaseOrder",
+                        "Value": "P.0004332.03.502.003"
+                    },
+                    {
+                        "Key": "Solution",
+                        "Value": "ShiftManagement"
+                    },
+                    {
+                        "Key": "cpm backup",
+                        "Value": "shiftmgmtppd_daily"
+                    }
+                ],
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "<script>\n",
+                                "cfn-init.exe -v -s ",
+                                {
+                                    "Ref": "AWS::StackName"
+                                },
+                                " -r PegaAppServer",
+                                " --region ",
+                                {
+                                    "Ref": "AWS::Region"
+                                },
+                                "\n",
+                                "</script>"
+                            ]
+                        ]
+                    }
+                },
+                "BlockDeviceMappings": [
+                    {
+                        "DeviceName": "/dev/sda1",
+                        "Ebs": {
+                            "VolumeSize": "30"
+                        }
+                    },
+                    {
+                        "DeviceName": "xvdf",
+                        "Ebs": {
+                            "VolumeSize": "50"
+                        }
+                    }
+                ]
+            }
+        }
+    }
+}
