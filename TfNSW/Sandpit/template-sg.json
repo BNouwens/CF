@@ -43,25 +43,5 @@
                 ]
             }
         }
-    },
-    "Outputs": {
-        "ApplicationSecurityGroup": {
-            "Value": {
-                "Ref": "SGShiftmgmtap"
-            },
-            "Description": "Security Group for App Servers",
-            "Export": {
-                "Name": "ApplicationSecurityGroup"
-            }
-        },
-        "DBSecurityGroup": {
-            "Value": {
-                "Ref": "SGShiftmgmtdb"
-            },
-            "Description": "Security Group for Database access",
-            "Export": {
-                "Name": "DBSecurityGroup"
-            }
-        }
     }
 }
