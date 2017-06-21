@@ -1,6 +1,6 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "Roles for Management Applications",
+    "Description": "Roles for Sandpit Access",
     "Parameters": {
         "SandpitName": {
             "Type": "String"
@@ -11,10 +11,35 @@
     },
     "Resources": {
         "Group": {
-            "Type": "AWS::IAM::Group",
+            "Type": "AWS::IAM::Role",
             "Properties": {
-                "GroupName": {
-                    "Ref": "SandpitName"
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "ds.amazonaws.com"
+                                ]
+                            },
+                            "Action": [
+                                "sts:AssumeRole"
+                            ]
+                        }
+                    ]
+                },
+                "Path": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "/TfNSW/",
+                            {
+                                "Ref": "SandpitName"
+                            },
+                            "/"
+                        ]
+                    ]
                 },
                 "Policies": [
                     {
@@ -33,7 +58,7 @@
                                         "StringEquals": {
                                             "ec2:ResourceTag/CostCentre": {
                                                 "Ref": "CostCentre"
-                                            }, 
+                                            },
                                             "ec2:Region": "ap-southeast-2"
                                         }
                                     },
@@ -91,7 +116,7 @@
                                     "Action": [
                                         "ec2:RunInstances"
                                     ],
-                                    "Resource": [                                        
+                                    "Resource": [
                                         "arn:aws:ec2:ap-southeast-2::image/ami-*"
                                     ]
                                 },
