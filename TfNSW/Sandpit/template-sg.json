@@ -1,0 +1,67 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Creates a Security Group for Sandpit Access",
+    "Parameters": {
+        "SandpitName": {
+            "Type": "String"
+        },
+        "CostCentre": {
+            "Type": "String"
+        }
+    },
+    "Resources": {
+        "SGAccess": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": {
+                    "Ref": "SandpitName"
+                },
+                "VpcId": {
+                    "Fn::ImportValue": "VPC-sandpit"
+                },
+                "SecurityGroupIngress": [
+                    {
+                        "CidrIp": "0.0.0.0/0",
+                        "IpProtocol": "tcp",
+                        "FromPort": "3389",
+                        "ToPort": "3389"
+                    },
+                    {
+                        "CidrIp": "0.0.0.0/0",
+                        "IpProtocol": "tcp",
+                        "FromPort": "22",
+                        "ToPort": "22"
+                    }
+                ],
+                "SecurityGroupEgress": [
+                    {
+                        "CidrIp": "0.0.0.0/0",
+                        "FromPort": "0",
+                        "IpProtocol": "-1",
+                        "ToPort": "65535"
+                    }
+                ]
+            }
+        }
+    },
+    "Outputs": {
+        "ApplicationSecurityGroup": {
+            "Value": {
+                "Ref": "SGShiftmgmtap"
+            },
+            "Description": "Security Group for App Servers",
+            "Export": {
+                "Name": "ApplicationSecurityGroup"
+            }
+        },
+        "DBSecurityGroup": {
+            "Value": {
+                "Ref": "SGShiftmgmtdb"
+            },
+            "Description": "Security Group for Database access",
+            "Export": {
+                "Name": "DBSecurityGroup"
+            }
+        }
+    }
+}
