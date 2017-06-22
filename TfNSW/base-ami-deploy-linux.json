@@ -176,22 +176,22 @@
                             ]
                         ]
                     }
-                }
-            },
-            "BlockDeviceMappings": [
-                {
-                    "DeviceName": "/dev/sda1",
-                    "Ebs": {
-                        "VolumeSize": "50"
-                    }
                 },
-                {
-                    "DeviceName": "xvdf",
-                    "Ebs": {
-                        "VolumeSize": "50"
+                "BlockDeviceMappings": [
+                    {
+                        "DeviceName": "/dev/sda1",
+                        "Ebs": {
+                            "VolumeSize": "50"
+                        }
+                    },
+                    {
+                        "DeviceName": "xvdf",
+                        "Ebs": {
+                            "VolumeSize": "50"
+                        }
                     }
-                }
-            ]
+                ]
+            }
         }
     }
 }
