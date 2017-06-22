@@ -110,11 +110,6 @@
                 "SecurityGroupIds": {
                     "Ref": "SecurityGroupIds"
                 },
-                "SsmAssociations": [
-                    {
-                        "DocumentName": "Template-JoinDomain"
-                    }
-                ],
                 "IamInstanceProfile": "JoinDomain",
                 "Tags": [
                     {
@@ -176,21 +171,7 @@
                             ]
                         ]
                     }
-                },
-                "BlockDeviceMappings": [
-                    {
-                        "DeviceName": "/dev/sda1",
-                        "Ebs": {
-                            "VolumeSize": "50"
-                        }
-                    },
-                    {
-                        "DeviceName": "xvdf",
-                        "Ebs": {
-                            "VolumeSize": "50"
-                        }
-                    }
-                ]
+                }
             }
         }
     }
