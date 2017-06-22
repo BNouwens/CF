@@ -118,7 +118,7 @@
                 "SsmAssociations": [
                     {
                         "DocumentName": 
-                            "awsconfig_Domain_d-97673e7fe1_sandpit.local"
+                            "Template-JoinDomain"
                         
                     }
                 ],
