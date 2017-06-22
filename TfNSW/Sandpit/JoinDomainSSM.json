@@ -38,3 +38,26 @@
         }
     }
 }
+
+
+
+
+
+{
+    "schemaVersion": "1.0",
+    "description": "Automatic Domain Join Configuration created by EC2 Console.",
+    "runtimeConfig": {
+        "aws:domainJoin": {
+            "properties": {
+                "directoryId": "d-97673e7fe1",
+                "directoryName": "sandpit.local",
+                "directoryOU": "OU=Template,OU=TfNSW,DC=sandpit,DC=local",
+                "dnsIpAddresses": [
+                    "10.216.66.24",
+                    "10.216.65.182"
+                ]
+            }
+        }
+    }
+}
+

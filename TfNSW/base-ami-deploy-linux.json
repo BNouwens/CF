@@ -1,0 +1,197 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Creates an AWS EC2 Instance",
+    "Parameters": {
+        "NameCode": {
+            "Description": "",
+            "Default": "ap01",
+            "Type": "String"
+        },
+        "AWSKeyPairName": {
+            "Description": "Select an existing key pair to use for connecting to your Instances",
+            "Type": "AWS::EC2::KeyPair::KeyName",
+            "MinLength": "1",
+            "MaxLength": "255",
+            "ConstraintDescription": "Select an existing EC2 Key Pair."
+        },
+        "SecurityGroupIds": {
+            "Description": "Security Group IDs for Server",
+            "Default": "",
+            "Type": "List<AWS::EC2::SecurityGroup::Id>"
+        },
+        "AMI": {
+            "Description": "AMI ID for Server",
+            "Default": "ami-32312751",
+            "Type": "String"
+        },
+        "Subnet": {
+            "Description": "Select a private subnet for the instance",
+            "Type": "AWS::EC2::Subnet::Id"
+        },
+        "Environment": {
+            "Description": "Environment Code",
+            "Default": "ppd",
+            "Type": "String"
+        },
+        "Solution": {
+            "Description": "Solution Code",
+            "Default": "ppd",
+            "Type": "String"
+        },
+        "CostCentre": {
+            "Description": "Cost Code",
+            "Default": "template",
+            "Type": "String"
+        }
+    },
+    "Resources": {
+        "Server": {
+            "Type": "AWS::EC2::Instance",
+            "Metadata": {
+                "Comment1": "Configure the bootstrap helpers to install the Apache Web Server",
+                "Comment2": "Save website content to /var/www/html/index.php",
+                "AWS::CloudFormation::Init": {
+                    "configSets": {
+                        "Install": [
+                            "Install"
+                        ]
+                    },
+                    "Install": {
+                        "packages": {
+                            "yum": {
+                                "httpd": []
+                            }
+                        },
+                        "files": {
+                            "/var/www/html/index.php": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "<html>\n",
+                                            "  <head>\n",
+                                            "    <title>AWS CloudFormation PHP Sample</title>\n",
+                                            "    <meta http-equiv=\"Content-Type\" content=\"text/html; charset=ISO-8859-1\">\n",
+                                            "  </head>\n",
+                                            "  <body>\n",
+                                            "    <h1>Welcome to the AWS CloudFormation PHP Sample</h1>\n",
+                                            "  </body>\n",
+                                            "</html>\n"
+                                        ]
+                                    ]
+                                },
+                                "mode": "000600",
+                                "owner": "apache",
+                                "group": "apache"
+                            },
+                            "services": {
+                                "sysvinit": {
+                                    "httpd": {
+                                        "enabled": "true",
+                                        "ensureRunning": "true"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "Properties": {
+                "ImageId": {
+                    "Ref": "AMI"
+                },
+                "InstanceType": "t2.large",
+                "KeyName": {
+                    "Ref": "AWSKeyPairName"
+                },
+                "SubnetId": {
+                    "Ref": "Subnet"
+                },
+                "SecurityGroupIds": {
+                    "Ref": "SecurityGroupIds"
+                },
+                "SsmAssociations": [
+                    {
+                        "DocumentName": "Template-JoinDomain"
+                    }
+                ],
+                "IamInstanceProfile": "JoinDomain",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    {
+                                        "Ref": "Solution"
+                                    },
+                                    {
+                                        "Ref": "Environment"
+                                    },
+                                    {
+                                        "Ref": "NameCode"
+                                    }
+                                ]
+                            ]
+                        }
+                    },
+                    {
+                        "Key": "CostCentre",
+                        "Value": {
+                            "Ref": "CostCentre"
+                        }
+                    },
+                    {
+                        "Key": "Solution",
+                        "Value": {
+                            "Ref": "Solution"
+                        }
+                    },
+                    {
+                        "Key": "cpm backup",
+                        "Value": "tbd"
+                    }
+                ],
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "#!/bin/bash -xe\n",
+                                "yum install -y aws-cfn-bootstrap\n",
+                                "# Install the files and packages from the metadata\n",
+                                "/opt/aws/bin/cfn-init -v ",
+                                "         --stack ",
+                                {
+                                    "Ref": "AWS::StackName"
+                                },
+                                "         --resource Server",
+                                "         --configsets Install ",
+                                "         --region ",
+                                {
+                                    "Ref": "AWS::Region"
+                                },
+                                "\n"
+                            ]
+                        ]
+                    }
+                }
+            },
+            "BlockDeviceMappings": [
+                {
+                    "DeviceName": "/dev/sda1",
+                    "Ebs": {
+                        "VolumeSize": "50"
+                    }
+                },
+                {
+                    "DeviceName": "xvdf",
+                    "Ebs": {
+                        "VolumeSize": "50"
+                    }
+                }
+            ]
+        }
+    }
+}
