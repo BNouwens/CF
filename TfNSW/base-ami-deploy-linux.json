@@ -85,7 +85,7 @@
                             },
                             "commands": {
                                 "a-test": {
-                                    "command": "sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config"
+                                    "command": "sudo sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config"
                                 }
                             },
                             "services": {
