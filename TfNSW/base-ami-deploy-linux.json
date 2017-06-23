@@ -116,17 +116,11 @@
                                 },
                                 "mode": "000600",
                                 "owner": "root",
-                                "group": "wheel"
+                                "group": "root"
                             },
                             "services": {
                                 "sysvinit": {
-                                    "httpd": {
-                                        "enabled": "true",
-                                        "ensureRunning": "true"
-                                    }
-                                },
-                                "sssd": {
-                                    "httpd": {
+                                    "ssd": {
                                         "enabled": "true",
                                         "ensureRunning": "true"
                                     }
