@@ -70,6 +70,7 @@
                                     "Fn::Join": [
                                         "",
                                         [
+                                            "\n",
                                             "[sssd]\n",
                                             "domains = sandpit.local\n",
                                             "config_file_version = 2\n",
@@ -83,7 +84,6 @@
                                             "id_provider = ad\n",
                                             "krb5_store_password_if_offline = True\n",
                                             "default_shell = /bin/bash\n",
-                                            "#ldap_sasl_authid = IP-10-216-48-21$\n",
                                             "ldap_id_mapping = True\n",
                                             "use_fully_qualified_names = True\n",
                                             "fallback_homedir = /home/%u@%d\n",
@@ -99,7 +99,7 @@
                                 },
                                 "mode": "000600",
                                 "owner": "root",
-                                "group": "wheel"
+                                "group": "root"
                             },
                             "/etc/resolv.conf": {
                                 "content": {
