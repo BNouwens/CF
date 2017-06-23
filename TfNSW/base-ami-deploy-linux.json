@@ -65,42 +65,6 @@
                             }
                         },
                         "files": {
-                            "/etc/sssd/sssd.conf": {
-                                "content": {
-                                    "Fn::Join": [
-                                        "",
-                                        [
-                                            "\n",
-                                            "[sssd]\n",
-                                            "domains = sandpit.local\n",
-                                            "config_file_version = 2\n",
-                                            "services = nss, pam\n",
-                                            "\n",
-                                            "[domain/sandpit.local]\n",
-                                            "ad_domain = sandpit.local\n",
-                                            "krb5_realm = SANDPIT.LOCAL\n",
-                                            "realmd_tags = manages-system joined-with-samba\n",
-                                            "cache_credentials = True\n",
-                                            "id_provider = ad\n",
-                                            "krb5_store_password_if_offline = True\n",
-                                            "default_shell = /bin/bash\n",
-                                            "ldap_id_mapping = True\n",
-                                            "use_fully_qualified_names = True\n",
-                                            "fallback_homedir = /home/%u@%d\n",
-                                            "#access_provider = ad\n",
-                                            "access_provider = simple\n",
-                                            "simple_allow_groups = ",
-                                            {
-                                                "Ref": "Solution"
-                                            },
-                                            "\n"
-                                        ]
-                                    ]
-                                },
-                                "mode": "000600",
-                                "owner": "root",
-                                "group": "root"
-                            },
                             "/etc/resolv.conf": {
                                 "content": {
                                     "Fn::Join": [
@@ -201,7 +165,9 @@
                                 {
                                     "Ref": "AWS::Region"
                                 },
-                                "\n"
+                                "\n",
+                                "cd /tmp\n",
+                                "sudo yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm\n"
                             ]
                         ]
                     }
