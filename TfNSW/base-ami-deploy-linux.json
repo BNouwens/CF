@@ -82,18 +82,18 @@
                                 "mode": "000600",
                                 "owner": "root",
                                 "group": "root"
-                            },
-                            "commands": {
-                                "a-test": {
-                                    "command": "sudo sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config"
-                                }
-                            },
-                            "services": {
-                                "sysvinit": {
-                                    "ssd": {
-                                        "enabled": "true",
-                                        "ensureRunning": "true"
-                                    }
+                            }
+                        },
+                        "commands": {
+                            "a-test": {
+                                "command": "sudo sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config"
+                            }
+                        },
+                        "services": {
+                            "sysvinit": {
+                                "ssd": {
+                                    "enabled": "true",
+                                    "ensureRunning": "true"
                                 }
                             }
                         }
