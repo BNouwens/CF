@@ -61,7 +61,8 @@
                             "yum": {
                                 "sssd": [],
                                 "realmd": [],
-                                "krb5-workstation": []
+                                "krb5-workstation": [],
+                                "https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm": []
                             }
                         },
                         "files": {
@@ -81,6 +82,11 @@
                                 "mode": "000600",
                                 "owner": "root",
                                 "group": "root"
+                            },
+                            "commands": {
+                                "a-test": {
+                                    "command": "sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config"
+                                }
                             },
                             "services": {
                                 "sysvinit": {
@@ -165,9 +171,7 @@
                                 {
                                     "Ref": "AWS::Region"
                                 },
-                                "\n",
-                                "cd /tmp\n",
-                                "sudo yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm\n"
+                                "\n"
                             ]
                         ]
                     }
