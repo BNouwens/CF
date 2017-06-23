@@ -140,7 +140,7 @@
                 "ImageId": {
                     "Ref": "AMI"
                 },
-                "InstanceType": "t2.large",
+                "InstanceType": "t2.micro",
                 "KeyName": {
                     "Ref": "AWSKeyPairName"
                 },
