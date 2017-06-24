@@ -90,6 +90,40 @@
                             },
                             "b-test2": {
                                 "command": "sudo echo \"TEST\" >> /tmp/tmp.txt"
+                            },
+                            "c-hostname": {
+                                "command": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "hostname ",
+                                            {
+                                                "Ref": "Solution"
+                                            },
+                                            {
+                                                "Ref": "NameCode"
+                                            }
+                                        ]
+                                    ]
+                                }
+                            },
+                            "d-domainjoin": {
+                                "command": "echo\"JoinDomain1\" | sudo realm join -U JoinDomain@sandpit.local --computer-ou=OU=Template,OU=TfNSW sandpit.local --verbose"
+                            },
+                            "e-sshdrestart": {
+                                "command": "sudo service sshd restart"
+                            },
+                            "f-configsssd.conf": {
+                                "command": "sudo sed -i 's/access_provider = ad/access_provider = simple/g' /etc/sssd/sssd.conf"
+                            },
+                            "g-configssd.conf2": {
+                                "command": "sudo echo\"simple_allow_groups = temp\" >> /etc/sssd/sssd.conf"
+                            },
+                            "h-sssdrestart": {
+                                "command": "sudo service sssd restart"
+                            },
+                            "i-protectresolv.conf": {
+                                "command": "sudo chattr +i /etc/resolv.conf"
                             }
                         },
                         "services": {
