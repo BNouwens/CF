@@ -89,8 +89,8 @@
                                 "command": "sudo sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config",
                                 "waitAfterCompletion": "0"
                             },
-                            "b-test2": {
-                                "command": "sudo echo \"TEST\" >> /tmp/tmp.txt",
+                            "b-chmodresolv": {
+                                "command": "sudo chmod 644 /etc/resolv.conf",
                                 "waitAfterCompletion": "0"
                             },
                             "c-hostname": {
