@@ -113,7 +113,7 @@
                                 "command": {
                                     "Fn::Join": [
                                         "",
-                                       [
+                                        [
                                             "sudo sed -i 's/127.0.0.1/127.0.0.1 ",
                                             {
                                                 "Ref": "NameCode"
@@ -145,7 +145,15 @@
                                 "waitAfterCompletion": "0"
                             },
                             "d-domainjoin": {
-                                "command": "echo \"JoinDomain1\" | sudo realm join -U JoinDomain@sandpit.local --computer-ou=OU=Template,OU=TfNSW sandpit.local --verbose",
+                                "command": {
+                                    "Fn::Join": [
+                                        "echo \"JoinDomain1\" | sudo realm join -U JoinDomain@sandpit.local --computer-ou=OU=",
+                                        {
+                                            "Ref": "Solution"
+                                        },
+                                        ",OU=TfNSW sandpit.local --verbose"
+                                    ]
+                                },
                                 "waitAfterCompletion": "0"
                             },
                             "e-sshdrestart": {
