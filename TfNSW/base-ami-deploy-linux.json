@@ -147,11 +147,14 @@
                             "d-domainjoin": {
                                 "command": {
                                     "Fn::Join": [
-                                        "echo \"JoinDomain1\" | sudo realm join -U JoinDomain@sandpit.local --computer-ou=OU=",
-                                        {
-                                            "Ref": "Solution"
-                                        },
-                                        ",OU=TfNSW sandpit.local --verbose"
+                                        "",
+                                        [
+                                            "echo \"JoinDomain1\" | sudo realm join -U JoinDomain@sandpit.local --computer-ou=OU=",
+                                            {
+                                                "Ref": "Solution"
+                                            },
+                                            ",OU=TfNSW sandpit.local --verbose"
+                                        ]
                                     ]
                                 },
                                 "waitAfterCompletion": "0"
