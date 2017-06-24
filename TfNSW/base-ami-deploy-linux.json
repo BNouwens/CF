@@ -93,18 +93,55 @@
                                 "command": "sudo chmod 644 /etc/resolv.conf",
                                 "waitAfterCompletion": "0"
                             },
-                            "c-hostname": {
+                            "c-a-hostname": {
                                 "command": {
                                     "Fn::Join": [
                                         "",
                                         [
-                                            "hostname ",
+                                            "sudo sed -i 's/HOSTNAME/HOSTNAME ",
                                             {
                                                 "Ref": "NameCode"
-                                            }
+                                            },
+                                            ".sandpit.local",
+                                            " /g' /etc/sysconfig/network"
                                         ]
                                     ]
                                 },
+                                "waitAfterCompletion": "0"
+                            },
+                            "c-b-hostname": {
+                                "command": {
+                                    "Fn::Join": [
+                                        "",
+                                       [
+                                            "sudo sed -i 's/127.0.0.1/127.0.0.1 ",
+                                            {
+                                                "Ref": "NameCode"
+                                            },
+                                            ".sandpit.local",
+                                            " /g' /etc/hosts"
+                                        ]
+                                    ]
+                                },
+                                "waitAfterCompletion": "0"
+                            },
+                            "c-c-hostname": {
+                                "command": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "#hostname ",
+                                            {
+                                                "Ref": "NameCode"
+                                            },
+                                            ".sandpit.local"
+                                        ]
+                                    ]
+                                },
+                                "waitAfterCompletion": "0"
+                            },
+                            "c-d-hostname": {
+                                "command": "sudo reboot",
                                 "waitAfterCompletion": "0"
                             },
                             "d-domainjoin": {
@@ -129,6 +166,10 @@
                             },
                             "i-protectresolv.conf": {
                                 "command": "sudo chattr +i /etc/resolv.conf",
+                                "waitAfterCompletion": "0"
+                            },
+                            "j-finalreboot": {
+                                "command": "sudo reboot",
                                 "waitAfterCompletion": "0"
                             }
                         },
