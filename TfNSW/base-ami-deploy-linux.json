@@ -86,10 +86,12 @@
                         },
                         "commands": {
                             "a-test": {
-                                "command": "sudo sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config"
+                                "command": "sudo sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config",
+                                "waitAfterCompletion": "0"
                             },
                             "b-test2": {
-                                "command": "sudo echo \"TEST\" >> /tmp/tmp.txt"
+                                "command": "sudo echo \"TEST\" >> /tmp/tmp.txt",
+                                "waitAfterCompletion": "0"
                             },
                             "c-hostname": {
                                 "command": {
@@ -105,25 +107,32 @@
                                             }
                                         ]
                                     ]
-                                }
+                                },
+                                "waitAfterCompletion": "0"
                             },
                             "d-domainjoin": {
-                                "command": "echo\"JoinDomain1\" | sudo realm join -U JoinDomain@sandpit.local --computer-ou=OU=Template,OU=TfNSW sandpit.local --verbose"
+                                "command": "echo\"JoinDomain1\" | sudo realm join -U JoinDomain@sandpit.local --computer-ou=OU=Template,OU=TfNSW sandpit.local --verbose",
+                                "waitAfterCompletion": "0"
                             },
                             "e-sshdrestart": {
-                                "command": "sudo service sshd restart"
+                                "command": "sudo service sshd restart",
+                                "waitAfterCompletion": "0"
                             },
                             "f-configsssd.conf": {
-                                "command": "sudo sed -i 's/access_provider = ad/access_provider = simple/g' /etc/sssd/sssd.conf"
+                                "command": "sudo sed -i 's/access_provider = ad/access_provider = simple/g' /etc/sssd/sssd.conf",
+                                "waitAfterCompletion": "0"
                             },
                             "g-configssd.conf2": {
-                                "command": "sudo echo\"simple_allow_groups = temp\" >> /etc/sssd/sssd.conf"
+                                "command": "sudo echo\"simple_allow_groups = temp\" >> /etc/sssd/sssd.conf",
+                                "waitAfterCompletion": "0"
                             },
                             "h-sssdrestart": {
-                                "command": "sudo service sssd restart"
+                                "command": "sudo service sssd restart",
+                                "waitAfterCompletion": "0"
                             },
                             "i-protectresolv.conf": {
-                                "command": "sudo chattr +i /etc/resolv.conf"
+                                "command": "sudo chattr +i /etc/resolv.conf",
+                                "waitAfterCompletion": "0"
                             }
                         },
                         "services": {
