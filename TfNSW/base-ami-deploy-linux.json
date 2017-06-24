@@ -87,6 +87,9 @@
                         "commands": {
                             "a-test": {
                                 "command": "sudo sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config"
+                            },
+                            "b-test2": {
+                                "command": "sudo echo \"TEST\" >> /tmp/tmp.txt"
                             }
                         },
                         "services": {
