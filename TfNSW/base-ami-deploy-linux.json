@@ -98,12 +98,11 @@
                                     "Fn::Join": [
                                         "",
                                         [
-                                            "sudo sed -i 's/HOSTNAME/HOSTNAME ",
+                                            "sudo sed -i 's/HOSTNAME=localhost.localdomain/HOSTNAME=",
                                             {
                                                 "Ref": "NameCode"
                                             },
-                                            ".sandpit.local",
-                                            " /g' /etc/sysconfig/network"
+                                            ".sandpit.local/g' /etc/sysconfig/network"
                                         ]
                                     ]
                                 },
@@ -118,8 +117,7 @@
                                             {
                                                 "Ref": "NameCode"
                                             },
-                                            ".sandpit.local",
-                                            " /g' /etc/hosts"
+                                            ".sandpit.local/g' /etc/hosts"
                                         ]
                                     ]
                                 },
