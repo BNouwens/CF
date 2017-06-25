@@ -49,7 +49,6 @@
             "Type": "AWS::EC2::Instance",
             "Metadata": {
                 "Comment1": "Configure the bootstrap helpers to install the Apache Web Server",
-                "Comment2": "Save website content to /var/www/html/index.php",
                 "AWS::CloudFormation::Init": {
                     "configSets": {
                         "Install": [
@@ -89,8 +88,12 @@
                                 "command": "sudo sed -i 's/PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config",
                                 "waitAfterCompletion": "0"
                             },
-                            "b-chmodresolv": {
+                            "b-a-chmodresolv": {
                                 "command": "sudo chmod 644 /etc/resolv.conf",
+                                "waitAfterCompletion": "0"
+                            },
+                            "b-b-protectresolv.conf": {
+                                "command": "sudo chattr +i /etc/resolv.conf",
                                 "waitAfterCompletion": "0"
                             },
                             "c-a-hostname": {
@@ -166,18 +169,25 @@
                                 "waitAfterCompletion": "0"
                             },
                             "g-configssd.conf2": {
-                                "command": "sudo echo\"simple_allow_groups = temp\" >> /etc/sssd/sssd.conf",
+                                "command": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "sudo echo\"simple_allow_groups = ",
+                                            {
+                                                "Ref": "Solution"
+                                            },
+                                            "\" >> /etc/sssd/sssd.conf"
+                                        ]
+                                    ]
+                                },
                                 "waitAfterCompletion": "0"
                             },
                             "h-sssdrestart": {
                                 "command": "sudo service sssd restart",
                                 "waitAfterCompletion": "0"
                             },
-                            "i-protectresolv.conf": {
-                                "command": "sudo chattr +i /etc/resolv.conf",
-                                "waitAfterCompletion": "0"
-                            },
-                            "j-finalreboot": {
+                            "i-finalreboot": {
                                 "command": "sudo reboot",
                                 "waitAfterCompletion": "0"
                             }
