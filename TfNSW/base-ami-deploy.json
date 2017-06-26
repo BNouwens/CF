@@ -117,9 +117,17 @@
                 },
                 "SsmAssociations": [
                     {
-                        "DocumentName": 
-                            "Template-JoinDomain"
-                        
+                        "DocumentName": "Join-Domain",
+                        "AssocationParameters": [
+                            {
+                                "Key": "Solution",
+                                "Value": [
+                                    {
+                                        "Ref": "Solution"
+                                    }
+                                ]
+                            }
+                        ]
                     }
                 ],
                 "IamInstanceProfile": "JoinDomain",
