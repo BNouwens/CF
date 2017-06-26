@@ -105,7 +105,7 @@
                 "ImageId": {
                     "Ref": "AMI"
                 },
-                "InstanceType": "t2.large",
+                "InstanceType": "t2.micro",
                 "KeyName": {
                     "Ref": "AWSKeyPairName"
                 },
@@ -117,9 +117,17 @@
                 },
                 "SsmAssociations": [
                     {
-                        "DocumentName": 
-                            "Template-JoinDomain"
-                        
+                        "DocumentName": "Join-Domain",
+                        "AssociationParameters": [
+                            {
+                                "Key": "Solution",
+                                "Value": [
+                                    {
+                                        "Ref": "Solution"
+                                    }
+                                ]
+                            }
+                        ]
                     }
                 ],
                 "IamInstanceProfile": "JoinDomain",
