@@ -173,7 +173,7 @@
                                     "Fn::Join": [
                                         "",
                                         [
-                                            "sudo echo\"simple_allow_groups = ",
+                                            "sudo echo simple_allow_groups = \"",
                                             {
                                                 "Ref": "Solution"
                                             },
