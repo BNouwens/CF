@@ -131,7 +131,7 @@
                                     "Fn::Join": [
                                         "",
                                         [
-                                            "#hostname ",
+                                            "hostname ",
                                             {
                                                 "Ref": "NameCode"
                                             },
@@ -142,7 +142,7 @@
                                 "waitAfterCompletion": "0"
                             },
                             "c-d-hostname": {
-                                "command": "sudo reboot",
+                                "command": "#sudo reboot",
                                 "waitAfterCompletion": "forever"
                             },
                             "d-domainjoin": {
