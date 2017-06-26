@@ -2,7 +2,7 @@
     "AWSTemplateFormatVersion": "2010-09-09",
     "Description": "Creates a Security Group for Sandpit Access",
     "Parameters": {
-        "SandpitName": {
+        "Solution": {
             "Type": "String"
         },
         "CostCentre": {
@@ -14,7 +14,7 @@
             "Type": "AWS::EC2::SecurityGroup",
             "Properties": {
                 "GroupDescription": {
-                    "Ref": "SandpitName"
+                    "Ref": "Solution"
                 },
                 "VpcId": {
                     "Fn::ImportValue": "VPC"
