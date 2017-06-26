@@ -143,7 +143,7 @@
                             },
                             "c-d-hostname": {
                                 "command": "sudo reboot",
-                                "waitAfterCompletion": "0"
+                                "waitAfterCompletion": "forever"
                             },
                             "d-domainjoin": {
                                 "command": {
@@ -189,7 +189,7 @@
                             },
                             "i-finalreboot": {
                                 "command": "sudo reboot",
-                                "waitAfterCompletion": "0"
+                                "waitAfterCompletion": "forever"
                             }
                         },
                         "services": {
