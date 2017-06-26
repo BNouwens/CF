@@ -118,7 +118,7 @@
                 "SsmAssociations": [
                     {
                         "DocumentName": "Join-Domain",
-                        "AssocationParameters": [
+                        "AssociationParameters": [
                             {
                                 "Key": "Solution",
                                 "Value": [
