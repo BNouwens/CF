@@ -529,6 +529,28 @@
                                     "Action": "apigateway:*",
                                     "Effect": "Allow",
                                     "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499761197764",
+                                    "Action": [
+                                        "iam:CreateInstanceProfile",
+                                        "iam:GetInstanceProfile",
+                                        "iam:ListInstanceProfiles",
+                                        "iam:ListInstanceProfilesForRole",
+                                        "iam:ListPolicies",
+                                        "iam:ListPoliciesGrantingServiceAccess",
+                                        "iam:AttachRolePolicy"
+                                    ],
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499763843728",
+                                    "Action": [
+                                        "iam:PassRole"
+                                    ],
+                                    "Effect": "Allow",
+                                    "Resource": "arn:aws:iam::419070736574:instance-profile/JoinDomain"
                                 }
                             ]
                         }
