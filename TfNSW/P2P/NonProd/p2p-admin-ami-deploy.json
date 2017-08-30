@@ -1,0 +1,221 @@
+    {
+        "AWSTemplateFormatVersion": "2010-09-09",
+        "Description": "Creates an AWS EC2 Instance",
+        "Parameters": {
+            "NameCode": {
+                "Description": "",
+                "Default": "ap01",
+                "Type": "String"
+            },
+            "AWSKeyPairName": {
+                "Description": "Select an existing key pair to use for connecting to your Instances",
+                "Type": "AWS::EC2::KeyPair::KeyName",
+                "MinLength": "1",
+                "MaxLength": "255",
+                "ConstraintDescription": "Select an existing EC2 Key Pair."
+            },
+            "SecurityGroupIds": {
+                "Description": "Security Group IDs for Server",
+                "Default": "",
+                "Type": "List<AWS::EC2::SecurityGroup::Id>"
+            },
+            "AMI": {
+                "Description": "AMI ID for Server",
+                "Default": "ami-32312751",
+                "Type": "String"
+            },
+            "Subnet": {
+                "Description": "Select a private subnet for the instance",
+                "Type": "AWS::EC2::Subnet::Id"
+            },
+            "Environment": {
+                "Description": "Environment Code",
+                "Default": "ppd",
+                "Type": "String"
+            },
+            "Solution": {
+                "Description": "Solution Code",
+                "Default": "ppd",
+                "Type": "String"
+            },
+            "CostCentre": {
+                "Description": "Cost Code",
+                "Default": "template",
+                "Type": "String"
+            }
+        },
+        "Resources": {
+            "Server": {
+                "Type": "AWS::EC2::Instance",
+                "Metadata": {
+                    "AWS::CloudFormation::Init": {
+                        "config": {
+                            "files": {
+                                "c:\\cfn\\cfn-hup.conf": {
+                                    "content": {
+                                        "Fn::Join": [
+                                            "",
+                                            [
+                                                "[main]\n",
+                                                "stack=",
+                                                {
+                                                    "Ref": "AWS::StackId"
+                                                },
+                                                "\n",
+                                                "region=",
+                                                {
+                                                    "Ref": "AWS::Region"
+                                                },
+                                                "\n"
+                                            ]
+                                        ]
+                                    }
+                                }
+                            },
+                            "commands": {
+                                "a-setexecutionpolicy": {
+                                    "command": "powershell -Command Set-ExecutionPolicy Unrestricted -Force"
+                                },
+                                "b-rename-computer": {
+                                    "command": {
+                                        "Fn::Join": [
+                                            "",
+                                            [
+                                                "powershell.exe -Command Rename-Computer -NewName ",
+                                                {
+                                                    "Ref": "Solution"
+                                                },
+                                                {
+                                                    "Ref": "Environment"
+                                                },
+                                                {
+                                                    "Ref": "NameCode"
+                                                },
+                                                " -Force -Restart"
+                                            ]
+                                        ]
+                                    },
+                                    "waitAfterCompletion": "0"
+                                }
+                            }
+                        }
+                    }
+                },
+                "Properties": {
+                    "ImageId": {
+                        "Ref": "AMI"
+                    },
+                    "InstanceType": "t2.large",
+                    "KeyName": {
+                        "Ref": "AWSKeyPairName"
+                    },
+                    "SubnetId": {
+                        "Ref": "Subnet"
+                    },
+                    "SecurityGroupIds": {
+                        "Ref": "SecurityGroupIds"
+                    },
+                    "SsmAssociations": [
+                        {
+                            "DocumentName": "SIT-DomainJoin",
+                            "AssociationParameters": [
+                                {
+                                    "Key": "Solution",
+                                    "Value": [
+                                        {
+                                            "Ref": "Solution"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    "IamInstanceProfile": "iam-ssmjoindomain-RootInstanceProfile-1MNNKTLK5O0RC",
+                    "Tags": [
+                        {
+                            "Key": "Name",
+                            "Value": {
+                                "Fn::Join": [
+                                    "",
+                                    [
+                                        {
+                                            "Ref": "Solution"
+                                        },
+                                        {
+                                            "Ref": "Environment"
+                                        },
+                                        {
+                                            "Ref": "NameCode"
+                                        }
+                                    ]
+                                ]
+                            }
+                        },
+                        {
+                            "Key": "CostCentre",
+                            "Value": {
+                                "Ref": "CostCentre"
+                            }
+                        },
+                        {
+                            "Key": "Environment",
+                            "Value": {
+                                "Ref": "Environment"
+                            }
+                        },
+                        {
+                            "Key": "Solution",
+                            "Value": {
+                                "Ref": "Solution"
+                            }
+                        },
+                        {
+                            "Key": "cpm backup",
+                            "Value": ""
+                        }
+                    ],
+                    "UserData": {
+                        "Fn::Base64": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "<script>\n",
+                                    "cfn-init.exe -v -s ",
+                                    {
+                                        "Ref": "AWS::StackName"
+                                    },
+                                    " -r Server",
+                                    " --region ",
+                                    {
+                                        "Ref": "AWS::Region"
+                                    },
+                                    "\n",
+                                    "</script>"
+                                ]
+                            ]
+                        }
+                    },
+                    "BlockDeviceMappings": [
+                        {
+                            "DeviceName": "/dev/sda1",
+                            "Ebs": {
+                                "VolumeSize": "50"
+                            }
+                        },
+                        {
+                            "DeviceName": "xvdf",
+                            "Ebs": {
+                                "VolumeSize": "50"
+                            }
+                        },
+                        {
+                            "DeviceName": "xvdg",
+                            "Ebs": {
+                                "VolumeSize": "50"
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    }

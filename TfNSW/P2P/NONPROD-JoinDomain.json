@@ -1,0 +1,24 @@
+*****NOTE THIS IS NOT A CF - COPY BELOW INTO NEW DOCUMENT***
+{
+    "schemaVersion": "1.2",
+    "description": "Automatic Domain Join Configuration created by EC2 Console.",
+    "parameters": {
+        "Solution": {
+            "type": "String",
+            "default": "Template",
+            "description": "(Required) Name of the Solution"
+        }
+    },
+    "runtimeConfig": {
+        "aws:domainJoin": {
+            "properties": {
+                "directoryId": "d-976721b8bc",
+                "directoryName": "aspnonprod.p2p",
+                "dnsIpAddresses": [
+                    "10.216.62.77",
+                    "10.216.62.55"
+                ]
+            }
+        }
+    }
+}

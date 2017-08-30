@@ -1,0 +1,19 @@
+{
+  "schemaVersion": "1.2",
+  "description": "Remove Computer from Domain",
+  "parameters": {},
+  "runtimeConfig": {
+    "aws:runPowerShellScript": {
+      "properties": [
+        {
+          "id": "0.aws:runPowerShellScript",
+          "runCommand": [
+            "",
+            "Remove-Computer -confirm:$false -Force",
+            "#aws autoscaling complete-lifecycle-action --lifecycle-hook-name ${LIFECYCLEHOOKNAME} --auto-scaling-group-name ${ASGNAME} --lifecycle-action-result ${HOOKRESULT} --instance-id ${INSTANCEID}  --region ${REGION}"
+          ]
+        }
+      ]
+    }
+  }
+}

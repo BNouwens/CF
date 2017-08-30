@@ -1,0 +1,108 @@
+Create IAM Role autoscalenotify
+(update scale-web-test.json with IAM role in the resource TerminatingLifecycleHook) - Possible enhancement to create IAM role via CF and create export for Notification IAM 
+            See appendix A for IAM Role requirements
+
+
+Deploy Stack for Auto Scale Group (Current tempalte is scale-web-test.json)
+            Current issue is that Computer Rename Script is not working)
+
+Create IAM Role for Lambda
+            see appendib B for IAM Role requirements
+
+Create Lambda using code from i-TerminatingTrigger.lambda 
+            Current issue is that the notification process back to ASG is not working
+
+Create SSM Document LeaveDomain
+            Current issue is that SSM docs run as local admin not domain admin so code fails to load 
+
+
+
+
+
+
+
+
+
+Appendix A:
+IAM Policy for autoscalenotify
+{
+    "Version": "2012-10-17",
+    "Statement": [{
+        "Effect": "Allow",
+        "Resource": "*",
+        "Action": [
+            "sqs:SendMessage",
+            "sqs:GetQueueUrl",
+            "sns:Publish"
+        ]
+      }
+    ]
+}
+
+Trust relationship is 
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "autoscaling.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+
+
+Appendix B:
+IAM Policy for Lambda to sns
+Add policies
+AmazonEC2RoleforSSM
+AmazonSSMAutomationRole
+
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "*"
+            ],
+            "Resource": [
+                "arn:aws:sns:*:*:*",
+                "arn:aws:logs:*:*:*"
+            ],
+            "Effect": "Allow"
+        }
+    ]
+}
+
+Trust relationship is
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "lambda.amazonaws.com"
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+
+
+Appendix C:
+Paramaters
+Key	Value
+AMI	ami-db859db8
+CostCentre	P.0023461
+Environment	sit
+InstanceType	t2.small
+KeyName	SIT
+LBSubnet	subnet-55858d31,subnet-890138ff
+NameCode	ts04
+OperatorEMail	bryan.nouwens@datacom.com.au
+SecurityGroupIds	sg-d9ae5fbf,sg-f77b9d91,sg-2a1af44c
+Solution	p2p
+SSHLocation	0.0.0.0/0
+Subnet	subnet-0d848c69,subnet-d50e37a3
