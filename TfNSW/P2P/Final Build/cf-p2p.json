@@ -1,0 +1,508 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Creates an AWS CloudFront Distribution",
+    "Parameters": {
+        "Solution": {
+            "Description": "Solution Name",
+            "Default": "p2p",
+            "Type": "String"
+        },
+        "Environment": {
+            "Description": "Environment Code",
+            "Default": "dev",
+            "Type": "String"
+        },
+        "Alias": {
+            "Description": "Alternate Domain Name",
+            "Default": "p2p-dev.aws.hosting.transport.nsw.gov.au",
+            "Type": "String"
+        },
+        "ContentLoadBalancer": {
+            "Description": "Content Server Load Balancer DNS Address",
+            "Type": "String"
+        },
+        "DirectoryServiceLoadBalancer": {
+            "Description": "Directory Services Load Balancer DNS Address",
+            "Type": "String"
+        },
+        "CertificateArn" : {
+            "Description" : "Arn of ACM Certificate",
+            "Type":"String"
+        }
+    },
+    "Resources": {
+        "CloudFront": {
+            "Type": "AWS::CloudFront::Distribution",
+            "Properties": {
+                "DistributionConfig": {
+                    "Aliases": [
+                        {
+                            "Ref": "Alias"
+                        }
+                    ],
+                    "Origins": [
+                        {
+                            "DomainName": {
+                                "Ref": "ContentLoadBalancer"
+                            },
+                            "Id": {
+                                "Fn::Join": [
+                                    "",
+                                    [
+                                        {
+                                            "Ref": "Solution"
+                                        },
+                                        {
+                                            "Ref": "Environment"
+                                        },
+                                        "LBOriginContent"
+                                    ]
+                                ]
+                            },
+                            "CustomOriginConfig": {
+                                "HTTPPort": "80",
+                                "HTTPSPort": "443",
+                                "OriginProtocolPolicy": "match-viewer",
+                                "OriginSSLProtocols": [
+                                    "SSLv3",
+                                    "TLSv1",
+                                    "TLSv1.1",
+                                    "TLSv1.2"
+                                ]
+                            }
+                        },
+                        {
+                            "DomainName": {
+                                "Ref": "DirectoryServiceLoadBalancer"
+                            },
+                            "Id": {
+                                "Fn::Join": [
+                                    "",
+                                    [
+                                        {
+                                            "Ref": "Solution"
+                                        },
+                                        {
+                                            "Ref": "Environment"
+                                        },
+                                        "LBOriginDirectoryServices"
+                                    ]
+                                ]
+                            },
+                            "CustomOriginConfig": {
+                                "HTTPPort": "8080",
+                                "HTTPSPort": "443",
+                                "OriginProtocolPolicy": "match-viewer",
+                                "OriginSSLProtocols": [
+                                    "SSLv3",
+                                    "TLSv1",
+                                    "TLSv1.1",
+                                    "TLSv1.2"
+                                ]
+                            }
+                        }
+                    ],
+                    "Enabled": "true",
+                    "Comment": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                {
+                                    "Ref": "Environment"
+                                },
+                                " Content"
+                            ]
+                        ]
+                    },
+                    "CustomErrorResponses": [
+                        {
+                            "ErrorCode": "404",
+                            "ResponsePagePath": "/error.html",
+                            "ResponseCode": "404",
+                            "ErrorCachingMinTTL": "30"
+                        }
+                    ],
+                    "PriceClass": "PriceClass_All",
+                    "HttpVersion": "http2",
+                    "Restrictions": {
+                        "GeoRestriction": {
+                            "RestrictionType": "whitelist",
+                            "Locations": [
+                                "AU"
+                            ]
+                        }
+                    },
+                    "ViewerCertificate": {
+                        "AcmCertificateArn" : {"Ref" : "CertificateArn"} ,
+                        "SslSupportMethod": "sni-only"
+                    },
+                    "DefaultCacheBehavior": {
+                        "AllowedMethods": [
+                            "HEAD",
+                            "GET"
+                        ],
+                        "CachedMethods": [
+                            "HEAD",
+                            "GET"
+                        ],
+                        "DefaultTTL": "60",
+                        "ForwardedValues": {
+                            "Cookies": {
+                                "Forward": "all"
+                            },
+                            "QueryString": "true"
+                        },
+                        "MaxTTL": "120",
+                        "MinTTL": "0",
+                        "SmoothStreaming": "false",
+                        "TargetOriginId": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    {
+                                        "Ref": "Solution"
+                                    },
+                                    {
+                                        "Ref": "Environment"
+                                    },
+                                    "LBOriginContent"
+                                ]
+                            ]
+                        },
+                        "ViewerProtocolPolicy": "allow-all"
+                    },
+                    "CacheBehaviors": [
+                        {
+                            "AllowedMethods": [
+                                "HEAD",
+                                "GET",
+                                "OPTIONS",
+                                "PUT",
+                                "POST",
+                                "PATCH",
+                                "DELETE"
+                            ],
+                            "CachedMethods": [
+                                "HEAD",
+                                "GET"
+                            ],
+                            "ForwardedValues": {
+                                "Headers": [
+                                    "*"
+                                ],
+                                "Cookies": {
+                                    "Forward": "all"
+                                },
+                                "QueryString": "true"
+                            },
+                            "PathPattern": "/otds-admin*",
+                            "SmoothStreaming": "false",
+                            "TargetOriginId": {
+                                "Fn::Join": [
+                                    "",
+                                    [
+                                        {
+                                            "Ref": "Solution"
+                                        },
+                                        {
+                                            "Ref": "Environment"
+                                        },
+                                        "LBOriginDirectoryServices"
+                                    ]
+                                ]
+                            },
+                            "ViewerProtocolPolicy": "allow-all"
+                        },
+                        {
+                            "AllowedMethods": [
+                                "HEAD",
+                                "GET",
+                                "OPTIONS",
+                                "PUT",
+                                "POST",
+                                "PATCH",
+                                "DELETE"
+                            ],
+                            "CachedMethods": [
+                                "HEAD",
+                                "GET"
+                            ],
+                            "ForwardedValues": {
+                                "Headers": [
+                                    "*"
+                                ],
+                                "Cookies": {
+                                    "Forward": "all"
+                                },
+                                "QueryString": "true"
+                            },
+                            "PathPattern": "/ot-authws*",
+                            "SmoothStreaming": "false",
+                            "TargetOriginId": {
+                                "Fn::Join": [
+                                    "",
+                                    [
+                                        {
+                                            "Ref": "Solution"
+                                        },
+                                        {
+                                            "Ref": "Environment"
+                                        },
+                                        "LBOriginDirectoryServices"
+                                    ]
+                                ]
+                            },
+                            "ViewerProtocolPolicy": "allow-all"
+                        },
+                        {
+                            "AllowedMethods": [
+                                "HEAD",
+                                "GET",
+                                "OPTIONS",
+                                "PUT",
+                                "POST",
+                                "PATCH",
+                                "DELETE"
+                            ],
+                            "CachedMethods": [
+                                "HEAD",
+                                "GET"
+                            ],
+                            "ForwardedValues": {
+                                "Headers": [
+                                    "*"
+                                ],
+                                "Cookies": {
+                                    "Forward": "all"
+                                },
+                                "QueryString": "true"
+                            },
+                            "PathPattern": "/otdstenant*",
+                            "SmoothStreaming": "false",
+                            "TargetOriginId": {
+                                "Fn::Join": [
+                                    "",
+                                    [
+                                        {
+                                            "Ref": "Solution"
+                                        },
+                                        {
+                                            "Ref": "Environment"
+                                        },
+                                        "LBOriginDirectoryServices"
+                                    ]
+                                ]
+                            },
+                            "ViewerProtocolPolicy": "allow-all"
+                        },
+                        {
+                            "AllowedMethods": [
+                                "HEAD",
+                                "GET",
+                                "OPTIONS",
+                                "PUT",
+                                "POST",
+                                "PATCH",
+                                "DELETE"
+                            ],
+                            "CachedMethods": [
+                                "HEAD",
+                                "GET"
+                            ],
+                            "ForwardedValues": {
+                                "Headers": [
+                                    "*"
+                                ],
+                                "Cookies": {
+                                    "Forward": "all"
+                                },
+                                "QueryString": "true"
+                            },
+                            "PathPattern": "/otds-usergroup*",
+                            "SmoothStreaming": "false",
+                            "TargetOriginId": {
+                                "Fn::Join": [
+                                    "",
+                                    [
+                                        {
+                                            "Ref": "Solution"
+                                        },
+                                        {
+                                            "Ref": "Environment"
+                                        },
+                                        "LBOriginDirectoryServices"
+                                    ]
+                                ]
+                            },
+                            "ViewerProtocolPolicy": "allow-all"
+                        },
+                        {
+                            "AllowedMethods": [
+                                "HEAD",
+                                "GET",
+                                "OPTIONS",
+                                "PUT",
+                                "POST",
+                                "PATCH",
+                                "DELETE"
+                            ],
+                            "CachedMethods": [
+                                "HEAD",
+                                "GET"
+                            ],
+                            "ForwardedValues": {
+                                "Headers": [
+                                    "*"
+                                ],
+                                "Cookies": {
+                                    "Forward": "all"
+                                },
+                                "QueryString": "true"
+                            },
+                            "PathPattern": "/otds-v2*",
+                            "SmoothStreaming": "false",
+                            "TargetOriginId": {
+                                "Fn::Join": [
+                                    "",
+                                    [
+                                        {
+                                            "Ref": "Solution"
+                                        },
+                                        {
+                                            "Ref": "Environment"
+                                        },
+                                        "LBOriginDirectoryServices"
+                                    ]
+                                ]
+                            },
+                            "ViewerProtocolPolicy": "allow-all"
+                        },
+                        {
+                            "AllowedMethods": [
+                                "HEAD",
+                                "GET",
+                                "OPTIONS",
+                                "PUT",
+                                "POST",
+                                "PATCH",
+                                "DELETE"
+                            ],
+                            "CachedMethods": [
+                                "HEAD",
+                                "GET"
+                            ],
+                            "ForwardedValues": {
+                                "Headers": [
+                                    "*"
+                                ],
+                                "Cookies": {
+                                    "Forward": "all"
+                                },
+                                "QueryString": "true"
+                            },
+                            "PathPattern": "/otdsws*",
+                            "SmoothStreaming": "false",
+                            "TargetOriginId": {
+                                "Fn::Join": [
+                                    "",
+                                    [
+                                        {
+                                            "Ref": "Solution"
+                                        },
+                                        {
+                                            "Ref": "Environment"
+                                        },
+                                        "LBOriginDirectoryServices"
+                                    ]
+                                ]
+                            },
+                            "ViewerProtocolPolicy": "allow-all"
+                        },
+                        {
+                            "AllowedMethods": [
+                                "HEAD",
+                                "GET",
+                                "OPTIONS",
+                                "PUT",
+                                "POST",
+                                "PATCH",
+                                "DELETE"
+                            ],
+                            "CachedMethods": [
+                                "HEAD",
+                                "GET"
+                            ],
+                            "ForwardedValues": {
+                                "Headers": [
+                                    "*"
+                                ],
+                                "Cookies": {
+                                    "Forward": "all"
+                                },
+                                "QueryString": "true"
+                            },
+                            "PathPattern": "/xecm-cmis*",
+                            "SmoothStreaming": "false",
+                            "TargetOriginId": {
+                                "Fn::Join": [
+                                    "",
+                                    [
+                                        {
+                                            "Ref": "Solution"
+                                        },
+                                        {
+                                            "Ref": "Environment"
+                                        },
+                                        "LBOriginDirectoryServices"
+                                    ]
+                                ]
+                            },
+                            "ViewerProtocolPolicy": "allow-all"
+                        },
+                        {
+                            "AllowedMethods": [
+                                "HEAD",
+                                "GET",
+                                "OPTIONS",
+                                "PUT",
+                                "POST",
+                                "PATCH",
+                                "DELETE"
+                            ],
+                            "CachedMethods": [
+                                "HEAD",
+                                "GET"
+                            ],
+                            "ForwardedValues": {
+                                "Headers": [
+                                    "*"
+                                ],
+                                "Cookies": {
+                                    "Forward": "all"
+                                },
+                                "QueryString": "true"
+                            },
+                            "PathPattern": "/otsapxecm*",
+                            "SmoothStreaming": "false",
+                            "TargetOriginId": {
+                                "Fn::Join": [
+                                    "",
+                                    [
+                                        {
+                                            "Ref": "Solution"
+                                        },
+                                        {
+                                            "Ref": "Environment"
+                                        },
+                                        "LBOriginDirectoryServices"
+                                    ]
+                                ]
+                            },
+                            "ViewerProtocolPolicy": "allow-all"
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

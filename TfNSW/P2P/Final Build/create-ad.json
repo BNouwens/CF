@@ -1,0 +1,72 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Creates an AWS Simple AD",
+    "Parameters": {
+        "Description": {
+            "Description": "Description",
+            "Default": "dev.p2p",
+            "Type": "String"
+        },
+        "FQDN": {
+            "Description": "Unique Alias For AD",
+            "Default": "dev.p2p.local",
+            "Type": "String"
+        },
+        "Password": {
+            "NoEcho": true,
+            "Description": "The Admin password",
+            "Default": "Password",
+            "Type": "String"
+        },
+        "ShortName": {
+            "Description": "Netbios Name",
+            "Default": "dev.p2p.local",
+            "Type": "String"
+        },
+        "Size": {
+            "Description": "Size of AD",
+            "Default": "dev.p2p.local",
+            "Type": "String"
+        },
+        "VPC": {
+            "Description": "VPC to attach to",
+            "Default": "dev.p2p.local",
+            "Type": "String"
+        }
+    },
+    "Resources": {
+        "SimpleAD": {
+            "Type": "AWS::DirectoryService::SimpleAD",
+            "Properties": {
+                "Description": {
+                    "Ref": "Description"
+                },
+                "Name": {
+                    "Ref": "FQDN"
+                },
+                "Password": {
+                    "Ref": "Password"
+                },
+                "ShortName": {
+                    "Ref": "ShortName"
+                },
+                "Size": {
+                    "Ref": "Size"
+                },
+                "VpcSettings": {
+                    "SubnetIds": [
+                        {
+                            "Fn::ImportValue": "RestrictedASubnet"
+                        },
+                        {
+                            "Fn::ImportValue": "RestrictedBSubnet"
+                        }
+                    ],
+                    "VpcId": {
+                        "Ref": "VPC"
+                    }
+                }
+            }
+        }
+    }
+}
