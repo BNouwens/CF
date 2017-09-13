@@ -1,37 +1,32 @@
 Write-Output "#####################################################################################"
 Write-Output " Installing Tomcat 8.0.46"
 
-try {
-    mkdir c:\temp -ErrorAction stop
-}
-catch {
-    Write-Output " Directory not created - likely already exists"
-}
+function installTomcat ($installpath) {
 
-#Download Installer
-Write-Output " Downloading Tomcat from media bucket"
-wget https://s3-ap-southeast-2.amazonaws.com/p2pmedia/apache-tomcat-8.0.46.exe -OutFile c:\temp\apache-tomcat-8.0.46.exe
+    #Download Installer
+    Write-Output " Downloading Tomcat from media bucket"
+    wget https://s3-ap-southeast-2.amazonaws.com/p2pmedia/apache-tomcat-8.0.46.exe -OutFile c:\temp\apache-tomcat-8.0.46.exe
 
-#Install Tomcat
-Set-Location c:\temp
-Write-Output " Installing Tomcat"
-.\apache-tomcat-8.0.46.exe /S /D=D:\Apache Software Foundation\Tomcat 8.0
+    #Install Tomcat
+    Set-Location c:\temp
+    Write-Output " Installing Tomcat"
+    .\apache-tomcat-8.0.46.exe /S /D=D:\Apache Software Foundation\Tomcat 8.0
 
-#Pause
-Start-Sleep -s 15
+    #Pause
+    Start-Sleep -s 15
 
-#In case Tomcat is running - stop it
-Write-Output " Starting Tomcat"
-net stop tomcat8
+    #In case Tomcat is running - stop it
+    Write-Output " Stopping Tomcat"
+    Stop-Service Tomcat8 -ErrorAction SilentlyContinue
 
-#Set Java Options
-Push-Location "D:\Apache Software Foundation\Tomcat 8.0\bin"
-.\tomcat8 //US//Tomcat8 --JvmMs=256 --JvmMx=1024 --Startup=auto
+    #Set Java Options
+    Push-Location "$installpath\bin"
+    .\tomcat8 //US//Tomcat8 --JvmMs=256 --JvmMx=1024 --Startup=auto
 
-#Configure Server.xml
+    #Configure Server.xml
 
-#Configure Server.xml
-$serverContent = @("<?xml version='1.0' encoding='utf-8'?>`r
+    #Configure Server.xml
+    $serverContent = @("<?xml version='1.0' encoding='utf-8'?>`r
 <!--`r
   Licensed to the Apache Software Foundation (ASF) under one or more`r
   contributor license agreements.  See the NOTICE file distributed with`r
@@ -177,18 +172,70 @@ $serverContent = @("<?xml version='1.0' encoding='utf-8'?>`r
 `r
 ")
 
-#New-Item "D:\Apache Software Foundation\Tomcat 8.0\conf\context.xml" -type file -force -value $contextContent
-$serverContent | New-Item "D:\Apache Software Foundation\Tomcat 8.0\conf\server.xml" -type file -force
+    #New-Item "D:\Apache Software Foundation\Tomcat 8.0\conf\context.xml" -type file -force -value $contextContent
+    $serverContent | New-Item "D:\Apache Software Foundation\Tomcat 8.0\conf\server.xml" -type file -force
 
-Write-Output " Starting Tomcat"
-net start tomcat8
+    Write-Output " Starting Tomcat"
+    net start tomcat8
 
-#Configure Local Windows Firewall
-$findFWRule = Get-NetFirewallRule -DisplayName "Apache Web-In*"
-$int = 0
-foreach ($record in $findFWRule) {$int++}
+    #Configure Local Windows Firewall
+    $findFWRule = Get-NetFirewallRule -DisplayName "Apache Web-In*"
+    $int = 0
+    foreach ($record in $findFWRule) {$int++}
 
-if ($int -lt 1) {
-    echo " Creating Firewall Rule"
-    netsh advfirewall firewall add rule name="Apache Web-In" dir=in localport=8080 protocol=TCP action=allow
+    if ($int -lt 1) {
+        echo " Creating Firewall Rule"
+        netsh advfirewall firewall add rule name="Apache Web-In" dir=in localport=8080 protocol=TCP action=allow
+    }
 }
+
+
+try {
+    mkdir c:\temp -ErrorAction stop
+}
+catch {
+    Write-Output " Directory not created - likely already exists"
+}
+
+$installpath = "D:\Apache Software Foundation\Tomcat 8.0"
+$filepath = "$installpath\bin\tomcat8.exe"
+$filetest = Test-Path $filepath
+
+if ($filetest -eq $false) {
+    Write-Output "Tomcat 8.0 Not Found"
+    Try {
+        $foundservices = Get-Service "Tomcat*"
+        if ($foundservices.Count -gt 0) {
+            Stop-Service Tomcat8 -ErrorAction SilentlyContinue
+            Push-Location D: -ErrorAction SilentlyContinue
+        
+            $findtomcat8 = Get-ChildItem -Recurse -filter "tomcat8.exe" -File -ErrorAction SilentlyContinue
+        
+            $tomcatlocation = $findtomcat8.DirectoryName
+
+            Push-Location $tomcatlocation
+            cd ..
+
+            .\uninstall.exe /S -ServiceName="Tomcat8"
+
+            #Pause
+            Start-Sleep -s 10
+        }
+
+        
+        
+    }
+    catch {
+        Write-Output "Something Happened Uninstalling previous"
+    }
+
+    
+    #Run Install Module
+    installTomcat ($installpath)
+    
+}
+
+if ($filetest -eq $true) {
+    Write-Output "Tomcat installation not required"
+}
+

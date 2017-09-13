@@ -160,6 +160,20 @@
                 "VpcId": {
                     "Fn::ImportValue": "VPC"
                 },
+                "SecurityGroupIngress": [
+                    {
+                        "CidrIp": "10.216.68.0/24",
+                        "IpProtocol": "tcp",
+                        "FromPort": "4440",
+                        "ToPort": "4440"
+                    },
+                    {
+                        "CidrIp": "10.216.68.0/24",
+                        "IpProtocol": "tcp",
+                        "FromPort": "8989",
+                        "ToPort": "8989"
+                    }
+                ],
                 "Tags": [
                     {
                         "Key": "Name",

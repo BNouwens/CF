@@ -1,31 +1,27 @@
 Write-Output "#####################################################################################"
-Write-Output " Installing Tomcat 8.0.46"
+Write-Output "  Running process to install Tomcat 8.5.20"
 
-try {
-    mkdir c:\temp -ErrorAction stop
-}
-catch {
-    Write-Output " Directory not created - likely already exists"
-}
+function installTomcat ($installpath) {
 
-#Download Installer
-Write-Output " Downloading Tomcat from media bucket"
-wget https://s3-ap-southeast-2.amazonaws.com/p2pmedia/apache-tomcat-8.0.46.exe -OutFile c:\temp\apache-tomcat-8.0.46.exe
+    #Download Installer
+    Write-Output " Downloading Tomcat from media bucket"
+    wget https://s3-ap-southeast-2.amazonaws.com/p2pmedia/apache-tomcat-8.5.20.exe -OutFile c:\temp\apache-tomcat-8.5.20.exe
 
-#Install Tomcat
-Set-Location c:\temp
-Write-Output " Installing Tomcat"
-.\apache-tomcat-8.0.46.exe /S /D=D:\Apache Software Foundation\Tomcat 8.0
+    #Install Tomcat
+    Set-Location c:\temp
+    Write-Output " Installing Tomcat - command .\apache-tomcat-8.5.20.exe /S /D=$installpath! "
+    .\apache-tomcat-8.5.20.exe /S /D=D:\Apache Software Foundation\Tomcat 8.5
+    #.\apache-tomcat-8.5.20.exe /S /D=$installpath
 
-#Pause
-Start-Sleep -s 15
+    #Pause
+    Start-Sleep -s 15
 
-#Set Java Options
-Push-Location "D:\Apache Software Foundation\Tomcat 8.0\bin"
-.\tomcat8 //US//Tomcat8 --JvmMs=512 --JvmMx=1024 --Startup=auto
+    #Set Java Options
+    Push-Location "$installpath\bin"
+    .\tomcat8 //US//Tomcat8 --JvmMs=512 --JvmMx=1024 --Startup=auto
 
-#Configure Context
-$contextContent = @("<?xml version='1.0' encoding='utf-8'?>
+    #Configure Context
+    $contextContent = @("<?xml version='1.0' encoding='utf-8'?>
 <!--`r
   Licensed to the Apache Software Foundation (ASF) under one or more`r
   contributor license agreements.  See the NOTICE file distributed with`r
@@ -64,12 +60,12 @@ $contextContent = @("<?xml version='1.0' encoding='utf-8'?>
 </Context>`r
 ")
 
-#New-Item "D:\Apache Software Foundation\Tomcat 8.0\conf\context.xml" -type file -force -value $contextContent
-$contextContent | New-Item "D:\Apache Software Foundation\Tomcat 8.0\conf\context.xml" -type file -force
+    #New-Item "D:\Apache Software Foundation\Tomcat 8.0\conf\context.xml" -type file -force -value $contextContent
+    $contextContent | New-Item "$installpath\conf\context.xml" -type file -force
 
 
-#Configure Logging.properties
-$loggingContent = @("
+    #Configure Logging.properties
+    $loggingContent = @("
 # Licensed to the Apache Software Foundation (ASF) under one or more`r
 # contributor license agreements.  See the NOTICE file distributed with`r
 # this work for additional information regarding copyright ownership.`r
@@ -137,22 +133,75 @@ org.apache.catalina.core.ContainerBase.[Catalina].[localhost].[/host-manager].ha
 `r
 ")
 
-#New-Item "D:\Apache Software Foundation\Tomcat 8.0\conf\logging.properties" -type file -force -value $loggingContent
-$loggingContent | New-Item "D:\Apache Software Foundation\Tomcat 8.0\conf\logging.properties" -type file -force
+    #New-Item "D:\Apache Software Foundation\Tomcat 8.0\conf\logging.properties" -type file -force -value $loggingContent
+    $loggingContent | New-Item "$installpath\conf\logging.properties" -type file -force
 
-#Configure Environment Variables
-[Environment]::SetEnvironmentVariable("AS_PREF_IP", "4", "Machine")
 
-Write-Output " Starting Tomcat"
-net start tomcat8
+    #Configure Environment Variables
+    [Environment]::SetEnvironmentVariable("AS_PREF_IP", "4", "Machine")
 
-#Configure Local Windows Firewall
-$findFWRule = Get-NetFirewallRule -DisplayName "Apache Web-In*"
-$int = 0
-foreach ($record in $findFWRule){$int++}
+    Write-Output " Starting Tomcat"
+    net start tomcat8
 
-if ($int -lt 1)
-{
-    echo "No Rule Found"
-    netsh advfirewall firewall add rule name="Apache Web-In" dir=in localport=8080 protocol=TCP action=allow
+    #Configure Local Windows Firewall
+    $findFWRule = Get-NetFirewallRule -DisplayName "Apache Web-In*"
+    $int = 0
+    foreach ($record in $findFWRule) {$int++}
+
+    if ($int -lt 1) {
+        echo "No Rule Found"
+        netsh advfirewall firewall add rule name="Apache Web-In" dir=in localport=8080 protocol=TCP action=allow
+        netsh advfirewall firewall add rule name="HazelCase-Out" dir=out localport=5701 protocol=TCP action=allow
+        netsh advfirewall firewall add rule name="HazelCase-In" dir=in localport=5701 protocol=TCP action=allow
+
+    }
 }
+
+try {
+    mkdir c:\temp -ErrorAction stop
+}
+catch {
+    Write-Output " Directory not created - likely already exists"
+}
+
+$installpath = "D:\Apache Software Foundation\Tomcat 8.5"
+$filepath = "$installpath\bin\tomcat8.exe"
+$filetest = Test-Path $filepath
+
+
+
+if ($filetest -eq $false) {
+    Write-Output "Tomcat 8.5 Not Found"
+    
+    Try {
+        $foundservices = Get-Service "Tomcat*"
+        if ($foundservices.Count -gt 0) {
+            Stop-Service Tomcat8 -ErrorAction SilentlyContinue
+            Push-Location D: -ErrorAction SilentlyContinue
+        
+            $findtomcat8 = Get-ChildItem -Recurse -filter "tomcat8.exe" -File -ErrorAction SilentlyContinue
+        
+            $tomcatlocation = $findtomcat8.DirectoryName
+
+            Push-Location $tomcatlocation
+            cd ..
+
+            .\uninstall.exe /S -ServiceName="Tomcat8"
+
+            #Pause
+            Start-Sleep -s 10
+        }
+
+        
+    }
+    catch {
+        Write-Output "Something Happened Uninstalling previous"
+    }
+    #Run Install Module
+    installTomcat ($installpath)
+}
+
+if ($filetest -eq $true) {
+    Write-Output "Tomcat installation not required"
+}
+

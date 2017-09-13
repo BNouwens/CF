@@ -25,9 +25,9 @@
             "Description": "Directory Services Load Balancer DNS Address",
             "Type": "String"
         },
-        "CertificateArn" : {
-            "Description" : "Arn of ACM Certificate",
-            "Type":"String"
+        "CertificateArn": {
+            "Description": "Arn of ACM Certificate",
+            "Type": "String"
         }
     },
     "Resources": {
@@ -133,7 +133,9 @@
                         }
                     },
                     "ViewerCertificate": {
-                        "AcmCertificateArn" : {"Ref" : "CertificateArn"} ,
+                        "AcmCertificateArn": {
+                            "Ref": "CertificateArn"
+                        },
                         "SslSupportMethod": "sni-only"
                     },
                     "DefaultCacheBehavior": {
@@ -147,6 +149,9 @@
                         ],
                         "DefaultTTL": "60",
                         "ForwardedValues": {
+                            "Headers": [
+                                "*"
+                            ],
                             "Cookies": {
                                 "Forward": "all"
                             },

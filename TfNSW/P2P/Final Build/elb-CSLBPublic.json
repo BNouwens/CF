@@ -160,6 +160,24 @@
                 "VpcId": {
                     "Fn::ImportValue": "VPC"
                 },
+                "SecurityGroupIngress": [
+                    {
+                        "CidrIp": {
+                            "Fn::ImportValue": "VPCCidrBlock"
+                        },
+                        "IpProtocol": "tcp",
+                        "FromPort": "5858",
+                        "ToPort": "5858"
+                    },
+                    {
+                        "CidrIp": {
+                            "Fn::ImportValue": "VPCCidrBlock"
+                        },
+                        "IpProtocol": "tcp",
+                        "FromPort": "2099",
+                        "ToPort": "2099"
+                    }
+                ],
                 "Tags": [
                     {
                         "Key": "Name",
@@ -232,7 +250,9 @@
                 "Protocol": "HTTPS",
                 "Certificates": [
                     {
-                        "CertificateArn": {"Ref": "CertificateArn"}
+                        "CertificateArn": {
+                            "Ref": "CertificateArn"
+                        }
                     }
                 ]
             }
