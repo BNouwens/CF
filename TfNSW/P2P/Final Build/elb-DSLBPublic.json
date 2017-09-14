@@ -172,6 +172,12 @@
                         "IpProtocol": "tcp",
                         "FromPort": "8989",
                         "ToPort": "8989"
+                    },
+                    {
+                        "CidrIp": "10.216.68.0/24",
+                        "IpProtocol": "tcp",
+                        "FromPort": "41616",
+                        "ToPort": "41616"
                     }
                 ],
                 "Tags": [
