@@ -141,7 +141,12 @@
                     "DefaultCacheBehavior": {
                         "AllowedMethods": [
                             "HEAD",
-                            "GET"
+                            "GET",
+                            "OPTIONS",
+                            "PUT",
+                            "POST",
+                            "PATCH",
+                            "DELETE"
                         ],
                         "CachedMethods": [
                             "HEAD",
