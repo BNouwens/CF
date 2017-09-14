@@ -156,6 +156,16 @@
                 "VpcId": {
                     "Fn::ImportValue": "VPC"
                 },
+                "SecurityGroupIngress": [
+                    {
+                        "CidrIp": {
+                            "Fn::ImportValue": "VPCCidrBlock"
+                        },
+                        "IpProtocol": "tcp",
+                        "FromPort": "5701",
+                        "ToPort": "5701"
+                    }
+                ],
                 "Tags": [
                     {
                         "Key": "Name",
