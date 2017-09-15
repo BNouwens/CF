@@ -176,6 +176,14 @@
                         "IpProtocol": "tcp",
                         "FromPort": "2099",
                         "ToPort": "2099"
+                    },
+                    {
+                        "CidrIp": {
+                            "Fn::ImportValue": "VPCCidrBlock"
+                        },
+                        "IpProtocol": "tcp",
+                        "FromPort": "3099",
+                        "ToPort": "3099"
                     }
                 ],
                 "Tags": [
