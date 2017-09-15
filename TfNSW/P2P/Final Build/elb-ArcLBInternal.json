@@ -120,6 +120,12 @@
                         "IpProtocol": "tcp",
                         "FromPort": "8080",
                         "ToPort": "8080"
+                    },
+                    {
+                        "CidrIp": "0.0.0.0/0",
+                        "IpProtocol": "tcp",
+                        "FromPort": "80",
+                        "ToPort": "80"
                     }
                 ],
                 "SecurityGroupEgress": [
@@ -218,6 +224,24 @@
                     "Ref": "arcLb"
                 },
                 "Port": "8080",
+                "Protocol": "HTTP"
+            }
+        },
+        "arcLbListener80": {
+            "Type": "AWS::ElasticLoadBalancingV2::Listener",
+            "Properties": {
+                "DefaultActions": [
+                    {
+                        "Type": "forward",
+                        "TargetGroupArn": {
+                            "Ref": "arcLbTG"
+                        }
+                    }
+                ],
+                "LoadBalancerArn": {
+                    "Ref": "arcLb"
+                },
+                "Port": "80",
                 "Protocol": "HTTP"
             }
         },
