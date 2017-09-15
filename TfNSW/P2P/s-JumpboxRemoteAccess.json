@@ -7,6 +7,10 @@
         },
         "CostCentre": {
             "Type": "String"
+        },
+        "JumpBox": {
+            "Type": "String",
+            "Default": "sg-cb25caad"
         }
     },
     "Resources": {
@@ -21,10 +25,12 @@
                 },
                 "SecurityGroupIngress": [
                     {
-                        "CidrIp": "0.0.0.0/0",
                         "IpProtocol": "tcp",
                         "FromPort": "3389",
-                        "ToPort": "3389"
+                        "ToPort": "3389",
+                        "SourceSecurityGroupId": {
+                            "Ref": "JumpBox"
+                        }
                     },
                     {
                         "CidrIp": "0.0.0.0/0",
