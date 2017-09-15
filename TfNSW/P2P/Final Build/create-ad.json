@@ -27,11 +27,6 @@
             "Description": "Size of AD",
             "Default": "dev.p2p.local",
             "Type": "String"
-        },
-        "VPC": {
-            "Description": "VPC to attach to",
-            "Default": "dev.p2p.local",
-            "Type": "String"
         }
     },
     "Resources": {
@@ -63,7 +58,7 @@
                         }
                     ],
                     "VpcId": {
-                        "Ref": "VPC"
+                        "Fn::ImportValue": "VPC"
                     }
                 }
             }
