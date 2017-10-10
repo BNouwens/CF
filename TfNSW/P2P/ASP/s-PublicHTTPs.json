@@ -1,6 +1,6 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "Creates a Security Group for Public HTTPs Access",
+    "Description": "Creates a Security Group for Public remote Access",
     "Parameters": {
         "Solution": {
             "Type": "String"
@@ -34,6 +34,12 @@
                     },
                     {
                         "CidrIp": "120.158.217.108/32",
+                        "IpProtocol": "tcp",
+                        "FromPort": "3389",
+                        "ToPort": "3389"
+                    },
+                    {
+                        "CidrIpv6": "2001:8003:390a:f800:293e:c8da:da6a:4c4b/128",
                         "IpProtocol": "tcp",
                         "FromPort": "3389",
                         "ToPort": "3389"

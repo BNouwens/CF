@@ -187,6 +187,9 @@ function installTomcat ($installpath) {
         echo " Creating Firewall Rule"
         netsh advfirewall firewall add rule name="Apache Web-In" dir=in localport=8080 protocol=TCP action=allow
         netsh advfirewall firewall add rule name="OpenText" dir=in localport=2099 protocol=TCP action=allow
+        netsh advfirewall firewall add rule name="OpenText2" dir=in localport=5858 protocol=TCP action=allow
+        netsh advfirewall firewall add rule name="ClusterAgent" dir=out localport=3099 protocol=TCP action=allow
+
 
     }
 }

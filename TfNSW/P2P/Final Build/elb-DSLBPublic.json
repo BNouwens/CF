@@ -162,19 +162,25 @@
                 },
                 "SecurityGroupIngress": [
                     {
-                        "CidrIp": "10.216.68.0/24",
+                        "CidrIp": {
+                            "Fn::ImportValue": "VPCCidrBlock"
+                        },
                         "IpProtocol": "tcp",
                         "FromPort": "4440",
                         "ToPort": "4440"
                     },
                     {
-                        "CidrIp": "10.216.68.0/24",
+                        "CidrIp": {
+                            "Fn::ImportValue": "VPCCidrBlock"
+                        },
                         "IpProtocol": "tcp",
                         "FromPort": "8989",
                         "ToPort": "8989"
                     },
                     {
-                        "CidrIp": "10.216.68.0/24",
+                        "CidrIp": {
+                            "Fn::ImportValue": "VPCCidrBlock"
+                        },
                         "IpProtocol": "tcp",
                         "FromPort": "41616",
                         "ToPort": "41616"

@@ -1,6 +1,6 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "Creates a Security Group for Sandpit Access",
+    "Description": "Creates a Security Group for RDP Access",
     "Parameters": {
         "Solution": {
             "Type": "String"
@@ -17,7 +17,7 @@
                     "Ref": "Solution"
                 },
                 "VpcId": {
-                    "Fn::ImportValue": "VPC"
+                    "Fn::ImportValue": "VPC-p2paspprod"
                 },
                 "SecurityGroupIngress": [
                     {

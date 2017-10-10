@@ -27,6 +27,14 @@
                         "IpProtocol": "tcp",
                         "FromPort": "80",
                         "ToPort": "80"
+                    },
+                    {
+                        "CidrIp": {
+                            "Fn::ImportValue": "VPCCidrBlock"
+                        },
+                        "IpProtocol": "tcp",
+                        "FromPort": "8500",
+                        "ToPort": "8515"
                     }
                 ]
             }

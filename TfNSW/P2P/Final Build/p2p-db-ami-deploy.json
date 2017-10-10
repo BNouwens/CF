@@ -114,12 +114,18 @@
                     "KeyName": {
                         "Ref": "AWSKeyPairName"
                     },
-                    "SubnetId": {
-                        "Ref": "Subnet"
-                    },
-                    "SecurityGroupIds": {
-                        "Ref": "SecurityGroupIds"
-                    },
+                    "NetworkInterfaces": [
+                        {
+                            "SubnetId": {
+                                "Ref": "Subnet"
+                            },
+                            "DeviceIndex": 0,
+                            "SecondaryPrivateIpAddressCount": 3,
+                            "GroupSet": {
+                                "Ref": "SecurityGroupIds"
+                            }
+                        }
+                    ],
                     "IamInstanceProfile": {
                         "Ref": "iamProfile"
                     },

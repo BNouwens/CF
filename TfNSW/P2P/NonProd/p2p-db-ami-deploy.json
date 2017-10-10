@@ -105,16 +105,22 @@
                     "ImageId": {
                         "Ref": "AMI"
                     },
-                    "InstanceType": "m4.large",
+                    "InstanceType": "m4.xlarge",
                     "KeyName": {
                         "Ref": "AWSKeyPairName"
                     },
-                    "SubnetId": {
-                        "Ref": "Subnet"
-                    },
-                    "SecurityGroupIds": {
-                        "Ref": "SecurityGroupIds"
-                    },
+                    "NetworkInterfaces": [
+                        {
+                            "SubnetId": {
+                                "Ref": "Subnet"
+                            },
+                            "DeviceIndex": 0,
+                            "SecondaryPrivateIpAddressCount": 3,
+                            "GroupSet": {
+                                "Ref": "SecurityGroupIds"
+                            }
+                        }
+                    ],
                     "SsmAssociations": [
                         {
                             "DocumentName": "SIT-DomainJoin",
