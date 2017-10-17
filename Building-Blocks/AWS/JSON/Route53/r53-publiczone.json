@@ -1,0 +1,31 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Creates a Route53 hosted zone",
+    "Parameters": {
+        "Solution": {
+            "Type": "String"
+        },
+        "DNSName": {
+            "Type": "String",
+            "Default": ".aws.hosting.transport.nsw.gov.au"
+        },
+        "CostCentre": {
+            "Type": "String"
+        }
+    },
+    "Resources": {
+        "DNS": {
+            "Type": "AWS::Route53::HostedZone",
+            "Properties": {
+                "HostedZoneConfig": {
+                    "Comment": "Hosted Zone"
+                    
+                },
+                "Name": {
+                    "Ref": "DNSName"
+                }
+                
+            }
+        }
+    }
+}

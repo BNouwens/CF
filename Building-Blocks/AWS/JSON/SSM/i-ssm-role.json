@@ -1,0 +1,166 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Roles for SSM Access",
+    "Parameters": {
+        "Solution": {
+            "Type": "String"
+        },
+        "CostCentre": {
+            "Type": "String"
+        },
+        "Environment": {
+            "Description": "Environment Code",
+            "Default": "dev",
+            "Type": "String"
+        }
+    },
+    "Resources": {
+        "ssm": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "ec2.amazonaws.com"
+                                ]
+                            },
+                            "Action": [
+                                "sts:AssumeRole"
+                            ]
+                        }
+                    ]
+                },
+                "Policies": [
+                    {
+                        "PolicyName": "allow-all-ssm",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Sid": "AllowaccesstoSSM",
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "ssm:DescribeAssociations",
+                                        "ssm:ListAssociations",
+                                        "ssm:GetDocument",
+                                        "ssm:UpdateAssociationStatus",
+                                        "ds:CreateComputer",
+                                        "ec2:DescribeInstanceStatus",
+                                        "ssm:DescribeAssociation",
+                                        "ssm:GetDeployablePatchSnapshotForInstance",
+                                        "ssm:GetDocument",
+                                        "ssm:GetParameters",
+                                        "ssm:ListAssociations",
+                                        "ssm:ListInstanceAssociations",
+                                        "ssm:PutInventory",
+                                        "ssm:PutComplianceItems",
+                                        "ssm:UpdateAssociationStatus",
+                                        "ssm:UpdateInstanceAssociationStatus",
+                                        "ssm:UpdateInstanceInformation",
+                                        "ec2messages:AcknowledgeMessage",
+                                        "ec2messages:DeleteMessage",
+                                        "ec2messages:FailMessage",
+                                        "ec2messages:GetEndpoint",
+                                        "ec2messages:GetMessages",
+                                        "ec2messages:SendReply",
+                                        "cloudwatch:PutMetricData",
+                                        "ds:CreateComputer",
+                                        "ds:DescribeDirectories",
+                                        "logs:CreateLogGroup",
+                                        "logs:CreateLogStream",
+                                        "logs:DescribeLogGroups",
+                                        "logs:DescribeLogStreams",
+                                        "logs:PutLogEvents",
+                                        "s3:PutObject",
+                                        "s3:GetObject",
+                                        "s3:AbortMultipartUpload",
+                                        "s3:ListMultipartUploadParts",
+                                        "s3:ListBucketMultipartUploads"
+                                    ],
+                                    "Resource": [
+                                        "*"
+                                    ]
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "s3:ListBucket"
+                                    ],
+                                    "Resource": "arn:aws:s3:::amazon-ssm-packages-*"
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "lambda:InvokeFunction"
+                                    ],
+                                    "Resource": [
+                                        "arn:aws:lambda:*:*:function:Automation*"
+                                    ]
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "ec2:CreateImage",
+                                        "ec2:CopyImage",
+                                        "ec2:DeregisterImage",
+                                        "ec2:DescribeImages",
+                                        "ec2:DeleteSnapshot",
+                                        "ec2:StartInstances",
+                                        "ec2:RunInstances",
+                                        "ec2:StopInstances",
+                                        "ec2:TerminateInstances",
+                                        "ec2:DescribeInstanceStatus",
+                                        "ec2:CreateTags",
+                                        "ec2:DeleteTags",
+                                        "ec2:DescribeTags",
+                                        "cloudformation:CreateStack",
+                                        "cloudformation:DescribeStackEvents",
+                                        "cloudformation:DescribeStacks",
+                                        "cloudformation:UpdateStack",
+                                        "cloudformation:DeleteStack"
+                                    ],
+                                    "Resource": [
+                                        "*"
+                                    ]
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "ssm:*"
+                                    ],
+                                    "Resource": [
+                                        "*"
+                                    ]
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "sns:Publish"
+                                    ],
+                                    "Resource": [
+                                        "arn:aws:sns:*:*:Automation*"
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "RootInstanceProfile": {
+            "Type": "AWS::IAM::InstanceProfile",
+            "Properties": {
+                "Path": "/",
+                "Roles": [
+                    {
+                        "Ref": "ssm"
+                    }
+                ]
+            }
+        }
+    }
+}

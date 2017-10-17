@@ -1,0 +1,74 @@
+from __future__ import print_function
+
+import json
+
+# Message Sample
+'''
+Service: AWS Auto Scaling
+Time: 2016-01-27T15:23:47.581Z
+RequestId: reqid 
+LifecycleActionToken: someToken
+AccountId: 123 
+AutoScalingGroupName: Group1 
+LifecycleHookName: Group1LifeCycleTerminationHook
+EC2InstanceId: i-1ba03992
+LifecycleTransition: autoscaling:EC2_INSTANCE_TERMINATING
+NotificationMetadata: null
+'''
+ASG_NAME_KEY='AutoScalingGroupName'
+EC2_INSTANCE_ID_KEY='EC2InstanceId'
+LIFE_CYCLE_NAME = 'LifecycleHookName'
+
+import boto3
+
+client = boto3.client('ssm')
+
+def abandon_lifecycle(life_cycle_hook, auto_scaling_group, instance_id):
+    asg_client = boto3.client('autoscaling')
+    try:
+        response = asg_client.complete_lifecycle_action(
+            LifecycleHookName=life_cycle_hook,
+            AutoScalingGroupName=auto_scaling_group,
+            LifecycleActionResult='ABANDON',
+            InstanceId=instance_id
+            )
+        if check_response(response):
+            #logger.info("Lifecycle hook abandoned correctly: %s", response)
+        else:
+            #logger.error("Lifecycle hook could not be abandoned: %s", response)
+    except Exception, e:
+        #logger.error("Lifecycle hook abandon could not be executed: %s", str(e))
+        return None    
+
+def lambda_handler(event, context):
+    print('boto3 version: %s' % boto3.__version__)
+    #print("Received event: " + json.dumps(event, indent=2))
+    message = event['Records'][0]['Sns']['Message']
+    print(message)
+    
+    json_message = json.loads(message)
+    asg_name = json_message[ASG_NAME_KEY]
+    ec2_id = json_message[EC2_INSTANCE_ID_KEY]
+    life_cycle_hook = json_message[LIFE_CYCLE_NAME]
+    
+    response = client.send_command(
+        InstanceIds=[
+            ec2_id,
+        ],
+        DocumentName='LeaveDomain',
+        TimeoutSeconds=120,
+        Comment='Remove server from Domain',
+        Parameters={},
+        #OutputS3BucketName='somebucket',
+        #OutputS3KeyPrefix='terminated_instance_logs/' + asg_name
+    )
+    # remove dates that are break json serialization
+    response['Command'].pop("RequestedDateTime", None)
+    response['Command'].pop("ExpiresAfter", None)
+    
+    abandon_lifecycle(life_cycle_hook, asg_name, ec2_id)
+
+    print(response)
+    
+    return response
+

@@ -1,0 +1,109 @@
+{
+    "schemaVersion": "0.3",
+    "description": "TEST DEPLOY Server Auto Script",
+    "assumeRole": "{{ AutomationAssumeRole }}",
+    "parameters": {
+        "SourceAmiId": {
+            "type": "String",
+            "description": "(Required) The source Amazon Machine Image ID."
+        },
+        "AutomationAssumeRole": {
+            "type": "String",
+            "description": "(Required) The name of the role that enables Systems Manager to asume.",
+            "default": "ManagedInstanceProfile"
+        },
+        "IamInstanceProfileName": {
+            "type": "String",
+            "description": "(Required) The name of the role that enables Systems Manager to manage the instance.",
+            "default": "ManagedInstanceProfile"
+        },
+        "InstanceType": {
+            "type": "String",
+            "description": "(Optional) Type of instance to launch as the workspace host. Instance types vary by region. Default is t2.medium.",
+            "default": "t2.medium"
+        }
+    },
+    "mainSteps": [
+        {
+            "name": "LaunchInstance",
+            "action": "aws:runInstances",
+            "timeoutSeconds": 1800,
+            "maxAttempts": 3,
+            "onFailure": "Abort",
+            "inputs": {
+                "ImageId": "{{ SourceAmiId  }}",
+                "InstanceType": "{{ InstanceType }}",
+                "MinInstanceCount": 1,
+                "MaxInstanceCount": 1,
+                "IamInstanceProfileName": "{{ IamInstanceProfileName }}"
+            }
+        },
+        {
+            "name": "OSCompatibilityCheck",
+            "action": "aws:runCommand",
+            "maxAttempts": 3,
+            "onFailure": "Abort",
+            "timeoutSeconds": 7200,
+            "inputs": {
+                "DocumentName": "AWS-RunPowerShellScript",
+                "InstanceIds": [
+                    "{{LaunchInstance.InstanceIds}}"
+                ],
+                "Parameters": {
+                    "executionTimeout": "7200",
+                    "commands": [
+                        "[System.Version]$osversion = [System.Environment]::OSVersion.Version",
+                        "if(($osversion.Major -eq 6 -and $osversion.Minor -ge 1) -or ($osversion.Major -ge 10)) {",
+                        "  Write-Host 'This OS is supported for use with this automation document.'",
+                        "} else {",
+                        "  Write-Host 'This OS is not supported for use with this automation document.'",
+                        "  exit -1",
+                        "}"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "InstallVC",
+            "action": "aws:runCommand",
+            "maxAttempts": 3,
+            "onFailure": "Abort",
+            "timeoutSeconds": 7200,
+            "inputs": {
+                "DocumentName": "AWS-RunPowerShellScript",
+                "InstanceIds": [
+                    "{{ LaunchInstance.InstanceIds }}"
+                ],
+                "Parameters": {
+                    "commands": [
+                        "md c:\temp",
+                        "wget https://s3-ap-southeast-2.amazonaws.com/p2pmedia/vcredist_x64.exe -OutFile c:\\temp\\vcredist_x64.exe",
+                        "cd c:\temp",
+                        ".\\vcredist_x64.exe /q"
+                    ]
+                }
+            }
+        },
+        {
+            "name": "UpdateEC2Config",
+            "action": "aws:runCommand",
+            "maxAttempts": 3,
+            "onFailure": "Abort",
+            "timeoutSeconds": 7200,
+            "inputs": {
+                "DocumentName": "AWS-RunPowerShellScript",
+                "InstanceIds": [
+                    "{{ LaunchInstance.InstanceIds }}"
+                ],
+                "Parameters": {
+                    "commands": [
+                        "md c:\temp",
+                        "wget https://s3-ap-southeast-2.amazonaws.com/p2pmedia/jre-8u144-windows-x64.exe -OutFile c:\\temp\\jre-8u144-windows-x64.exe",
+                        "cd c:\temp",
+                        ".\\jre-8u144-windows-x64.exe /s REMOVEOUTOFDATEJRES=1"
+                    ]
+                }
+            }
+        }
+    ]
+}

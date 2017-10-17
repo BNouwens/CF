@@ -1,0 +1,35 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Creates a Security Group for Jumpbox RDP Access",
+    "Parameters": {
+        "Solution": {
+            "Type": "String"
+        },
+        "CostCentre": {
+            "Type": "String"
+        }
+    },
+    "Resources": {
+        "SG": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": {
+                    "Ref": "Solution"
+                },
+                "VpcId": {
+                    "Fn::ImportValue": "VPC"
+                },
+                "SecurityGroupIngress": [
+                    {
+                        "CidrIp": {
+                            "Fn::ImportValue": "VPCCidrBlock"
+                        },
+                        "IpProtocol": "-1",
+                        "FromPort": "0",
+                        "ToPort": "65536"
+                    }
+                ]
+            }
+        }
+    }
+}

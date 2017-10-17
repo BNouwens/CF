@@ -1,0 +1,71 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Updates Security Group for AD",
+  "Parameters": {
+    "Solution": {
+      "Type": "String"
+    },
+    "CostCentre": {
+      "Type": "String"
+    },
+    "Environment": {
+      "Description": "Environment Code",
+      "Default": "dev",
+      "Type": "String"
+    },
+    "DirectoryID": {
+      "Description": "AWS Simple AD ID",
+      "Type": "String"
+    },
+    "DirectoryName": {
+      "Description": "AWS Simple AD ID",
+      "Type": "String"
+    },
+    "DNSAddresses1": {
+      "Description": "AWS Simple AD ID",
+      "Type": "String"
+    },
+    "DNSAddresses2": {
+      "Description": "AWS Simple AD ID",
+      "Type": "String"
+    }
+  },
+  "Resources": {
+    "association": {
+      "Type": "AWS::SSM::Association",
+      "Properties": {
+        "Name": "AWS-JoinDirectoryServiceDomain",
+        "Parameters": {
+          "directoryId": [
+            {
+              "Ref": "DirectoryID"
+            }
+          ],
+          "directoryName": [
+            {
+              "Ref": "DirectoryName"
+            }
+          ],
+          "dnsIpAddresses": [
+            {
+              "Ref": "DNSAddresses1"
+            },
+            {
+              "Ref": "DNSAddresses2"
+            }
+          ]
+        },
+        "Targets": [
+          {
+            "Key": "tag:Environment",
+            "Values": [
+              {
+                "Ref": "Environment"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  }
+}

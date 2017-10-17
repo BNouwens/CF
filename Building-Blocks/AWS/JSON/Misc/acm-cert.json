@@ -1,0 +1,72 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Creates AWS Certificate",
+    "Parameters": {
+        "Solution": {
+            "Type": "String"
+        },
+        "CostCentre": {
+            "Type": "String"
+        },
+        "Environment": {
+            "Description": "Environment Code",
+            "Default": "dev",
+            "Type": "String"
+        },
+        "DomainName": {
+            "Description": "FQDN of Certificate",
+            "Default": "",
+            "Type": "String"
+        },
+        "AlternateDomain": {
+            "Description": "Secondary FQDN",
+            "Default": "",
+            "Type": "String"
+        }
+    },
+    "Conditions": {
+        "NoAlternateDomain": {
+            "Fn::Equals": [
+                {
+                    "Ref": "AlternateDomain"
+                },
+                ""
+            ]
+        }
+    },
+    "Resources": {
+        "cert": {
+            "Type": "AWS::CertificateManager::Certificate",
+            "Properties": {
+                "DomainName": {
+                    "Ref": "DomainName"
+                },
+                "DomainValidationOptions": [
+                    {
+                        "DomainName": {
+                            "Ref": "DomainName"
+                        },
+                        "ValidationDomain": {
+                            "Ref": "DomainName"
+                        }
+                    }
+                ],
+                "SubjectAlternativeNames": [
+                    {
+                        "Fn::If": [
+                            "NoAlternateDomain",
+                            {
+                                "Ref": "AWS::NoValue"
+                            },
+                            {
+                                "Id": {
+                                    "Ref": "AlternateDomain"
+                                }
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}

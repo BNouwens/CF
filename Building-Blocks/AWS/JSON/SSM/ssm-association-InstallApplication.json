@@ -1,0 +1,43 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Create association for InstallApplication",
+    "Parameters": {
+        "Solution": {
+            "Type": "String"
+        },
+        "CostCentre": {
+            "Type": "String"
+        },
+        "Environment": {
+            "Description": "Environment Code",
+            "Default": "dev",
+            "Type": "String"
+        }
+    },
+    "Resources": {
+        "association": {
+            "Type": "AWS::SSM::Association",
+            "Properties": {
+                "Name": "AWS-InstallApplication",
+                "Parameters": {
+                    "action": [
+                        "Install"
+                    ],
+                    "source":[
+                        "https://s3.amazonaws.com/aws-cli/AWSCLI64.msi"
+                    ]
+                },
+                "Targets": [
+                    {
+                        "Key": "tag:Environment",
+                        "Values": [
+                            {
+                                "Ref": "Environment"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}

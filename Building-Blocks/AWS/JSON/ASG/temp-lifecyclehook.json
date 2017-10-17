@@ -1,0 +1,13 @@
+"TerminatingLifecycleHook": {
+            "Type": "AWS::AutoScaling::LifecycleHook",
+            "Properties": {
+                "AutoScalingGroupName": {
+                    "Ref": "WebServerGroup"
+                },
+                "LifecycleTransition": "autoscaling:EC2_INSTANCE_TERMINATING",
+                "NotificationTargetARN": {
+                    "Ref": "NotificationTopic"
+                },
+                "RoleARN": "arn:aws:iam::072821764751:role/autoscalenotify"
+            }
+        },
