@@ -84,36 +84,69 @@ exports.handler = function (event, context) {
                 console.log("Found: " + images[imageIndex].Name + ", " + images[imageIndex].ImageId);
                 break;
             }
+        };
+    });
+
+
+
+
+    // Create Cloudfront API reference
+    var cloudformation = new aws.CloudFormation({ apiVersion: '2010-05-15' });
+    var stackParams = {
+        StackName: cfToUpdate,
+        UsePreviousTemplate: true,
+        Parameters: [
+
+        ]
+    };
+    //console.log(stackParams)
+    console.log("Starting Stack Update")
+
+    var params = {
+        StackName: cfToUpdate
+    };
+
+    // ----------------------         DESCRIBE STACK         ---------------------
+    var requestDescribeStack = cloudformation.describeStacks(params)
+    requestDescribeStack.on('success', function (response) {
+
+        console.log("Creating Array of Params in CF");
+        console.log(response.data);
+        const stacks = response.data['Stacks'];
+
+        stackDescription = stacks[0];
+
+        for (var paramsIndex = 0; paramsIndex < stackDescription.Parameters.length; paramsIndex++) {
+            var objParam = new Object();
+            if (stackDescription.Parameters[paramsIndex].ParameterKey == "AMI") {
+                objParam.ParameterKey = stackDescription.Parameters[paramsIndex].ParameterKey;
+                objParam.ParameterValue = responseData["Id"];
+            }
+            else {
+                objParam.ParameterKey = stackDescription.Parameters[paramsIndex].ParameterKey;
+                objParam.UsePreviousValue = true;
+                //objParam.ParameterValue = stackDescription.Parameters[paramsIndex].ParameterValue;
+            }
+            stackParams.Parameters.push(objParam);
         }
+    });
+    requestDescribeStack.on('complete', function () {
+        console.log("Completed Get Stack");
+        console.log(stackParams);
+    })
+    requestDescribeStack.send();
 
-
-        // Create Cloudfront API reference
-        var cloudformation = new aws.CloudFormation({ apiVersion: '2010-05-15' });
-        var stackParams = {
-            StackName: cfToUpdate,
-            UsePreviousTemplate: true,
-            Parameters: [
-
-            ]
-        };
-        console.log(stackParams)
-        console.log("Starting Stack Update")
-
-        var params = {
-            StackName: cfToUpdate
-        };
-
-        // ----------------------         DESCRIBE STACK         ---------------------
+    /*  This does work but out of sequence
         cloudformation.describeStacks(params, function (err, data) {
             if (err) console.log(err, err.stack); // an error occurred
             else {
                 //Prints all details of the stacks found
-
+    
                 console.log("Creating Array of Params in CF");
                 const stacks = data['Stacks'];
-
+    
                 stackDescription = stacks[0];
-
+    
                 for (var paramsIndex = 0; paramsIndex < stackDescription.Parameters.length; paramsIndex++) {
                     var objParam = new Object();
                     if (stackDescription.Parameters[paramsIndex].ParameterKey == "AMI") {
@@ -126,25 +159,29 @@ exports.handler = function (event, context) {
                         //objParam.ParameterValue = stackDescription.Parameters[paramsIndex].ParameterValue;
                     }
                     stackParams.Parameters.push(objParam);
+    
                 }
-
-
+    
+    
             }
             // successful response
-
+    
             return stackParams;
         });
-        console.log("Last step before updating")
-        console.log(stackParams)
+    */
+    console.log("Last step before updating")
+    console.log(stackParams)
 
-        // ----------------------         UPDATE STACK      ---------------------
+    // ----------------------         UPDATE STACK      ---------------------
+    /*
         cloudformation.updateStack(stackParams, function (err, data) {
             if (err) console.log(err, err.stack); // an error occurred
-            else console.log(data);           // successful response
-
+            else {
+                console.log(data);           // successful response
+            }
         });
+    */
 
-    });
 };
 
 
