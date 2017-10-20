@@ -9,6 +9,18 @@
 *   Need to update OS patterns for operating systems in use
 *   Need to update Cloud Formation To Update
 *
+
+Test Parameters: - Needs tweeking
+{
+  "RequestType": "Save",
+  "ASG": "TEMP",
+  "Stack": "BN-ASGWeb",
+  "AccountID": "<account-id>",
+  "Region": "<region>",
+  "ResourceProperties": {
+    "OSName": "DC Windows 2016"
+  }
+}
 **/
 
 // Map display OS names to AMI name patterns
@@ -42,7 +54,6 @@ exports.handler = function (event, context) {
     var describeImagesParams = {
         Filters: [{ Name: "name", Values: [osBaseName] }],
         Owners: [event.AccountID]
-        //Owners: ["760584908251"]
     };
 
     console.log("Calling describeImages...");
@@ -75,7 +86,7 @@ exports.handler = function (event, context) {
             }
         }
 
-        //Find and Update Stack 
+
         // Create Cloudfront API reference
         var cloudformation = new aws.CloudFormation({ apiVersion: '2010-05-15' });
         var stackParams = {
@@ -85,11 +96,11 @@ exports.handler = function (event, context) {
 
             ]
         };
-
+        console.log(stackParams)
         console.log("Starting Stack Update")
 
         var params = {
-            StackName: "BN-ASGWeb"
+            StackName: cfToUpdate
         };
 
         // ----------------------         DESCRIBE STACK         ---------------------
@@ -97,15 +108,13 @@ exports.handler = function (event, context) {
             if (err) console.log(err, err.stack); // an error occurred
             else {
                 //Prints all details of the stacks found
-                //console.log(data.Stacks);
 
-                console.log("Creating AArray of Params in CF");
+                console.log("Creating Array of Params in CF");
                 const stacks = data['Stacks'];
 
                 stackDescription = stacks[0];
 
                 for (var paramsIndex = 0; paramsIndex < stackDescription.Parameters.length; paramsIndex++) {
-
                     var objParam = new Object();
                     if (stackDescription.Parameters[paramsIndex].ParameterKey == "AMI") {
                         objParam.ParameterKey = stackDescription.Parameters[paramsIndex].ParameterKey;
@@ -114,23 +123,27 @@ exports.handler = function (event, context) {
                     else {
                         objParam.ParameterKey = stackDescription.Parameters[paramsIndex].ParameterKey;
                         objParam.UsePreviousValue = true;
+                        //objParam.ParameterValue = stackDescription.Parameters[paramsIndex].ParameterValue;
                     }
-                    console.log(objParam);
-
                     stackParams.Parameters.push(objParam);
                 }
-                console.log("After Update")
-                console.log(stackParams)
+
+
             }
             // successful response
-        });
 
+            return stackParams;
+        });
+        console.log("Last step before updating")
+        console.log(stackParams)
 
         // ----------------------         UPDATE STACK      ---------------------
         cloudformation.updateStack(stackParams, function (err, data) {
             if (err) console.log(err, err.stack); // an error occurred
             else console.log(data);           // successful response
+
         });
+
     });
 };
 
