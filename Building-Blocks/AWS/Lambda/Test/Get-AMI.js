@@ -1,24 +1,21 @@
 /**
 * A sample Lambda function that looks up the latest Windows AMI ID 
 * for a given region and Windows AMI base name.
+*
+*   This Lambda script will only update Auto Scaling Groups deined via a CloudFormation stack
+*   Also the CloudFormation Stack must have a paramater "AMI" as this script updates that paramater.
+*
+* Process:
+*   Need to update OS patterns for operating systems in use
+*   Need to update Cloud Formation To Update
+*
 **/
 
 // Map display OS names to AMI name patterns
-//var osNameToPattern = {
-//    "Windows Server 2008 SP2 English 32-bit": "Windows_Server-2008-SP2-English-32Bit-Base-*",
-//    "Windows Server 2008 SP2 English 64-bit": "Windows_Server-2008-SP2-English-64Bit-Base-*",
-//    "Windows Server 2008 R2 English 64-bit": "Windows_Server-2008-R2_SP1-English-64Bit-Base-*",
-//	"Windows Server 2012 RTM English 64-bit": "Windows_Server-2012-RTM-English-64Bit-Base-*",
-//	"Windows Server 2012 R2 English 64-bit": "Windows_Server-2012-R2_RTM-English-64Bit-Base-*"
-//};
 
 var osNameToPattern = {
     "DC Windows 2016": "DC Windows 2016*",
     "DC Windows 2012R2": "DC Windows 2012R2*",
-};
-
-var asgToUpdate = {
-    "BN-ASGWeb-WebServerGroup-1OJURPJHPWZ5Z": "BN-ASGWeb-WebServerGroup-1OJURPJHPWZ5Z"
 };
 
 var cfToUpdate = "BN-ASGWeb";
@@ -128,19 +125,13 @@ exports.handler = function (event, context) {
             // successful response
         });
 
-        /*
-                // ----------------------         UPDATE STACK      ---------------------
-                cloudformation.updateStack(stackParams, function (err, data) {
-                    if (err) console.log(err, err.stack); // an error occurred
-                    else console.log(data);           // successful response
-                });
-        */
 
-        //sendResponse(event, context, responseStatus, responseData);
+        // ----------------------         UPDATE STACK      ---------------------
+        cloudformation.updateStack(stackParams, function (err, data) {
+            if (err) console.log(err, err.stack); // an error occurred
+            else console.log(data);           // successful response
+        });
     });
-
-
-
 };
 
 
