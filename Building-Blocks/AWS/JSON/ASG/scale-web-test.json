@@ -64,11 +64,6 @@
             ],
             "ConstraintDescription": "must be a valid EC2 instance type."
         },
-        "iamProfile": {
-            "Description": "IAM Profile to associate with instance",
-            "Default": "",
-            "Type": "String"
-        },
         "OperatorEMail": {
             "Description": "EMail address to notify if there are any scaling operations",
             "Type": "String",
@@ -597,7 +592,7 @@
                     "Ref": "Subnet"
                 },
                 "HealthCheckType": "EC2",
-                "HealthCheckGracePeriod": "120",
+                "HealthCheckGracePeriod": "1200",
                 "Tags": [
                     {
                         "Key": "Name",
@@ -642,8 +637,8 @@
                 "LaunchConfigurationName": {
                     "Ref": "LaunchConfig"
                 },
-                "MinSize": "1",
-                "MaxSize": "3",
+                "MinSize": "3",
+                "MaxSize": "4",
                 "LoadBalancerNames": [
                     {
                         "Ref": "ElasticLoadBalancer"
@@ -655,15 +650,15 @@
                     "MinSuccessfulInstancesPercent": "0"
                 },
                 "ResourceSignal": {
-                    "Timeout": "PT5M",
+                    "Timeout": "PT20M",
                     "Count": "0"
                 }
             },
             "UpdatePolicy": {
                 "AutoScalingRollingUpdate": {
-                    "MinInstancesInService": "0",
+                    "MinInstancesInService": "1",
                     "MaxBatchSize": "1",
-                    "PauseTime": "PT5M",
+                    "PauseTime": "PT20M",
                     "WaitOnResourceSignals": "true"
                 }
             }
@@ -705,10 +700,14 @@
                                     "Fn::Join": [
                                         "",
                                         [
-                                            "install-windowsfeature Web-Server, Web-WebServer, Web-Common-Http, Web-Default-Doc, Web-Dir-Browsing, Web-Http-Errors, Web-Static-Content, Web-Health, Web-Http-Logging, Web-Request-Monitor, Web-Performance, Web-Stat-Compression, Web-Dyn-Compression, Web-Filtering, Web-Basic-Auth, Web-App-Dev, Web-Net-Ext, Web-Net-Ext45, Web-Asp-Net45, Web-CGI, Web-ISAPI-Ext, Web-ISAPI-Filter, Web-Mgmt-Tools, Web-Mgmt-Console, Web-Mgmt-Compat, Web-Metabase, Web-Lgcy-Mgmt-Console, Web-Lgcy-Scripting, Web-WMI, Web-Scripting-Tools, Web-Mgmt-Service"
+                                            "powershell -Command install-windowsfeature Web-Server, Web-WebServer, Web-Common-Http, Web-Default-Doc, Web-Dir-Browsing, Web-Http-Errors, Web-Static-Content, Web-Health, Web-Http-Logging, Web-Request-Monitor, Web-Performance, Web-Stat-Compression, Web-Dyn-Compression, Web-Filtering, Web-Basic-Auth, Web-App-Dev, Web-Net-Ext, Web-Net-Ext45, Web-Asp-Net45, Web-CGI, Web-ISAPI-Ext, Web-ISAPI-Filter, Web-Mgmt-Tools, Web-Mgmt-Console, Web-Mgmt-Compat, Web-Metabase, Web-Lgcy-Mgmt-Console, Web-Lgcy-Scripting, Web-WMI, Web-Scripting-Tools, Web-Mgmt-Service"
                                         ]
                                     ]
                                 }
+                            },
+                            "c-restart": {
+                                "command": "rem powershell -Command Shutdown /r /t 00"
+                                
                             }
                         }
                     },
@@ -735,9 +734,7 @@
                     "Ref": "InstanceType"
                 },
                 "InstanceMonitoring": "false",
-                "IamInstanceProfile": {
-                    "Ref": "iamProfile"
-                },
+                
                 "UserData": {
                     "Fn::Base64": {
                         "Fn::Join": [
@@ -860,10 +857,10 @@
                 ],
                 "HealthCheck": {
                     "Target": "HTTP:80/",
-                    "HealthyThreshold": "3",
-                    "UnhealthyThreshold": "5",
-                    "Interval": "30",
-                    "Timeout": "5"
+                    "HealthyThreshold": "2",
+                    "UnhealthyThreshold": "2",
+                    "Interval": "5",
+                    "Timeout": "4"
                 }
             }
         }
