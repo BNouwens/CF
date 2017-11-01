@@ -72,8 +72,7 @@ exports.handler = function (event, context) {
             console.log("I HAVE MADE IT TO THE FUNCTION");
             //if (err) return reject(err);
             var ec2 = new aws.EC2();
-            //var objParam = new Object();
-            //var instanceIP = "10.1.1.1";
+
             ec2.describeInstances(instanceID, function (err, data) {
                 if (err) console.log(err, err.stack); // an error occurred
                 else {
@@ -82,14 +81,7 @@ exports.handler = function (event, context) {
                     //console.log(describeInstancesIP);
                     //objParam.Value = describeInstancesIP;
                     var instanceIP = describeInstancesIP;
-                    //paramNameServers.ChangeBatch.Changes[0].ResourceRecordSet.ResourceRecords.push(objParam);
-                    //const instances = instanceresponse.data['Reservations'];
-                    //describeInstancesIP = instances[0].Instances[0].PrivateIpAddress;
-                    //console.log(describeInstancesIP);
-                    //objParam.Value = describeInstancesIP;
-                    //paramNameServers.ChangeBatch.Changes[0].ResourceRecordSet.ResourceRecords.push(objParam);
-                    //console.log(paramNameServers.ChangeBatch.Changes[0].ResourceRecordSet);
-                    //console.log(paramNameServers);
+
                     resolve(instanceIP);
                 }
 
@@ -127,68 +119,24 @@ exports.handler = function (event, context) {
 
             // -----------------  DESCRIBE EC2 --------------------------
 
-            /* OLD PROMISE ATTEMPT
-                        var requestDescribeInstance = ec2.describeInstances(paramsInstance)
-                        var result = requestDescribeInstance.promise();
-                        result.then(function (instanceresponse) {
-            
-                            const instances = instanceresponse.Reservations;
-                            describeInstancesIP = instances[0].Instances[0].PrivateIpAddress;
-                            console.log(describeInstancesIP);
-                            objParam.Value = describeInstancesIP;
-                            paramNameServers.ChangeBatch.Changes[0].ResourceRecordSet.ResourceRecords.push(objParam);
-                            //const instances = instanceresponse.data['Reservations'];
-                            //describeInstancesIP = instances[0].Instances[0].PrivateIpAddress;
-                            //console.log(describeInstancesIP);
-                            //objParam.Value = describeInstancesIP;
-                            //paramNameServers.ChangeBatch.Changes[0].ResourceRecordSet.ResourceRecords.push(objParam);
-                            console.log(paramNameServers.ChangeBatch.Changes[0].ResourceRecordSet);
-            
-                        }, function (error) { });
-            */
-            // NEW PROMISE ATTEMPT
+
             getInstanceIP(paramsInstance)
                 //.then(function (instanceIP) { return getInstanceIP(instanceIP, 'actualValue') })
                 //.then(function (value) { console.log('Value from function = ' + value); })
                 .then(function (value) {
                     var objParam = new Object();
-                    objParam.Value = value;                    
+                    objParam.Value = value;
                     paramNameServers.ChangeBatch.Changes[0].ResourceRecordSet.ResourceRecords.push(objParam);
                     console.log(paramNameServers.ChangeBatch.Changes[0].ResourceRecordSet);
                 })
 
 
 
-
-
-
-            /*
-            requestDescribeInstance.on('success', function (instanceresponse) {
-                const instances = instanceresponse.data['Reservations'];
-                describeInstancesIP = instances[0].Instances[0].PrivateIpAddress;
-                console.log(describeInstancesIP);
-                objParam.Value = describeInstancesIP;
-                paramNameServers.ChangeBatch.Changes[0].ResourceRecordSet.ResourceRecords.push(objParam);
-                console.log(paramNameServers.ChangeBatch.Changes[0].ResourceRecordSet);
-            }).on('error', function (error, instanceresponse) {
-                console.log("------------ DESCRIBE INSTANCE FAILED ------------");
-                console.log(error);
-            }).on('complete', function () {
-                console.log("DESCRIBE Instance Done");
-            }).send();
-            */
-
-            // --------------- END DESCRIBE EC2 ------------------
-
-            //Add entry to the parameters for updating R53
-            //paramNameServers.ChangeBatch.Changes[0].ResourceRecordSet.ResourceRecords.push(objParam)
-
-
         }
         // ----------------------         UPDATE R53 Name Servers      ---------------------
         var route53 = new aws.Route53({ region: 'us-east-1' });
 
-        //console.log(paramNameServers.ChangeBatch.Changes[0].ResourceRecordSet);
+
 
         console.log("------------ START UPDATE ------------");
         var requestUpdateNameServers = route53.changeResourceRecordSets(paramNameServers);
@@ -202,7 +150,6 @@ exports.handler = function (event, context) {
             console.log("All Done");
         }).send();
 
-        //console.log(instanceresponse.data.Instances);
         // ----------------------      END UPDATE R53 Name Servers      ---------------------
 
     }).on('error', function (error, response) {
@@ -213,30 +160,5 @@ exports.handler = function (event, context) {
     }).send();
 
 
-
-
-    /*
-
-    // ----------------------         UPDATE R53 Name Servers      ---------------------
-    var route53 = new aws.Route53({ region: 'us-east-1' });
-
-    //route53.changeResourceRecordSets(params, function (err, data) {
-
-    console.log("------------ START UPDATE ------------");
-    var requestUpdateNameServers = route53.changeResourceRecordSets(paramNameServers);
-
-    requestUpdateNameServers.on('success', function (response) {
-        console.log("------------ UPDATE SUCCESS ------------");
-    });
-    requestUpdateNameServers.on('error', function (error, response) {
-        console.log("------------ UPDATE FAILED ------------");
-        console.log(error);
-    });
-    requestUpdateNameServers.on('complete', function () {
-        console.log("All Done");
-    });
-    requestUpdateNameServers.send();
-
-    */
 
 };
