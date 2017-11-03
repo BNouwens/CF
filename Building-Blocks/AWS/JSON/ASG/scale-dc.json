@@ -1,0 +1,399 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "AWS CloudFormation Sample Template: Create a multi-az.",
+    "Parameters": {
+        "InstanceType": {
+            "Description": "ADServer EC2 instance type",
+            "Type": "String",
+            "Default": "t2.small",
+            "AllowedValues": [
+                "t1.micro",
+                "t2.nano",
+                "t2.micro",
+                "t2.small",
+                "t2.medium",
+                "t2.large",
+                "m1.small",
+                "m1.medium",
+                "m1.large",
+                "m1.xlarge",
+                "m2.xlarge",
+                "m2.2xlarge",
+                "m2.4xlarge",
+                "m3.medium",
+                "m3.large",
+                "m3.xlarge",
+                "m3.2xlarge",
+                "m4.large",
+                "m4.xlarge",
+                "m4.2xlarge",
+                "m4.4xlarge",
+                "m4.10xlarge",
+                "c1.medium",
+                "c1.xlarge",
+                "c3.large",
+                "c3.xlarge",
+                "c3.2xlarge",
+                "c3.4xlarge",
+                "c3.8xlarge",
+                "c4.large",
+                "c4.xlarge",
+                "c4.2xlarge",
+                "c4.4xlarge",
+                "c4.8xlarge",
+                "g2.2xlarge",
+                "g2.8xlarge",
+                "r3.large",
+                "r3.xlarge",
+                "r3.2xlarge",
+                "r3.4xlarge",
+                "r3.8xlarge",
+                "i2.xlarge",
+                "i2.2xlarge",
+                "i2.4xlarge",
+                "i2.8xlarge",
+                "d2.xlarge",
+                "d2.2xlarge",
+                "d2.4xlarge",
+                "d2.8xlarge",
+                "hi1.4xlarge",
+                "hs1.8xlarge",
+                "cr1.8xlarge",
+                "cc2.8xlarge",
+                "cg1.4xlarge"
+            ],
+            "ConstraintDescription": "must be a valid EC2 instance type."
+        },
+        "OperatorEMail": {
+            "Description": "EMail address to notify if there are any scaling operations",
+            "Type": "String",
+            "AllowedPattern": "([a-zA-Z0-9_\\-\\.]+)@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.)|(([a-zA-Z0-9\\-]+\\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\\]?)",
+            "ConstraintDescription": "must be a valid email address."
+        },
+        "KeyName": {
+            "Description": "The EC2 Key Pair to allow SSH access to the instances",
+            "Type": "AWS::EC2::KeyPair::KeyName",
+            "ConstraintDescription": "must be the name of an existing EC2 KeyPair."
+        },
+        "SSHLocation": {
+            "Description": "The IP address range that can be used to SSH to the EC2 instances",
+            "Type": "String",
+            "MinLength": "9",
+            "MaxLength": "18",
+            "Default": "0.0.0.0/0",
+            "AllowedPattern": "(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})\\.(\\d{1,3})/(\\d{1,2})",
+            "ConstraintDescription": "must be a valid IP CIDR range of the form x.x.x.x/x."
+        },
+        "SecurityGroupIds": {
+            "Description": "Security Group IDs for Server",
+            "Default": "",
+            "Type": "List<AWS::EC2::SecurityGroup::Id>"
+        },
+        "AMI": {
+            "Description": "AMI ID for Server",
+            "Default": "ami-32312751",
+            "Type": "String"
+        },
+        "Subnet": {
+            "Description": "Select a private subnet for the instance",
+            "Type": "List<AWS::EC2::Subnet::Id>"
+        },
+        "LBSubnet": {
+            "Description": "Select a private subnet for the instance",
+            "Type": "List<AWS::EC2::Subnet::Id>"
+        },
+        "Environment": {
+            "Description": "Environment Code",
+            "Default": "ppd",
+            "Type": "String"
+        },
+        "Solution": {
+            "Description": "Solution Code",
+            "Default": "ppd",
+            "Type": "String"
+        },
+        "CostCentre": {
+            "Description": "Cost Code",
+            "Default": "template",
+            "Type": "String"
+        },
+        "NameCode": {
+            "Description": "Server Name code",
+            "Default": "ap01",
+            "Type": "String"
+        }
+    },
+    "Resources": {
+        "NotificationTopic": {
+            "Type": "AWS::SNS::Topic",
+            "Properties": {
+                "Subscription": [
+                    {
+                        "Endpoint": {
+                            "Ref": "OperatorEMail"
+                        },
+                        "Protocol": "email"
+                    }
+                ]
+            }
+        },
+        "ADServerGroup": {
+            "Type": "AWS::AutoScaling::AutoScalingGroup",
+            "Properties": {
+                "VPCZoneIdentifier": {
+                    "Ref": "Subnet"
+                },
+                "NotificationConfigurations": {
+                    "NotificationTypes": [
+                        "autoscaling:EC2_INSTANCE_LAUNCH",
+                        "autoscaling:EC2_INSTANCE_LAUNCH_ERROR",
+                        "autoscaling:EC2_INSTANCE_TERMINATE",
+                        "autoscaling:EC2_INSTANCE_TERMINATE_ERROR",
+                        "autoscaling:TEST_NOTIFICATION"
+                    ],
+                    "TopicARN": {
+                        "Ref": "NotificationTopic"
+                    }
+                },
+                "HealthCheckType": "EC2",
+                "HealthCheckGracePeriod": "1200",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    {
+                                        "Ref": "Solution"
+                                    },
+                                    {
+                                        "Ref": "Environment"
+                                    },
+                                    {
+                                        "Ref": "NameCode"
+                                    }
+                                ]
+                            ]
+                        },
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "CostCentre",
+                        "Value": {
+                            "Ref": "CostCentre"
+                        },
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "Solution",
+                        "Value": {
+                            "Ref": "Solution"
+                        },
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "cpm backup",
+                        "Value": "tbd",
+                        "PropagateAtLaunch": "true"
+                    }
+                ],
+                "LaunchConfigurationName": {
+                    "Ref": "LaunchConfig"
+                },
+                "MinSize": "3",
+                "MaxSize": "4",
+                
+            },
+            "CreationPolicy": {
+                "AutoScalingCreationPolicy": {
+                    "MinSuccessfulInstancesPercent": "0"
+                },
+                "ResourceSignal": {
+                    "Timeout": "PT20M",
+                    "Count": "0"
+                }
+            },
+            "UpdatePolicy": {
+                "AutoScalingRollingUpdate": {
+                    "MinInstancesInService": "1",
+                    "MaxBatchSize": "1",
+                    "PauseTime": "PT20M",
+                    "WaitOnResourceSignals": "true"
+                }
+            }
+        },
+        "LaunchConfig": {
+            "Type": "AWS::AutoScaling::LaunchConfiguration",
+            "Metadata": {
+                "Comment": "Builds a domain Controller",
+                "AWS::CloudFormation::Init": {
+                    "config": {
+                        "files": {
+                            "c:\\cfn\\cfn-hup.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "[main]\n",
+                                            "stack=",
+                                            {
+                                                "Ref": "AWS::StackId"
+                                            },
+                                            "\n",
+                                            "region=",
+                                            {
+                                                "Ref": "AWS::Region"
+                                            },
+                                            "\n"
+                                        ]
+                                    ]
+                                }
+                            }
+                        },
+                        "commands": {
+                            "a-setexecutionpolicy": {
+                                "command": "powershell -Command Set-ExecutionPolicy Unrestricted -Force"
+                            },
+                            "b-installIIS": {
+                                "command": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "powershell -Command install-windowsfeature AD-Domain-Services"
+                                        ]
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "Finalize": {
+                        "commands": {
+                            "a-signal-success": {
+                                "command": "powershell -Command \"Write-AWSQuickStartStatus\""
+                            }
+                        }
+                    }
+                }
+            },
+            "Properties": {
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
+                "ImageId": {
+                    "Ref": "AMI"
+                },
+                "SecurityGroups": {
+                    "Ref": "SecurityGroupIds"
+                },
+                "InstanceType": {
+                    "Ref": "InstanceType"
+                },
+                "InstanceMonitoring": "false",
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "<script>\n",
+                                "cfn-init.exe -v -s ",
+                                {
+                                    "Ref": "AWS::StackName"
+                                },
+                                " -r LaunchConfig",
+                                " --region ",
+                                {
+                                    "Ref": "AWS::Region"
+                                },
+                                "\n",
+                                "cfn-signal -e %ERRORLEVEL% --stack ",
+                                {
+                                    "Ref": "AWS::StackName"
+                                },
+                                " --resource ADServerGroup --region ",
+                                {
+                                    "Ref": "AWS::Region"
+                                },
+                                "</script>"
+                            ]
+                        ]
+                    }
+                }
+            }
+        },
+        "ADServerScaleUpPolicy": {
+            "Type": "AWS::AutoScaling::ScalingPolicy",
+            "Properties": {
+                "AdjustmentType": "ChangeInCapacity",
+                "AutoScalingGroupName": {
+                    "Ref": "ADServerGroup"
+                },
+                "Cooldown": "60",
+                "ScalingAdjustment": "1"
+            }
+        },
+        "ADServerScaleDownPolicy": {
+            "Type": "AWS::AutoScaling::ScalingPolicy",
+            "Properties": {
+                "AdjustmentType": "ChangeInCapacity",
+                "AutoScalingGroupName": {
+                    "Ref": "ADServerGroup"
+                },
+                "Cooldown": "60",
+                "ScalingAdjustment": "-1"
+            }
+        },
+        "CPUAlarmHigh": {
+            "Type": "AWS::CloudWatch::Alarm",
+            "Properties": {
+                "AlarmDescription": "Scale-up if CPU > 90% for 10 minutes",
+                "MetricName": "CPUUtilization",
+                "Namespace": "AWS/EC2",
+                "Statistic": "Average",
+                "Period": "300",
+                "EvaluationPeriods": "2",
+                "Threshold": "90",
+                "AlarmActions": [
+                    {
+                        "Ref": "ADServerScaleUpPolicy"
+                    }
+                ],
+                "Dimensions": [
+                    {
+                        "Name": "AutoScalingGroupName",
+                        "Value": {
+                            "Ref": "ADServerGroup"
+                        }
+                    }
+                ],
+                "ComparisonOperator": "GreaterThanThreshold"
+            }
+        },
+        "CPUAlarmLow": {
+            "Type": "AWS::CloudWatch::Alarm",
+            "Properties": {
+                "AlarmDescription": "Scale-down if CPU < 70% for 10 minutes",
+                "MetricName": "CPUUtilization",
+                "Namespace": "AWS/EC2",
+                "Statistic": "Average",
+                "Period": "300",
+                "EvaluationPeriods": "2",
+                "Threshold": "70",
+                "AlarmActions": [
+                    {
+                        "Ref": "ADServerScaleDownPolicy"
+                    }
+                ],
+                "Dimensions": [
+                    {
+                        "Name": "AutoScalingGroupName",
+                        "Value": {
+                            "Ref": "ADServerGroup"
+                        }
+                    }
+                ],
+                "ComparisonOperator": "LessThanThreshold"
+            }
+        }
+    }
+}

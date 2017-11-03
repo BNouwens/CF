@@ -1,0 +1,65 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Creates a Security Group for Public remote Access",
+    "Parameters": {
+        "Solution": {
+            "Type": "String"
+        },
+        "CostCentre": {
+            "Type": "String"
+        }
+    },
+    "Resources": {
+        "PublicIPs": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": {
+                    "Ref": "Solution"
+                },
+                "VpcId": {
+                    "Fn::ImportValue": "VPC-p2paspprod"
+                },
+                "SecurityGroupIngress": [
+                    {
+                        "CidrIp": "0.0.0.0/0",
+                        "IpProtocol": "tcp",
+                        "FromPort": "443",
+                        "ToPort": "443"
+                    },
+                    {
+                        "CidrIp": "124.190.79.245/32",
+                        "IpProtocol": "tcp",
+                        "FromPort": "3389",
+                        "ToPort": "3389"
+                    },
+                    {
+                        "CidrIp": "120.158.217.108/32",
+                        "IpProtocol": "tcp",
+                        "FromPort": "3389",
+                        "ToPort": "3389"
+                    },
+                    {
+                        "CidrIpv6": "2001:8003:390a:f800:293e:c8da:da6a:4c4b/128",
+                        "IpProtocol": "tcp",
+                        "FromPort": "3389",
+                        "ToPort": "3389"
+                    },
+                    {
+                        "CidrIp": "10.216.0.0/16",
+                        "IpProtocol": "tcp",
+                        "FromPort": "443",
+                        "ToPort": "443"
+                    }
+                ],
+                "SecurityGroupEgress": [
+                    {
+                        "CidrIp": "0.0.0.0/0",
+                        "FromPort": "0",
+                        "IpProtocol": "-1",
+                        "ToPort": "65535"
+                    }
+                ]
+            }
+        }
+    }
+}
