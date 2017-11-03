@@ -1,23 +1,63 @@
 /**
-* A sample Lambda function that updates name servers based on ASG servers - However this process itself is not an appropriate fix for Domain Controllers
+* A sample Lambda function that updates DHCP options based on ASG servers - However this process itself is not an appropriate fix for Domain Controllers
 * Instead need to develop a process to update dhcp scope options.
 * 
 * Process:
 * 
 
-Test Parameters: - Needs tweeking (and updating for this code)
-{
-  "RequestType": "Save",
-  "ASG": "TEMP",
-  "Stack": "BN-ASGWeb",
-  "AccountID": "<account-id>",
-  "Region": "<region>",
-  "ResourceProperties": {
-    "OSName": "DC Windows 2016"
-  }
-}
+ // This example creates a DHCP options set. 
 
-Second Test Scenario
+ var params = {
+  DhcpConfigurations: [
+     {
+    Key: "domain-name-servers", 
+    Values: [
+       "10.2.5.1", 
+       "10.2.5.2"
+    ]
+   }
+  ]
+ };
+ ec2.createDhcpOptions(params, function(err, data) {
+   if (err) console.log(err, err.stack); // an error occurred
+   else     console.log(data);           // successful response
+   
+//    data = {
+//     DhcpOptions: {
+//      DhcpConfigurations: [
+//         {
+//        Key: "domain-name-servers", 
+//        Values: [
+//           {
+//          Value: "10.2.5.2"
+//         }, 
+//           {
+//          Value: "10.2.5.1"
+//         }
+//        ]
+//       }
+//      ], 
+//      DhcpOptionsId: "dopt-d9070ebb"
+//     }
+//    }
+
+ });
+
+
+// This example associates the specified DHCP options set with the specified VPC.
+
+ var params = {
+  DhcpOptionsId: "dopt-d9070ebb", 
+  VpcId: "vpc-a01106c2"
+ };
+ ec2.associateDhcpOptions(params, function(err, data) {
+   if (err) console.log(err, err.stack); // an error occurred
+   else     console.log(data);           // successful response
+ });
+
+
+
+Test Parameters: - Needs tweeking (and updating for this code)
 
 {
     "Records": [
@@ -45,12 +85,10 @@ Second Test Scenario
 
 //NAME Server Params TEMP - to be moved into a lookup
 var varDomain = "bntest.local"
-var varZoneId = "Z2Z4B9I5E0XMAB"
 
 var aws = require("aws-sdk");
 var autoscaling = new aws.AutoScaling({ apiVersion: '2011-01-01' });
 var ec2 = new aws.EC2();
-var route53 = new aws.Route53({ region: 'us-east-1' });
 
 //Creating a function for finding Instance IP --------------------------------------------------
 function getInstanceIP(instanceID) {
@@ -73,7 +111,19 @@ function getInstanceIP(instanceID) {
 }
 
 exports.handler = function (event, context, callback) {
-    var paramNameServers = {
+    var paramsDHCP = {
+        DhcpConfigurations: [
+            {
+                Key: "domain-name-servers",
+                Values: [
+                    "10.2.5.1",
+                    "10.2.5.2"
+                ]
+            }
+        ]
+    };
+
+    /* var paramNameServers = {
         ChangeBatch: {
             Changes: [
                 {
@@ -91,11 +141,8 @@ exports.handler = function (event, context, callback) {
             Comment: "Name Servers"
         },
         HostedZoneId: varZoneId
-    };
-    // FROM ABOVE in ResourceRecords
-    // {
-    //Value: ""
-    //}
+    }; */
+
     console.log("REQUEST RECEIVED:\n" + JSON.stringify(event));
 
     // For Delete requests, immediately send a SUCCESS response.
@@ -105,29 +152,22 @@ exports.handler = function (event, context, callback) {
     }
     var responseStatus = "FAILED";
     var responseData = {};
-    
+
     // --------- Building EVENT data ---------    
-    var message = event['Records'][0]['Sns']['Message']  
-       
+    var message = event['Records'][0]['Sns']['Message']
+
     var asgName = JSON.parse(message);
     console.log(asgName.AutoScalingGroupName);
-    //var asgName = message.AccountId;
-    //console.log(asgName);
 
-    //var asgName = event.Records[0].Sns;
-    //console.log("ASG NAME TO BE UPDATED = " + asgName);
-          
-    
     var paramsASG = {
         AutoScalingGroupNames: [
             asgName.AutoScalingGroupName
             /* more items */
         ],
     };
-
+    // Describes all Instances in the ASG, creates an array and Describes the Instances to create an array of IP addresses for all nodes
     autoscaling.describeAutoScalingGroups(paramsASG).promise()
         .then((response) => {
-
             console.log(response);           // successful response
             const asgs = response['AutoScalingGroups'];
             // TO ADD LATER asgInstances.LifecycleState = "InService"
@@ -148,11 +188,13 @@ exports.handler = function (event, context, callback) {
         }).then(results => {
             results.forEach(value => {
                 var objParam = new Object();
-                objParam.Value = value;
-                paramNameServers.ChangeBatch.Changes[0].ResourceRecordSet.ResourceRecords.push(objParam);
+                objParam.Values = value;
+                paramsDHCP.DhcpConfigurations[0].Values.push(value);    // ChangeBatch.Changes[0].ResourceRecordSet.ResourceRecords.push(objParam);
             })
-            console.log(paramNameServers.ChangeBatch.Changes[0].ResourceRecordSet);
-            return route53.changeResourceRecordSets(paramNameServers).promise();
+            console.log(paramsDHCP.DhcpConfigurations[0].Values);
+            //return route53.changeResourceRecordSets(paramNameServers).promise();
+            return ec2.createDhcpOptions(paramsDHCP).promise();
+            
         }).then(() => {
             console.log('Im all finished');
             callback(null);
@@ -160,26 +202,4 @@ exports.handler = function (event, context, callback) {
             console.log('Something went really wrong')
             callback(err);
         })
-
-    //.then(function (instanceIP) { return getInstanceIP(instanceIP, 'actualValue') })
-    //.then(function (value) { console.log('Value from function = ' + value); })
-
-    /*
-    // ----------------------         UPDATE R53 Name Servers      ---------------------
-    var route53 = new aws.Route53({ region: 'us-east-1' });
-
-    console.log("------------ START UPDATE ------------");
-    var requestUpdateNameServers = route53.changeResourceRecordSets(paramNameServers);
-
-    requestUpdateNameServers.on('success', function (response) {
-        console.log("------------ UPDATE SUCCESS ------------");
-    }).on('error', function (error, response) {
-        console.log("------------ UPDATE FAILED ------------");
-        console.log(error);
-    }).on('complete', function () {
-        console.log("All Done");
-    }).send();
-*/
-    // ----------------------      END UPDATE R53 Name Servers      ---------------------
-
 };

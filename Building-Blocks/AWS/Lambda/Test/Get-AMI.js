@@ -35,7 +35,6 @@ var cfToUpdate = "BN-ASGWeb";
 var aws = require("aws-sdk");
 
 exports.handler = function (event, context) {
-
     console.log("REQUEST RECEIVED:\n" + JSON.stringify(event));
 
     // For Delete requests, immediately send a SUCCESS response.
@@ -59,136 +58,99 @@ exports.handler = function (event, context) {
     console.log("Calling describeImages...");
 
     // Get the available AMIs for the specified Windows version.
-    ec2.describeImages(describeImagesParams, function (err, describeImagesResult) {
-        if (err) {
-            responseData = { Error: "DescribeImages call failed" };
-            console.log(responseData.Error + ":\n", err);
+
+    // ---------------------        FIND AMI        -------------------------------
+    var requestDescribeImages = ec2.describeImages(describeImagesParams)
+    requestDescribeImages.on('success', function (describeImagesResult) {
+        console.log("Got a response back from the server");
+        var images = describeImagesResult.data.Images;
+
+        console.log("Got " + images.length + " images back");
+
+        // Sort the images by descending creation date order so the
+        // most recent image is first in the array.
+        images.sort(function (x, y) {
+            return x.CreationDate < y.CreationDate;
+        });
+
+        for (var imageIndex = 0; imageIndex < images.length; imageIndex++) {
+            responseStatus = "SUCCESS";
+            responseData["Id"] = images[imageIndex].ImageId;
+            responseData["Name"] = images[imageIndex].Name;
+            console.log("Found: " + images[imageIndex].Name + ", " + images[imageIndex].ImageId);
+            break;
         }
-        else {
-            console.log("Got a response back from the server");
+    });
+    requestDescribeImages.on('error', function (error, response) {
+        console.log(error);
+    });
+    requestDescribeImages.on('complete', function () {
+        // Create Cloudfront API reference
+        var cloudformation = new aws.CloudFormation({ apiVersion: '2010-05-15' });
+        var stackParams = {
+            StackName: cfToUpdate,
+            UsePreviousTemplate: true,
+            Parameters: [
 
-            var images = describeImagesResult.Images;
-
-            console.log("Got " + images.length + " images back");
-
-            // Sort the images by descending creation date order so the
-            // most recent image is first in the array.
-            images.sort(function (x, y) {
-                return x.CreationDate < y.CreationDate;
-            });
-
-            for (var imageIndex = 0; imageIndex < images.length; imageIndex++) {
-                responseStatus = "SUCCESS";
-                responseData["Id"] = images[imageIndex].ImageId;
-                responseData["Name"] = images[imageIndex].Name;
-                console.log("Found: " + images[imageIndex].Name + ", " + images[imageIndex].ImageId);
-                break;
-            }
+            ]
         };
-    });
+        //console.log(stackParams)
+        console.log("Starting Stack Update")
 
+        var params = {
+            StackName: cfToUpdate
+        };
 
+        // ----------------------         DESCRIBE STACK         ---------------------
+        var requestDescribeStack = cloudformation.describeStacks(params)
+        requestDescribeStack.on('success', function (response) {
 
+            console.log("Creating Array of Params in CF");
+            console.log(response.data);
+            const stacks = response.data['Stacks'];
 
-    // Create Cloudfront API reference
-    var cloudformation = new aws.CloudFormation({ apiVersion: '2010-05-15' });
-    var stackParams = {
-        StackName: cfToUpdate,
-        UsePreviousTemplate: true,
-        Parameters: [
+            stackDescription = stacks[0];
 
-        ]
-    };
-    //console.log(stackParams)
-    console.log("Starting Stack Update")
-
-    var params = {
-        StackName: cfToUpdate
-    };
-
-    // ----------------------         DESCRIBE STACK         ---------------------
-    var requestDescribeStack = cloudformation.describeStacks(params)
-    requestDescribeStack.on('success', function (response) {
-
-        console.log("Creating Array of Params in CF");
-        console.log(response.data);
-        const stacks = response.data['Stacks'];
-
-        stackDescription = stacks[0];
-
-        for (var paramsIndex = 0; paramsIndex < stackDescription.Parameters.length; paramsIndex++) {
-            var objParam = new Object();
-            if (stackDescription.Parameters[paramsIndex].ParameterKey == "AMI") {
-                objParam.ParameterKey = stackDescription.Parameters[paramsIndex].ParameterKey;
-                objParam.ParameterValue = responseData["Id"];
-            }
-            else {
-                objParam.ParameterKey = stackDescription.Parameters[paramsIndex].ParameterKey;
-                objParam.UsePreviousValue = true;
-                //objParam.ParameterValue = stackDescription.Parameters[paramsIndex].ParameterValue;
-            }
-            stackParams.Parameters.push(objParam);
-        }
-    });
-    requestDescribeStack.on('complete', function () {
-        console.log("Completed Get Stack");
-        console.log(stackParams);
-    })
-    requestDescribeStack.send();
-
-    /*  This does work but out of sequence
-        cloudformation.describeStacks(params, function (err, data) {
-            if (err) console.log(err, err.stack); // an error occurred
-            else {
-                //Prints all details of the stacks found
-    
-                console.log("Creating Array of Params in CF");
-                const stacks = data['Stacks'];
-    
-                stackDescription = stacks[0];
-    
-                for (var paramsIndex = 0; paramsIndex < stackDescription.Parameters.length; paramsIndex++) {
-                    var objParam = new Object();
-                    if (stackDescription.Parameters[paramsIndex].ParameterKey == "AMI") {
-                        objParam.ParameterKey = stackDescription.Parameters[paramsIndex].ParameterKey;
-                        objParam.ParameterValue = responseData["Id"];
-                    }
-                    else {
-                        objParam.ParameterKey = stackDescription.Parameters[paramsIndex].ParameterKey;
-                        objParam.UsePreviousValue = true;
-                        //objParam.ParameterValue = stackDescription.Parameters[paramsIndex].ParameterValue;
-                    }
-                    stackParams.Parameters.push(objParam);
-    
+            for (var paramsIndex = 0; paramsIndex < stackDescription.Parameters.length; paramsIndex++) {
+                var objParam = new Object();
+                if (stackDescription.Parameters[paramsIndex].ParameterKey == "AMI") {
+                    objParam.ParameterKey = stackDescription.Parameters[paramsIndex].ParameterKey;
+                    objParam.ParameterValue = responseData["Id"];
                 }
-    
-    
+                else {
+                    objParam.ParameterKey = stackDescription.Parameters[paramsIndex].ParameterKey;
+                    objParam.UsePreviousValue = true;
+                    //objParam.ParameterValue = stackDescription.Parameters[paramsIndex].ParameterValue;
+                }
+                stackParams.Parameters.push(objParam);
             }
-            // successful response
-    
-            return stackParams;
         });
-    */
-    console.log("Last step before updating")
-    console.log(stackParams)
+        requestDescribeStack.on('error', function (error, response) {
+            console.log(error);
+        })
+        requestDescribeStack.on('complete', function () {
+            console.log("Completed Get Stack");
+            console.log(stackParams);
 
-    // ----------------------         UPDATE STACK      ---------------------
-    /*
-        cloudformation.updateStack(stackParams, function (err, data) {
-            if (err) console.log(err, err.stack); // an error occurred
-            else {
-                console.log(data);           // successful response
-            }
-        });
-    */
+            // ----------------------         UPDATE STACK      ---------------------
+            var requestUpdateStack = cloudformation.updateStack(stackParams)
+            requestUpdateStack.on('success', function (response) {
+
+
+            });
+            requestUpdateStack.on('error', function (error, response) {
+                console.log(error);
+            });
+            requestUpdateStack.on('complete', function () {
+                console.log("All Done");
+            });
+            requestUpdateStack.send();
+        })
+        requestDescribeStack.send();
+    })
+    requestDescribeImages.send()
 
 };
-
-
-
-
-
-
 
     /*
     // Send response to the pre-signed S3 URL 

@@ -7,7 +7,7 @@ Deploy Stack for Auto Scale Group (Current tempalte is scale-web-test.json)
             Current issue is that Computer Rename Script is not working)
 
 Create IAM Role for Lambda
-            see appendib B for IAM Role requirements
+              see appendib B for IAM Role requirements
 
 Create Lambda using code from i-TerminatingTrigger.lambda 
             Current issue is that the notification process back to ASG is not working
@@ -17,6 +17,10 @@ Create SSM Document LeaveDomain
 
 
 
+[‎19/‎10/‎2017 9:30 AM] Christopher Coombs: 
+We can then have a per account function subscribed to the topic which will then search for the tag in the AMIs and then announce on an account topic the AMI ID.
+At which point you’d need a function subscribed to that topic which would run update-stack with the new AMI ID as a param
+It’s currently low priority on the backlog, but if it’s required sooner let us know
 
 
 
