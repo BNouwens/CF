@@ -3,7 +3,7 @@
     "Description": "AWS CloudFormation Sample Template: Create a multi-az.",
     "Parameters": {
         "InstanceType": {
-            "Description": "ADServer EC2 instance type",
+            "Description": "WebServer EC2 instance type",
             "Type": "String",
             "Default": "t2.small",
             "AllowedValues": [
@@ -119,7 +119,7 @@
         },
         "NameCode": {
             "Description": "Server Name code",
-            "Default": "ap01",
+            "Default": "ap",
             "Type": "String"
         }
     },
@@ -137,24 +137,12 @@
                 ]
             }
         },
-        "ADServerGroup": {
+        "WebServerGroup": {
             "Type": "AWS::AutoScaling::AutoScalingGroup",
             "Properties": {
                 "VPCZoneIdentifier": {
                     "Ref": "Subnet"
                 },
-                "NotificationConfigurations": [{
-                    "NotificationTypes": [
-                        "autoscaling:EC2_INSTANCE_LAUNCH",
-                        "autoscaling:EC2_INSTANCE_LAUNCH_ERROR",
-                        "autoscaling:EC2_INSTANCE_TERMINATE",
-                        "autoscaling:EC2_INSTANCE_TERMINATE_ERROR",
-                        "autoscaling:TEST_NOTIFICATION"
-                    ],
-                    "TopicARN": {
-                        "Ref": "NotificationTopic"
-                    }
-                }],
                 "HealthCheckType": "EC2",
                 "HealthCheckGracePeriod": "1200",
                 "Tags": [
@@ -201,9 +189,13 @@
                 "LaunchConfigurationName": {
                     "Ref": "LaunchConfig"
                 },
-                "MinSize": "3",
-                "MaxSize": "4"
-                
+                "MinSize": "0",
+                "MaxSize": "0",
+                "LoadBalancerNames": [
+                    {
+                        "Ref": "ElasticLoadBalancer"
+                    }
+                ]
             },
             "CreationPolicy": {
                 "AutoScalingCreationPolicy": {
@@ -226,7 +218,7 @@
         "LaunchConfig": {
             "Type": "AWS::AutoScaling::LaunchConfiguration",
             "Metadata": {
-                "Comment": "Builds a domain Controller",
+                "Comment": "Install a simple application",
                 "AWS::CloudFormation::Init": {
                     "config": {
                         "files": {
@@ -260,10 +252,13 @@
                                     "Fn::Join": [
                                         "",
                                         [
-                                            "powershell -Command install-windowsfeature AD-Domain-Services"
+                                            "rem powershell -Command install-windowsfeature Web-Server, Web-WebServer, Web-Common-Http, Web-Default-Doc, Web-Dir-Browsing, Web-Http-Errors, Web-Static-Content, Web-Health, Web-Http-Logging, Web-Request-Monitor, Web-Performance, Web-Stat-Compression, Web-Dyn-Compression, Web-Filtering, Web-Basic-Auth, Web-App-Dev, Web-Net-Ext, Web-Net-Ext45, Web-Asp-Net45, Web-CGI, Web-ISAPI-Ext, Web-ISAPI-Filter, Web-Mgmt-Tools, Web-Mgmt-Console, Web-Mgmt-Compat, Web-Metabase, Web-Lgcy-Mgmt-Console, Web-Lgcy-Scripting, Web-WMI, Web-Scripting-Tools, Web-Mgmt-Service"
                                         ]
                                     ]
                                 }
+                            },
+                            "c-restart": {
+                                "command": "rem powershell -Command Shutdown /r /t 00"
                             }
                         }
                     },
@@ -310,7 +305,7 @@
                                 {
                                     "Ref": "AWS::StackName"
                                 },
-                                " --resource ADServerGroup --region ",
+                                " --resource WebServerGroup --region ",
                                 {
                                     "Ref": "AWS::Region"
                                 },
@@ -321,23 +316,23 @@
                 }
             }
         },
-        "ADServerScaleUpPolicy": {
+        "WebServerScaleUpPolicy": {
             "Type": "AWS::AutoScaling::ScalingPolicy",
             "Properties": {
                 "AdjustmentType": "ChangeInCapacity",
                 "AutoScalingGroupName": {
-                    "Ref": "ADServerGroup"
+                    "Ref": "WebServerGroup"
                 },
                 "Cooldown": "60",
                 "ScalingAdjustment": "1"
             }
         },
-        "ADServerScaleDownPolicy": {
+        "WebServerScaleDownPolicy": {
             "Type": "AWS::AutoScaling::ScalingPolicy",
             "Properties": {
                 "AdjustmentType": "ChangeInCapacity",
                 "AutoScalingGroupName": {
-                    "Ref": "ADServerGroup"
+                    "Ref": "WebServerGroup"
                 },
                 "Cooldown": "60",
                 "ScalingAdjustment": "-1"
@@ -355,14 +350,14 @@
                 "Threshold": "90",
                 "AlarmActions": [
                     {
-                        "Ref": "ADServerScaleUpPolicy"
+                        "Ref": "WebServerScaleUpPolicy"
                     }
                 ],
                 "Dimensions": [
                     {
                         "Name": "AutoScalingGroupName",
                         "Value": {
-                            "Ref": "ADServerGroup"
+                            "Ref": "WebServerGroup"
                         }
                     }
                 ],
@@ -381,18 +376,135 @@
                 "Threshold": "70",
                 "AlarmActions": [
                     {
-                        "Ref": "ADServerScaleDownPolicy"
+                        "Ref": "WebServerScaleDownPolicy"
                     }
                 ],
                 "Dimensions": [
                     {
                         "Name": "AutoScalingGroupName",
                         "Value": {
-                            "Ref": "ADServerGroup"
+                            "Ref": "WebServerGroup"
                         }
                     }
                 ],
                 "ComparisonOperator": "LessThanThreshold"
+            }
+        },
+        "ElasticLoadBalancer": {
+            "Type": "AWS::ElasticLoadBalancing::LoadBalancer",
+            "Properties": {
+                "Subnets": {
+                    "Ref": "LBSubnet"
+                },
+                "CrossZone": "true",
+                "Listeners": [
+                    {
+                        "LoadBalancerPort": "80",
+                        "InstancePort": "80",
+                        "Protocol": "HTTP"
+                    }
+                ],
+                "HealthCheck": {
+                    "Target": "HTTP:80/",
+                    "HealthyThreshold": "2",
+                    "UnhealthyThreshold": "2",
+                    "Interval": "5",
+                    "Timeout": "4"
+                }
+            }
+        },
+        "LambdaExecutionRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "lambda.amazonaws.com"
+                                ]
+                            },
+                            "Action": [
+                                "sts:AssumeRole"
+                            ]
+                        }
+                    ]
+                },
+                "Policies": [
+                    {
+                        "PolicyName": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    {
+                                        "Ref": "NameCode"
+                                    },
+                                    "-Lambda"
+                                ]
+                            ]
+                        },
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Version": "2012-10-17",
+                                    "Statement": [
+                                        {
+                                            "Action": [
+                                                "*"
+                                            ],
+                                            "Resource": [
+                                                "arn:aws:sns:*:*:*",
+                                                "arn:aws:logs:*:*:*",
+                                                "ec2*"
+                                            ],
+                                            "Effect": "Allow"
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "ASGSuspendUnhealthyReplace": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Handler": "index.handler",
+                "Role": {
+                    "Fn::GetAtt": [
+                        "LambdaExecutionRole",
+                        "Arn"
+                    ]
+                },
+                "Code": "hello world",
+                "Runtime": "nodejs6.10",
+                "Timeout": "30",
+                "TracingConfig": {
+                    "Mode": "Active"
+                }
+            }
+        }
+    },
+    "Outputs": {
+        "URL": {
+            "Description": "The URL of the website",
+            "Value": {
+                "Fn::Join": [
+                    "",
+                    [
+                        "http://",
+                        {
+                            "Fn::GetAtt": [
+                                "ElasticLoadBalancer",
+                                "DNSName"
+                            ]
+                        }
+                    ]
+                ]
             }
         }
     }
