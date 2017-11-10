@@ -1,6 +1,6 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "AWS CloudFormation Sample Template: Create a multi-az.",
+    "Description": "Auto Scaling Group for SharePoint function",
     "Parameters": {
         "InstanceType": {
             "Description": "WebServer EC2 instance type",
@@ -133,9 +133,21 @@
                             "Ref": "OperatorEMail"
                         },
                         "Protocol": "email"
+                    },
+                    {
+                        "Endpoint": {
+                            "Fn::GetAtt": [
+                                "ASGSuspendUnhealthyReplace",
+                                "Arn"
+                            ]
+                        },
+                        "Protocol": "lambda"
                     }
                 ]
-            }
+            },
+            "DependsOn": [
+                "ASGSuspendUnhealthyReplace"
+            ]
         },
         "WebServerGroup": {
             "Type": "AWS::AutoScaling::AutoScalingGroup",
@@ -143,6 +155,18 @@
                 "VPCZoneIdentifier": {
                     "Ref": "Subnet"
                 },
+                "NotificationConfigurations": [{
+                    "NotificationTypes": [
+                        "autoscaling:EC2_INSTANCE_LAUNCH",
+                        "autoscaling:EC2_INSTANCE_LAUNCH_ERROR",
+                        "autoscaling:EC2_INSTANCE_TERMINATE",
+                        "autoscaling:EC2_INSTANCE_TERMINATE_ERROR",
+                        "autoscaling:TEST_NOTIFICATION"
+                    ],
+                    "TopicARN": {
+                        "Ref": "NotificationTopic"
+                    }
+                }],
                 "HealthCheckType": "EC2",
                 "HealthCheckGracePeriod": "1200",
                 "Tags": [
@@ -432,6 +456,7 @@
                         }
                     ]
                 },
+                "Path": "/",
                 "Policies": [
                     {
                         "PolicyName": {
@@ -440,8 +465,7 @@
                                 [
                                     {
                                         "Ref": "NameCode"
-                                    },
-                                    "-Lambda"
+                                    }
                                 ]
                             ]
                         },
@@ -449,20 +473,13 @@
                             "Version": "2012-10-17",
                             "Statement": [
                                 {
-                                    "Version": "2012-10-17",
-                                    "Statement": [
-                                        {
-                                            "Action": [
-                                                "*"
-                                            ],
-                                            "Resource": [
-                                                "arn:aws:sns:*:*:*",
-                                                "arn:aws:logs:*:*:*",
-                                                "ec2*"
-                                            ],
-                                            "Effect": "Allow"
-                                        }
-                                    ]
+                                    "Action": [
+                                        "*"
+                                    ],
+                                    "Resource": [
+                                        "*"
+                                    ],
+                                    "Effect": "Allow"
                                 }
                             ]
                         }
@@ -480,7 +497,21 @@
                         "Arn"
                     ]
                 },
-                "Code": "hello world",
+                "Code": {
+                    "ZipFile": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "var response = require('cfn-response');",
+                                "exports.handler = function(event, context) {",
+                                "  var input = parseInt(event.ResourceProperties.Input);",
+                                "  var responseData = {Value: input * 5};",
+                                "  response.send(event, context, response.SUCCESS, responseData);",
+                                "};"
+                            ]
+                        ]
+                    }
+                },
                 "Runtime": "nodejs6.10",
                 "Timeout": "30",
                 "TracingConfig": {
