@@ -118,6 +118,10 @@
             "Description": "IAM Profile to associate with instance",
             "Default": "",
             "Type": "String"
+        },
+        "CertificateArn": {
+            "Description": "Arn of ACM Certificate",
+            "Type": "String"
         }
     },
     "Resources": {
@@ -751,6 +755,31 @@
                 },
                 "Port": "80",
                 "Protocol": "HTTP"
+            }
+        },
+        "contentLbListener443": {
+            "Type": "AWS::ElasticLoadBalancingV2::Listener",
+            "Properties": {
+                "DefaultActions": [
+                    {
+                        "Type": "forward",
+                        "TargetGroupArn": {
+                            "Ref": "spLbTG"
+                        }
+                    }
+                ],
+                "LoadBalancerArn": {
+                    "Ref": "spLb"
+                },
+                "Port": "443",
+                "Protocol": "HTTPS",
+                "Certificates": [
+                    {
+                        "CertificateArn": {
+                            "Ref": "CertificateArn"
+                        }
+                    }
+                ]
             }
         },
         "spLbTG": {
