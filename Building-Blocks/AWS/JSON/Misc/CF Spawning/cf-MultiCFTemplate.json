@@ -30,7 +30,7 @@
                 "Type": "String"
             },
             "Environment": {
-                "Description": "Environment Code",
+                "Description": "Environment Code (dev)",
                 "Default": "dev",
                 "Type": "String"
             }
@@ -62,4 +62,5 @@
             }
         }
     }
+
 }
