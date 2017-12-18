@@ -1,0 +1,370 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "SharePoint LB and Security Groups",
+    "Parameters": {
+        "Solution": {
+            "Type": "String"
+        },
+        "CostCentre": {
+            "Type": "String"
+        },
+        "Environment": {
+            "Description": "Environment Code",
+            "Default": "dev",
+            "Type": "String"
+        },
+        "InstanceId1": {
+            "Description": "AP01 Instance ID (leave empty if no created yet)",
+            "Default": "",
+            "Type": "String"
+        },
+        "InstanceId2": {
+            "Description": "AP02 Instance ID (leave empty if no created yet)",
+            "Default": "",
+            "Type": "String"
+        },
+        "InstanceId3": {
+            "Description": "AP03 Instance ID (leave empty if no created yet)",
+            "Default": "",
+            "Type": "String"
+        }
+    },
+    "Conditions": {
+        "NoInstance1": {
+            "Fn::Equals": [
+                {
+                    "Ref": "InstanceId1"
+                },
+                ""
+            ]
+        },
+        "NoInstance2": {
+            "Fn::Equals": [
+                {
+                    "Ref": "InstanceId2"
+                },
+                ""
+            ]
+        },
+        "NoInstance3": {
+            "Fn::Equals": [
+                {
+                    "Ref": "InstanceId3"
+                },
+                ""
+            ]
+        }
+    },
+    "Resources": {
+        "spLb": {
+            "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+            "Properties": {
+                "Scheme": "internal",
+                "Subnets": [
+                    {
+                        "Fn::ImportValue": "RestrictedASubnet"
+                    },
+                    {
+                        "Fn::ImportValue": "RestrictedBSubnet"
+                    },
+                    {
+                        "Fn::ImportValue": "RestrictedCSubnet"
+                    }
+                ],
+                "LoadBalancerAttributes": [
+                    {
+                        "Key": "idle_timeout.timeout_seconds",
+                        "Value": "60"
+                    }
+                ],
+                "SecurityGroups": [
+                    {
+                        "Ref": "spLbSG"
+                    }
+                ],
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "p2p",
+                                    {
+                                        "Ref": "Environment"
+                                    },
+                                    "splb"
+                                ]
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "spLbSG": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "SharePoint Load Balancer Security Group",
+                "VpcId": {
+                    "Fn::ImportValue": "VPC"
+                },
+                "SecurityGroupIngress": [
+                    {
+                        "CidrIp": "0.0.0.0/0",
+                        "IpProtocol": "tcp",
+                        "FromPort": "443",
+                        "ToPort": "443"
+                    },
+                    {
+                        "CidrIp": "0.0.0.0/0",
+                        "IpProtocol": "tcp",
+                        "FromPort": "8080",
+                        "ToPort": "8080"
+                    },
+                    {
+                        "CidrIp": "0.0.0.0/0",
+                        "IpProtocol": "tcp",
+                        "FromPort": "80",
+                        "ToPort": "80"
+                    }
+                ],
+                "SecurityGroupEgress": [
+                    {
+                        "CidrIp": "0.0.0.0/0",
+                        "FromPort": "0",
+                        "IpProtocol": "TCP",
+                        "ToPort": "65535"
+                    }
+                ],
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "p2p",
+                                    {
+                                        "Ref": "Environment"
+                                    },
+                                    "splb"
+                                ]
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "spSG": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "SharePoint Instance Security Group",
+                "VpcId": {
+                    "Fn::ImportValue": "VPC"
+                },
+                "SecurityGroupIngress": [
+                    {
+                        "CidrIp": {
+                            "Fn::ImportValue": "VPCCidrBlock"
+                        },
+                        "IpProtocol": "tcp",
+                        "FromPort": "5701",
+                        "ToPort": "5701"
+                    }
+                ],
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "p2p",
+                                    {
+                                        "Ref": "Environment"
+                                    },
+                                    "splb"
+                                ]
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        
+        "spSGIngress": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "spSG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": "8080",
+                "ToPort": "8080",
+                "SourceSecurityGroupId": {
+                    "Fn::GetAtt": [
+                        "spLbSG",
+                        "GroupId"
+                    ]
+                }
+            }
+        },
+        "spLbListener": {
+            "Type": "AWS::ElasticLoadBalancingV2::Listener",
+            "Properties": {
+                "DefaultActions": [
+                    {
+                        "Type": "forward",
+                        "TargetGroupArn": {
+                            "Ref": "spLbTG"
+                        }
+                    }
+                ],
+                "LoadBalancerArn": {
+                    "Ref": "spLb"
+                },
+                "Port": "8080",
+                "Protocol": "HTTP"
+            }
+        },
+        "spLbListener80": {
+            "Type": "AWS::ElasticLoadBalancingV2::Listener",
+            "Properties": {
+                "DefaultActions": [
+                    {
+                        "Type": "forward",
+                        "TargetGroupArn": {
+                            "Ref": "spLbTG"
+                        }
+                    }
+                ],
+                "LoadBalancerArn": {
+                    "Ref": "spLb"
+                },
+                "Port": "80",
+                "Protocol": "HTTP"
+            }
+        },
+        "spLbTG": {
+            "Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+            "Properties": {
+                "HealthCheckIntervalSeconds": 30,
+                "HealthCheckProtocol": "HTTP",
+                "HealthCheckPort": 80,
+                "HealthCheckPath": "/",
+                "HealthCheckTimeoutSeconds": 5,
+                "HealthyThresholdCount": 5,
+                "Matcher": {
+                    "HttpCode": "200"
+                },
+                "Name": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "p2p",
+                            {
+                                "Ref": "Environment"
+                            },
+                            "splb"
+                        ]
+                    ]
+                },
+                "Port": 80,
+                "Protocol": "HTTP",
+                "TargetGroupAttributes": [
+                    {
+                        "Key": "deregistration_delay.timeout_seconds",
+                        "Value": "20"
+                    },
+                    {
+                        "Key": "stickiness.enabled",
+                        "Value": "true"
+                    },
+                    {
+                        "Key": "stickiness.lb_cookie.duration_seconds",
+                        "Value": 86400
+                    }
+                ],
+                "UnhealthyThresholdCount": 2,
+                "VpcId": {
+                    "Fn::ImportValue": "VPC"
+                },
+                "Targets": [
+                    {
+                        "Fn::If": [
+                            "NoInstance1",
+                            {
+                                "Ref": "AWS::NoValue"
+                            },
+                            {
+                                "Id": {
+                                    "Ref": "InstanceId1"
+                                },
+                                "Port": 80
+                            }
+                        ]
+                    },
+                    {
+                        "Fn::If": [
+                            "NoInstance2",
+                            {
+                                "Ref": "AWS::NoValue"
+                            },
+                            {
+                                "Id": {
+                                    "Ref": "InstanceId2"
+                                },
+                                "Port": 80
+                            }
+                        ]
+                    },
+                    {
+                        "Fn::If": [
+                            "NoInstance3",
+                            {
+                                "Ref": "AWS::NoValue"
+                            },
+                            {
+                                "Id": {
+                                    "Ref": "InstanceId3"
+                                },
+                                "Port": 80
+                            }
+                        ]
+                    }
+                ],
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "SharePoint Server"
+                    }
+                ]
+            }
+        }
+    },
+    "Outputs": {
+        "ALB": {
+            "Description": "SharePoint DNS Name",
+            "Value": {
+                "Fn::GetAtt": [
+                    "spLb",
+                    "DNSName"
+                ]
+            },
+            "Export": {
+                "Name": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "p2p",
+                            {
+                                "Ref": "Environment"
+                            },
+                            "splbDNS"
+                        ]
+                    ]
+                }
+            }
+        }
+    }
+}

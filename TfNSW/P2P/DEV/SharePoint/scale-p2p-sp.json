@@ -578,7 +578,7 @@
         "spLb": {
             "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
             "Properties": {
-                "Scheme": "internal",
+                "Scheme": "internet-facing",
                 "Subnets": [
                     {
                         "Fn::ImportValue": "ControlledASubnet"
@@ -802,7 +802,7 @@
                             {
                                 "Ref": "Environment"
                             },
-                            "splb"
+                            "splbnew"
                         ]
                     ]
                 },
@@ -829,7 +829,7 @@
                 "Tags": [
                     {
                         "Key": "Name",
-                        "Value": "SharePoint Server"
+                        "Value": "SharePoint"
                     }
                 ]
             }

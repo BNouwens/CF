@@ -2,9 +2,19 @@
     "AWSTemplateFormatVersion": "2010-09-09",
     "Description": "Creates an S3 Bucket for Data Migration",
     "Parameters": {
+        "Solution": {
+            "Description": "Solution",
+            "Default": "p2p",
+            "Type": "String"
+        },
         "Environment": {
             "Description": "Environment",
             "Default": "ppd",
+            "Type": "String"
+        },
+        "BucketName": {
+            "Description": "Name of Bucket (documents will be named solution-environment-documents. eg. p2p-sit-documents)",
+            "Default": "datamigration",
             "Type": "String"
         }
     },
@@ -27,6 +37,100 @@
                 },
                 "VersioningConfiguration": {
                     "Status": "Suspended"
+                }
+            }
+        },
+        "iamPolicy": {
+            "Type": "AWS::IAM::Policy",
+            "Properties": {
+                "PolicyName": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "s3",
+                            {
+                                "Ref": "Solution"
+                            },
+                            {
+                                "Ref": "Environment"
+                            },
+                            {
+                                "Ref": "BucketName"
+                            }
+                        ]
+                    ]
+                },
+                "PolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Action": [
+                                "s3:ListAllMyBuckets"
+                            ],
+                            "Resource": "arn:aws:s3:::*"
+                        },
+                        {
+                            "Effect": "Allow",
+                            "Action": [
+                                "s3:ListBucket",
+                                "s3:GetBucketLocation"
+                            ],
+                            "Resource": {
+                                "Fn::GetAtt": [
+                                    "p2pDataMigration",
+                                    "Arn"
+                                ]
+                            }
+                        },
+                        {
+                            "Effect": "Allow",
+                            "Action": [
+                                "s3:*"
+                            ],
+                            "Resource": {
+                                "Fn::Join": [
+                                    "",
+                                    [
+                                        {
+                                            "Fn::GetAtt": [
+                                                "p2pDataMigration",
+                                                "Arn"
+                                            ]
+                                        },
+                                        "/*"
+                                    ]
+                                ]
+                            }
+                        }
+                    ]
+                },
+                "Users": [
+                    {
+                        "Ref": "iamUser"
+                    }
+                ]
+            }
+        },
+        "iamUser": {
+            "Type": "AWS::IAM::User",
+            "Properties": {
+                "UserName": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "iam",
+                            {
+                                "Ref": "Solution"
+                            },
+                            {
+                                "Ref": "Environment"
+                            },
+                            {
+                                "Ref": "BucketName"
+                            }
+                        ]
+                    ]
                 }
             }
         }
