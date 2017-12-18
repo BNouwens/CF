@@ -1,0 +1,65 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "This template creates a VPC infrastructure for a multi-AZ, multi-tier deployment of a Windows based Application infrastructure. It will deploy a Remote Desktop Gateway and manage NAT gateways or NAT instances into the public subnet for each Availability Zone. **WARNING** This template creates Amazon EC2 Windows instance and related resources. You will be billed for the AWS resources used if you create a stack from this template.",
+    "Metadata": {
+        "AWS::CloudFormation::Interface": {
+            "ParameterGroups": [
+                {
+                    "Label": {
+                        "default": "Common Values"
+                    },
+                    "Parameters": [
+                        "Solution",
+                        "Environment"
+                    ]
+                }
+            ],
+            "ParameterLabels": {
+                "Solution": {
+                    "default": "Solution Name"
+                },
+                "Environment": {
+                    "default": "Environment Code"
+                }
+            }
+        },
+        "Parameters": {
+            "Solution": {
+                "Description": "Solution Name",
+                "Default": "p2p",
+                "Type": "String"
+            },
+            "Environment": {
+                "Description": "Environment Code",
+                "Default": "dev",
+                "Type": "String"
+            }
+        },
+        "Conditions": {
+            "GovCloudCondition": {
+                "Fn::Equals": [
+                    {
+                        "Ref": "AWS::Region"
+                    },
+                    "ap-southeast-2"
+                ]
+            }
+        },
+        "Resources": {
+            "RDGWStack": {
+                "Type": "AWS::CloudFormation::Stack",
+                "Properties": {
+                    "TemplateURL": "https://s3-ap-southeast-2.amazonaws.com/bnouwens-lab-cf/s3-bucket-with-iam.json",
+                    "Parameters": {
+                        "Solution": {
+                            "Ref": "Solution"
+                        },
+                        "Environment": {
+                            "Ref": "Environment"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
