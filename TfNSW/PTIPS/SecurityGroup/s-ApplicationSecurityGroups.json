@@ -33,11 +33,49 @@
                         "FromPort": "443",
                         "ToPort": "443",
                         "CidrIp": "0.0.0.0/0"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "15673",
+                        "ToPort": "15673",
+                        "CidrIp": "147.200.0.0/16",
+                        "Description": "Transport Network - Rabbit MQ UI"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "15673",
+                        "ToPort": "15673",
+                        "CidrIp": "163.189.0.0/16",
+                        "Description": "Transport Network - Rabbit MQ UI"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "15673",
+                        "ToPort": "15673",
+                        "CidrIp": "192.168.0.0/16",
+                        "Description": "Transport Network - Rabbit MQ UI"
                     }
                 ]
             }
         },
+        /*
 
+
+3001	Monitoring, Transport-Network (Uchiwa UI)
+5671	Monitoring,Mid-Tier (RabbitMQ SSL for Graphite)
+5672	Monitoring (RabbitMQ beam.smp)
+8088	Monitoring,Transport-Network (Storm UI gateway)
+25672	Monitoring (RabbitMQ beam.smp)
+15672	Monitoring (RabbitMQ beam.smp)
+3011	Monitoring, Transport-Network (Grafana UI HTTPS internal)
+6379	Monitoring (Redis for Sensu)
+2003	Monitoring,Mid-Tier (carbon graphite)
+4567	Monitoring (SensuAPI)
+8081	Monitoring, Transport-Network (Jenkins UI)
+3010	Monitoring, ELB Monitoring service (Grafana UI for external use)
+
+
+*/
         "MonitoringIngress22": {
             "Type": "AWS::EC2::SecurityGroupIngress",
             "Properties": {
@@ -50,6 +88,36 @@
                 "SourceSecurityGroupId": {
                     "Ref": "MonitoringSG"
                 }
+            }
+        },
+        "MonitoringIngress4369": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "MonitoringSG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": "4369",
+                "ToPort": "4369",
+                "SourceSecurityGroupId": {
+                    "Ref": "MonitoringSG"
+                },
+                "Description": "Rabbit MQ EPMD"
+            }
+        },
+        "MonitoringIngress15673": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "MonitoringSG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": "15673",
+                "ToPort": "15673",
+                "SourceSecurityGroupId": {
+                    "Ref": "MonitoringSG"
+                },
+                "Description": "Rabbit MQ UI"
             }
         },
         "MonitoringIngress8280": {
@@ -66,7 +134,6 @@
                 }
             }
         },
-
         "CacheloaderSG": {
             "Type": "AWS::EC2::SecurityGroup",
             "Properties": {
@@ -94,7 +161,6 @@
                 ]
             }
         },
-        
         "DispatcherSG": {
             "Type": "AWS::EC2::SecurityGroup",
             "Properties": {
@@ -281,7 +347,6 @@
                 }
             }
         },
-        
         "ELBCubicSG": {
             "Type": "AWS::EC2::SecurityGroup",
             "Properties": {
@@ -328,6 +393,23 @@
                         "SourceSecurityGroupId": {
                             "Ref": "MonitoringSG"
                         }
+                    }
+                ]
+            }
+        },
+        "ELBWebservicesSG": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "ELB GTFS Security Group",
+                "VpcId": {
+                    "Fn::ImportValue": "VPC"
+                },
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "-1",
+                        "ToPort": "-1",
+                        "CidrIp": "0.0.0.0/0"
                     }
                 ]
             }
@@ -442,6 +524,22 @@
                         "SourceSecurityGroupId": {
                             "Ref": "MonitoringSG"
                         }
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "443",
+                        "ToPort": "443",
+                        "CidrIp": "0.0.0.0/0",
+                        "Description": "Transport Network"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "443",
+                        "ToPort": "443",
+                        "CidrIp": {
+                            "Fn::ImportValue": "VPCCidrBlock"
+                        },
+                        "Description": "VPC Subnet"
                     }
                 ]
             }
@@ -464,11 +562,205 @@
                     },
                     {
                         "IpProtocol": "tcp",
+                        "FromPort": "8680",
+                        "ToPort": "8680",
+                        "SourceSecurityGroupId": {
+                            "Ref": "ELBWebservicesSG"
+                        }
+                    },
+                    {
+                        "IpProtocol": "tcp",
                         "FromPort": "22",
                         "ToPort": "22",
                         "SourceSecurityGroupId": {
                             "Ref": "MonitoringSG"
                         }
+                    }
+                ]
+            }
+        },
+        "SQLSG": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "SQL Server Security Group",
+                "VpcId": {
+                    "Fn::ImportValue": "VPC"
+                },
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "1433",
+                        "ToPort": "1433",
+                        "SourceSecurityGroupId": {
+                            "Ref": "MonitoringSG"
+                        }
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "1433",
+                        "ToPort": "1433",
+                        "CidrIp": {
+                            "Fn::ImportValue": "VPCCidrBlock"
+                        },
+                        "Description": "VPC Subnet"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "5985",
+                        "ToPort": "5985",
+                        "SourceSecurityGroupId": {
+                            "Ref": "MonitoringSG"
+                        }
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "3389",
+                        "ToPort": "3389",
+                        "SourceSecurityGroupId": {
+                            "Ref": "MonitoringSG"
+                        }
+                    }
+                ]
+            }
+        },
+        "SQLIngress1433": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "SQLSG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": "1433",
+                "ToPort": "1433",
+                "SourceSecurityGroupId": {
+                    "Ref": "SQLSG"
+                }
+            }
+        },
+        "JumpBoxSG": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "JumpBox Security Group",
+                "VpcId": {
+                    "Fn::ImportValue": "VPC"
+                },
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "3389",
+                        "ToPort": "3389",
+                        "CidrIp": "0.0.0.0/0",
+                        "Description": "Transport Network"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "5985",
+                        "ToPort": "5985",
+                        "SourceSecurityGroupId": {
+                            "Ref": "MonitoringSG"
+                        },
+                        "Description": "Monitoring - WinRM HTTP"
+                    }
+                ]
+            }
+        },
+        "ZooKeeprSG": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "Zookeeper Security Group",
+                "VpcId": {
+                    "Fn::ImportValue": "VPC"
+                },
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "2888",
+                        "ToPort": "2888",
+                        "SourceSecurityGroupId": {
+                            "Ref": "MonitoringSG"
+                        },
+                        "Description": "Monitoring"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "2888",
+                        "ToPort": "2888",
+                        "SourceSecurityGroupId": {
+                            "Ref": "StormSG"
+                        },
+                        "Description": "Storm"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "3888",
+                        "ToPort": "3888",
+                        "SourceSecurityGroupId": {
+                            "Ref": "MonitoringSG"
+                        },
+                        "Description": "Monitoring"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "3888",
+                        "ToPort": "3888",
+                        "SourceSecurityGroupId": {
+                            "Ref": "StormSG"
+                        },
+                        "Description": "Storm"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "2181",
+                        "ToPort": "2181",
+                        "SourceSecurityGroupId": {
+                            "Ref": "MonitoringSG"
+                        },
+                        "Description": "Monitoring"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "2181",
+                        "ToPort": "2181",
+                        "SourceSecurityGroupId": {
+                            "Ref": "StormSG"
+                        },
+                        "Description": "Storm"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "2181",
+                        "ToPort": "2181",
+                        "SourceSecurityGroupId": {
+                            "Ref": "WebServicesSG"
+                        },
+                        "Description": "Web Services"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "2181",
+                        "ToPort": "2181",
+                        "SourceSecurityGroupId": {
+                            "Ref": "PersistenceSG"
+                        },
+                        "Description": "Persistence"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "2181",
+                        "ToPort": "2181",
+                        "SourceSecurityGroupId": {
+                            "Ref": "KafkaSG"
+                        },
+                        "Description": "Kafka"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "22",
+                        "ToPort": "22",
+                        "SourceSecurityGroupId": {
+                            "Ref": "MonitoringSG"
+                        },
+                        "Description": "SSH from Monitoring"
                     }
                 ]
             }
