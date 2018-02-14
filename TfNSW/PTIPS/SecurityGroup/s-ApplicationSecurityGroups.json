@@ -26,13 +26,43 @@
                         "IpProtocol": "tcp",
                         "FromPort": "22",
                         "ToPort": "22",
-                        "CidrIp": "0.0.0.0/0"
+                        "CidrIp": "147.200.0.0/16",
+                        "Description": "Transport Network - SSH"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "22",
+                        "ToPort": "22",
+                        "CidrIp": "163.189.0.0/16",
+                        "Description": "Transport Network - SSH"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "22",
+                        "ToPort": "22",
+                        "CidrIp": "192.168.0.0/16",
+                        "Description": "Transport Network - SSH"
                     },
                     {
                         "IpProtocol": "tcp",
                         "FromPort": "443",
                         "ToPort": "443",
-                        "CidrIp": "0.0.0.0/0"
+                        "CidrIp": "147.200.0.0/16",
+                        "Description": "Transport Network - HTTPS"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "443",
+                        "ToPort": "443",
+                        "CidrIp": "163.189.0.0/16",
+                        "Description": "Transport Network - HTTPS"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "443",
+                        "ToPort": "443",
+                        "CidrIp": "192.168.0.0/16",
+                        "Description": "Transport Network - HTTPS"
                     },
                     {
                         "IpProtocol": "tcp",
@@ -674,8 +704,8 @@
                 "SecurityGroupIngress": [
                     {
                         "IpProtocol": "tcp",
-                        "FromPort": "-1",
-                        "ToPort": "-1",
+                        "FromPort": "443",
+                        "ToPort": "443",
                         "CidrIp": "0.0.0.0/0"
                     }
                 ]
@@ -755,7 +785,10 @@
                         "IpProtocol": "tcp",
                         "FromPort": "6363",
                         "ToPort": "6379",
-                        "CidrIp": "0.0.0.0/0"
+                        "CidrIp": {
+                            "Fn::ImportValue": "VPCCidrBlock"
+                        },
+                        "Description": "Redis - needs to be locked to restricted tier"
                     },
                     {
                         "IpProtocol": "tcp",
@@ -796,8 +829,22 @@
                         "IpProtocol": "tcp",
                         "FromPort": "443",
                         "ToPort": "443",
-                        "CidrIp": "0.0.0.0/0",
-                        "Description": "Transport Network"
+                        "CidrIp": "147.200.0.0/16",
+                        "Description": "Transport Network - HTTPS"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "443",
+                        "ToPort": "443",
+                        "CidrIp": "163.189.0.0/16",
+                        "Description": "Transport Network - HTTPS"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "443",
+                        "ToPort": "443",
+                        "CidrIp": "192.168.0.0/16",
+                        "Description": "Transport Network - HTTPS"
                     },
                     {
                         "IpProtocol": "tcp",
@@ -807,6 +854,38 @@
                             "Fn::ImportValue": "VPCCidrBlock"
                         },
                         "Description": "VPC Subnet"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "6700",
+                        "ToPort": "6701",
+                        "SourceSecurityGroupId": {
+                            "Ref": "MonitoringSG"
+                        }
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "6700",
+                        "ToPort": "6701",
+                        "SourceSecurityGroupId": {
+                            "Ref": "WebServicesSG"
+                        }
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "6627",
+                        "ToPort": "6627",
+                        "SourceSecurityGroupId": {
+                            "Ref": "MonitoringSG"
+                        }
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "8088",
+                        "ToPort": "8088",
+                        "SourceSecurityGroupId": {
+                            "Ref": "MonitoringSG"
+                        }
                     }
                 ]
             }
@@ -916,8 +995,22 @@
                         "IpProtocol": "tcp",
                         "FromPort": "3389",
                         "ToPort": "3389",
-                        "CidrIp": "0.0.0.0/0",
-                        "Description": "Transport Network"
+                        "CidrIp": "147.200.0.0/16",
+                        "Description": "Transport Network - RDP"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "3389",
+                        "ToPort": "3389",
+                        "CidrIp": "163.189.0.0/16",
+                        "Description": "Transport Network - RDP"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "3389",
+                        "ToPort": "3389",
+                        "CidrIp": "192.168.0.0/16",
+                        "Description": "Transport Network - RDP"
                     },
                     {
                         "IpProtocol": "tcp",
@@ -927,6 +1020,40 @@
                             "Ref": "MonitoringSG"
                         },
                         "Description": "Monitoring - WinRM HTTP"
+                    }
+                ]
+            }
+        },
+        "VinfoSG": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "Vinfo Security Group",
+                "VpcId": {
+                    "Fn::ImportValue": "VPC"
+                },
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "22",
+                        "ToPort": "22",
+                        "SourceSecurityGroupId": {
+                            "Ref": "MonitoringSG"
+                        }
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "8780",
+                        "ToPort": "8780",
+                        "SourceSecurityGroupId": {
+                            "Ref": "MonitoringSG"
+                        }
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "8780",
+                        "ToPort": "8780",
+                        "CidrIp": "0.0.0.0/0",
+                        "Description": "Vinfo Service - needs to be locked down"
                     }
                 ]
             }
