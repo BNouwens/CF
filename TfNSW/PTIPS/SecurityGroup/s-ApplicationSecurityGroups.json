@@ -36,6 +36,27 @@
                     },
                     {
                         "IpProtocol": "tcp",
+                        "FromPort": "5671",
+                        "ToPort": "5671",
+                        "CidrIp": "0.0.0.0/0",
+                        "Description": "Restricted - RabbitMQ SSL for Graphite (to be locked down)"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "2003",
+                        "ToPort": "2003",
+                        "CidrIp": "0.0.0.0/0",
+                        "Description": "Restricted - Carbon Graphite (to be locked down)"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "3010",
+                        "ToPort": "3010",
+                        "CidrIp": "0.0.0.0/0",
+                        "Description": "ELB Monitoring - Grafana UI for external use (to be locked down)"
+                    },
+                    {
+                        "IpProtocol": "tcp",
                         "FromPort": "15673",
                         "ToPort": "15673",
                         "CidrIp": "147.200.0.0/16",
@@ -54,28 +75,94 @@
                         "ToPort": "15673",
                         "CidrIp": "192.168.0.0/16",
                         "Description": "Transport Network - Rabbit MQ UI"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "3001",
+                        "ToPort": "3001",
+                        "CidrIp": "147.200.0.0/16",
+                        "Description": "Transport Network - Uchiwa UI"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "3001",
+                        "ToPort": "3001",
+                        "CidrIp": "163.189.0.0/16",
+                        "Description": "Transport Network - Uchiwa UI"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "3001",
+                        "ToPort": "3001",
+                        "CidrIp": "192.168.0.0/16",
+                        "Description": "Transport Network - Uchiwa UI"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "8088",
+                        "ToPort": "8088",
+                        "CidrIp": "147.200.0.0/16",
+                        "Description": "Transport Network - Storm UI gateway"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "8088",
+                        "ToPort": "8088",
+                        "CidrIp": "163.189.0.0/16",
+                        "Description": "Transport Network - Storm UI gateway"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "8088",
+                        "ToPort": "8088",
+                        "CidrIp": "192.168.0.0/16",
+                        "Description": "Transport Network - Storm UI gateway"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "3011",
+                        "ToPort": "3011",
+                        "CidrIp": "147.200.0.0/16",
+                        "Description": "Transport Network - Grafana UI HTTPS internal"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "3011",
+                        "ToPort": "3011",
+                        "CidrIp": "163.189.0.0/16",
+                        "Description": "Transport Network - Grafana UI HTTPS internal"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "3011",
+                        "ToPort": "3011",
+                        "CidrIp": "192.168.0.0/16",
+                        "Description": "Transport Network - Grafana UI HTTPS internal"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "8081",
+                        "ToPort": "8081",
+                        "CidrIp": "147.200.0.0/16",
+                        "Description": "Transport Network - Jenkins UI"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "8081",
+                        "ToPort": "8081",
+                        "CidrIp": "163.189.0.0/16",
+                        "Description": "Transport Network - Jenkins UI"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "8081",
+                        "ToPort": "8081",
+                        "CidrIp": "192.168.0.0/16",
+                        "Description": "Transport Network - Jenkins UI"
                     }
                 ]
             }
         },
-        /*
-
-
-3001	Monitoring, Transport-Network (Uchiwa UI)
-5671	Monitoring,Mid-Tier (RabbitMQ SSL for Graphite)
-5672	Monitoring (RabbitMQ beam.smp)
-8088	Monitoring,Transport-Network (Storm UI gateway)
-25672	Monitoring (RabbitMQ beam.smp)
-15672	Monitoring (RabbitMQ beam.smp)
-3011	Monitoring, Transport-Network (Grafana UI HTTPS internal)
-6379	Monitoring (Redis for Sensu)
-2003	Monitoring,Mid-Tier (carbon graphite)
-4567	Monitoring (SensuAPI)
-8081	Monitoring, Transport-Network (Jenkins UI)
-3010	Monitoring, ELB Monitoring service (Grafana UI for external use)
-
-
-*/
         "MonitoringIngress22": {
             "Type": "AWS::EC2::SecurityGroupIngress",
             "Properties": {
@@ -118,6 +205,186 @@
                     "Ref": "MonitoringSG"
                 },
                 "Description": "Rabbit MQ UI"
+            }
+        },
+        "MonitoringIngress3001": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "MonitoringSG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": "3001",
+                "ToPort": "3001",
+                "SourceSecurityGroupId": {
+                    "Ref": "MonitoringSG"
+                },
+                "Description": "Uchiwa UI"
+            }
+        },
+        "MonitoringIngress5671": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "MonitoringSG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": "5671",
+                "ToPort": "5671",
+                "SourceSecurityGroupId": {
+                    "Ref": "MonitoringSG"
+                },
+                "Description": "RabbitMQ SSL for Graphite"
+            }
+        },
+        "MonitoringIngress5672": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "MonitoringSG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": "5672",
+                "ToPort": "5672",
+                "SourceSecurityGroupId": {
+                    "Ref": "MonitoringSG"
+                },
+                "Description": "RabbitMQ beam.smp"
+            }
+        },
+        "MonitoringIngress8088": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "MonitoringSG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": "8088",
+                "ToPort": "8088",
+                "SourceSecurityGroupId": {
+                    "Ref": "MonitoringSG"
+                },
+                "Description": "Storm UI gateway"
+            }
+        },
+        "MonitoringIngress25672": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "MonitoringSG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": "25672",
+                "ToPort": "25672",
+                "SourceSecurityGroupId": {
+                    "Ref": "MonitoringSG"
+                },
+                "Description": "RabbitMQ beam.smp"
+            }
+        },
+        "MonitoringIngress15672": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "MonitoringSG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": "15672",
+                "ToPort": "15672",
+                "SourceSecurityGroupId": {
+                    "Ref": "MonitoringSG"
+                },
+                "Description": "RabbitMQ beam.smp"
+            }
+        },
+        "MonitoringIngress3011": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "MonitoringSG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": "3011",
+                "ToPort": "3011",
+                "SourceSecurityGroupId": {
+                    "Ref": "MonitoringSG"
+                },
+                "Description": "Grafana UI HTTPS internal"
+            }
+        },
+        "MonitoringIngress6379": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "MonitoringSG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": "6379",
+                "ToPort": "6379",
+                "SourceSecurityGroupId": {
+                    "Ref": "MonitoringSG"
+                },
+                "Description": "Redis for Sensu"
+            }
+        },
+        "MonitoringIngress2003": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "MonitoringSG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": "2003",
+                "ToPort": "2003",
+                "SourceSecurityGroupId": {
+                    "Ref": "MonitoringSG"
+                },
+                "Description": "Carbon Graphite"
+            }
+        },
+        "MonitoringIngress4567": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "MonitoringSG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": "4567",
+                "ToPort": "4567",
+                "SourceSecurityGroupId": {
+                    "Ref": "MonitoringSG"
+                },
+                "Description": "SensuAPI"
+            }
+        },
+        "MonitoringIngress8081": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "MonitoringSG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": "8081",
+                "ToPort": "8081",
+                "SourceSecurityGroupId": {
+                    "Ref": "MonitoringSG"
+                },
+                "Description": "Jenkins UI"
+            }
+        },
+        "MonitoringIngress3010": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "MonitoringSG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": "3010",
+                "ToPort": "3010",
+                "SourceSecurityGroupId": {
+                    "Ref": "MonitoringSG"
+                },
+                "Description": "Grafana UI for external use"
             }
         },
         "MonitoringIngress8280": {
