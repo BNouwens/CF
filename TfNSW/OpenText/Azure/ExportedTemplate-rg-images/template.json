@@ -1,0 +1,77 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "images_Server2012R2_13_02_2018_name": {
+            "defaultValue": "Server2012R2-13-02-2018",
+            "type": "String"
+        },
+        "storageAccounts_opentexttemplates_name": {
+            "defaultValue": "opentexttemplates",
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+        {
+            "comments": "Generalized from resource: '/subscriptions/f7be4146-afe0-4790-835e-5443cbab62f3/resourceGroups/rg-images/providers/Microsoft.Compute/images/Server2012R2-13-02-2018'.",
+            "type": "Microsoft.Compute/images",
+            "name": "[parameters('images_Server2012R2_13_02_2018_name')]",
+            "apiVersion": "2017-03-30",
+            "location": "australiaeast",
+            "tags": {},
+            "scale": null,
+            "properties": {
+                "storageProfile": {
+                    "osDisk": {
+                        "osType": "Windows",
+                        "osState": "Generalized",
+                        "diskSizeGB": 128,
+                        "blobUri": "[concat('https', '://', parameters('storageAccounts_opentexttemplates_name'), '.blob.core.windows.net', concat('/images/', parameters('images_Server2012R2_13_02_2018_name'),'.vhd'))]",
+                        "caching": "None",
+                        "storageAccountType": "Standard_LRS"
+                    },
+                    "dataDisks": []
+                }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccounts_opentexttemplates_name'))]"
+            ]
+        },
+        {
+            "comments": "Generalized from resource: '/subscriptions/f7be4146-afe0-4790-835e-5443cbab62f3/resourceGroups/rg-images/providers/Microsoft.Storage/storageAccounts/opentexttemplates'.",
+            "type": "Microsoft.Storage/storageAccounts",
+            "sku": {
+                "name": "Standard_LRS",
+                "tier": "Standard"
+            },
+            "kind": "Storage",
+            "name": "[parameters('storageAccounts_opentexttemplates_name')]",
+            "apiVersion": "2017-10-01",
+            "location": "australiaeast",
+            "tags": {},
+            "scale": null,
+            "properties": {
+                "networkAcls": {
+                    "bypass": "AzureServices",
+                    "virtualNetworkRules": [],
+                    "ipRules": [],
+                    "defaultAction": "Allow"
+                },
+                "supportsHttpsTrafficOnly": true,
+                "encryption": {
+                    "services": {
+                        "file": {
+                            "enabled": true
+                        },
+                        "blob": {
+                            "enabled": true
+                        }
+                    },
+                    "keySource": "Microsoft.Storage"
+                }
+            },
+            "dependsOn": []
+        }
+    ]
+}

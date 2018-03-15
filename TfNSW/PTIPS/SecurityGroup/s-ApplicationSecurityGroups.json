@@ -19,7 +19,7 @@
             "Properties": {
                 "GroupDescription": "Monitoring Security Group",
                 "VpcId": {
-                    "Fn::ImportValue": "VPC"
+                    "Fn::ImportValue": "VPC-9"
                 },
                 "SecurityGroupIngress": [
                     {
@@ -436,7 +436,7 @@
             "Properties": {
                 "GroupDescription": "Cacheloader Security Group",
                 "VpcId": {
-                    "Fn::ImportValue": "VPC"
+                    "Fn::ImportValue": "VPC-9"
                 },
                 "SecurityGroupIngress": [
                     {
@@ -463,7 +463,7 @@
             "Properties": {
                 "GroupDescription": "Dispatcher Security Group",
                 "VpcId": {
-                    "Fn::ImportValue": "VPC"
+                    "Fn::ImportValue": "VPC-9"
                 },
                 "SecurityGroupIngress": [
                     {
@@ -498,7 +498,7 @@
             "Properties": {
                 "GroupDescription": "GTFS Publisher Security Group",
                 "VpcId": {
-                    "Fn::ImportValue": "VPC"
+                    "Fn::ImportValue": "VPC-9"
                 },
                 "SecurityGroupIngress": [
                     {
@@ -525,7 +525,7 @@
             "Properties": {
                 "GroupDescription": "GTFS Provider Security Group",
                 "VpcId": {
-                    "Fn::ImportValue": "VPC"
+                    "Fn::ImportValue": "VPC-9"
                 },
                 "SecurityGroupIngress": [
                     {
@@ -568,7 +568,7 @@
             "Properties": {
                 "GroupDescription": "Kafka Security Group",
                 "VpcId": {
-                    "Fn::ImportValue": "VPC"
+                    "Fn::ImportValue": "VPC-9"
                 },
                 "SecurityGroupIngress": [
                     {
@@ -649,7 +649,7 @@
             "Properties": {
                 "GroupDescription": "ELB Cubic Security Group",
                 "VpcId": {
-                    "Fn::ImportValue": "VPC"
+                    "Fn::ImportValue": "VPC-9"
                 },
                 "SecurityGroupIngress": [
                     {
@@ -674,7 +674,7 @@
             "Properties": {
                 "GroupDescription": "ELB GTFS Security Group",
                 "VpcId": {
-                    "Fn::ImportValue": "VPC"
+                    "Fn::ImportValue": "VPC-9"
                 },
                 "SecurityGroupIngress": [
                     {
@@ -699,7 +699,7 @@
             "Properties": {
                 "GroupDescription": "ELB GTFS Security Group",
                 "VpcId": {
-                    "Fn::ImportValue": "VPC"
+                    "Fn::ImportValue": "VPC-9"
                 },
                 "SecurityGroupIngress": [
                     {
@@ -716,7 +716,7 @@
             "Properties": {
                 "GroupDescription": "Persistence Security Group",
                 "VpcId": {
-                    "Fn::ImportValue": "VPC"
+                    "Fn::ImportValue": "VPC-9"
                 },
                 "SecurityGroupIngress": [
                     {
@@ -743,7 +743,7 @@
             "Properties": {
                 "GroupDescription": "Priority Security Group",
                 "VpcId": {
-                    "Fn::ImportValue": "VPC"
+                    "Fn::ImportValue": "VPC-9"
                 },
                 "SecurityGroupIngress": [
                     {
@@ -770,7 +770,7 @@
             "Properties": {
                 "GroupDescription": "Redis Security Group",
                 "VpcId": {
-                    "Fn::ImportValue": "VPC"
+                    "Fn::ImportValue": "VPC-9"
                 },
                 "SecurityGroupIngress": [
                     {
@@ -786,7 +786,7 @@
                         "FromPort": "6363",
                         "ToPort": "6379",
                         "CidrIp": {
-                            "Fn::ImportValue": "VPCCidrBlock"
+                            "Fn::ImportValue": "VPCCidrBlock-9"
                         },
                         "Description": "Redis - needs to be locked to restricted tier"
                     },
@@ -806,7 +806,7 @@
             "Properties": {
                 "GroupDescription": "Storm Security Group",
                 "VpcId": {
-                    "Fn::ImportValue": "VPC"
+                    "Fn::ImportValue": "VPC-9"
                 },
                 "SecurityGroupIngress": [
                     {
@@ -851,7 +851,7 @@
                         "FromPort": "443",
                         "ToPort": "443",
                         "CidrIp": {
-                            "Fn::ImportValue": "VPCCidrBlock"
+                            "Fn::ImportValue": "VPCCidrBlock-9"
                         },
                         "Description": "VPC Subnet"
                     },
@@ -895,7 +895,7 @@
             "Properties": {
                 "GroupDescription": "Webservices Security Group",
                 "VpcId": {
-                    "Fn::ImportValue": "VPC"
+                    "Fn::ImportValue": "VPC-9"
                 },
                 "SecurityGroupIngress": [
                     {
@@ -930,7 +930,7 @@
             "Properties": {
                 "GroupDescription": "SQL Server Security Group",
                 "VpcId": {
-                    "Fn::ImportValue": "VPC"
+                    "Fn::ImportValue": "VPC-9"
                 },
                 "SecurityGroupIngress": [
                     {
@@ -946,7 +946,7 @@
                         "FromPort": "1433",
                         "ToPort": "1433",
                         "CidrIp": {
-                            "Fn::ImportValue": "VPCCidrBlock"
+                            "Fn::ImportValue": "VPCCidrBlock-9"
                         },
                         "Description": "VPC Subnet"
                     },
@@ -988,7 +988,7 @@
             "Properties": {
                 "GroupDescription": "JumpBox Security Group",
                 "VpcId": {
-                    "Fn::ImportValue": "VPC"
+                    "Fn::ImportValue": "VPC-9"
                 },
                 "SecurityGroupIngress": [
                     {
@@ -1029,7 +1029,7 @@
             "Properties": {
                 "GroupDescription": "Vinfo Security Group",
                 "VpcId": {
-                    "Fn::ImportValue": "VPC"
+                    "Fn::ImportValue": "VPC-9"
                 },
                 "SecurityGroupIngress": [
                     {
@@ -1063,7 +1063,7 @@
             "Properties": {
                 "GroupDescription": "Zookeeper Security Group",
                 "VpcId": {
-                    "Fn::ImportValue": "VPC"
+                    "Fn::ImportValue": "VPC-9"
                 },
                 "SecurityGroupIngress": [
                     {
@@ -1155,6 +1155,23 @@
                             "Ref": "MonitoringSG"
                         },
                         "Description": "SSH from Monitoring"
+                    }
+                ]
+            }
+        },
+        "ELBWebservicesSGTemp": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "ELB GTFS Security Group",
+                "VpcId": {
+                    "Fn::ImportValue": "VPC-9"
+                },
+                "SecurityGroupIngress": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "443",
+                        "ToPort": "443",
+                        "CidrIp": "0.0.0.0/0"
                     }
                 ]
             }

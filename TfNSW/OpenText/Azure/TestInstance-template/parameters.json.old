@@ -1,0 +1,45 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "value": "australiaeast"
+        },
+        "virtualMachineName": {
+            "value": "TEST"
+        },
+        "virtualMachineSize": {
+            "value": "Standard_F4s"
+        },
+        "adminUsername": {
+            "value": "TEST.ACCOUNT"
+        },
+        "virtualNetworkNameResourceGroup": {
+            "value": "RG-SYD-NonPRD-OPENTEXT-ASP-VNET01"
+        },
+        "virtualNetworkName": {
+            "value": "VNET-SYD-NonPRD-OPENTEXT-ASP-NETWORK01"
+        },
+        "networkInterfaceName": {
+            "value": "test624"
+        },
+        "networkSecurityGroupName": {
+            "value": "NSG-SYD-NonPRD-OPENTEXT-ASP-NETWORK01-ASP01"
+        },
+        "adminPassword": {
+            "value": "APassword@123"
+        },
+        "diagnosticsStorageAccountName": {
+            "value": "opentexttestdiag189"
+        },
+        "diagnosticsStorageAccountType": {
+            "value": "Standard_LRS"
+        },
+        "diagnosticsStorageAccountId": {
+            "value": "Microsoft.Storage/storageAccounts/opentexttestdiag189"
+        },
+        "subnetName": {
+            "value": "SN-SYD-NonPRD-OpenText-ASP-ASP01"
+        }
+    }
+}
