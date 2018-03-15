@@ -277,6 +277,8 @@
                                 "pip install python-daemon\n",
                                 "pip install requests\n",
                                 "cd /opt\n",
+                                "Curl –O  https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-1.0-4.noarch.rpm\n",
+                                "rpm –Uvh aws*.rpm\n",
                                 "curl -O https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n",
                                 "tar -xvpf aws-cfn-bootstrap-latest.tar.gz\n",
                                 "cd aws-cfn-bootstrap-1.4/\n",
