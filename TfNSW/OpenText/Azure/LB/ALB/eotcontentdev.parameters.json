@@ -1,0 +1,30 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "value": "australiaeast"
+        },
+        "applicationGatewayName": {
+            "value": "eotdevcs"
+        },
+        "tier": {
+            "value": "Standard"
+        },
+        "skuSize": {
+            "value": "Standard_Medium"
+        },
+        "capacity": {
+            "value": 2
+        },
+        "frontEndPort": {
+            "value": 80
+        },
+        "subnetName": {
+            "value": "SN-SYD-NonPRD-OpenText-WORKLOAD-WEB01"
+        },
+        "publicIpAddressName": {
+            "value": "eotdevcs"
+        }
+    }
+}

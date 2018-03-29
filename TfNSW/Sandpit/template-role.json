@@ -121,72 +121,414 @@
                                     ]
                                 },
                                 {
-                                    "Action": [
-                                        "acm:*",
-                                        "s3:*",
-                                        "sns:*",
-                                        "cloudformation:*",
-                                        "cloudhsm:*",
-                                        "cloudtrail:*",
-                                        "codebuild:*",
-                                        "codecommit:*",
-                                        "codedeploy:*",
-                                        "codepipeline:*",
-                                        "codestar:*",
-                                        "config:*",
-                                        "elasticbeanstalk:*",
-                                        "iot:*",
-                                        "kms:*",
-                                        "lambda:*",
-                                        "aws-marketplace:*",
-                                        "opsworks:*",
-                                        "opsworks-cm:*",
-                                        "servicecatalog:*",
-                                        "shield:*",
-                                        "states:*",
-                                        "trustedadvisor:*",
-                                        "waf:*",
-                                        "waf-regional:*",
-                                        "execute-api:*",
-                                        "cloudfront:*",
-                                        "cloudwatch:*",
-                                        "events:*",
-                                        "logs:*",
-                                        "dynamodb:*",
-                                        "elasticache:*",
-                                        "elasticfilesystem:*",
-                                        "elasticmapreduce:*",
-                                        "elastictranscoder:*",
-                                        "es:*",
-                                        "glacier:*",
-                                        "inspector:*",
-                                        "kinesis:*",
-                                        "lex:*",
-                                        "lightsail:*",
-                                        "machinelearning:*",
-                                        "mechanicalturk:*",
-                                        "mobileanalytics:*",
-                                        "mobiletargeting:*",
-                                        "polly:*",
-                                        "rds:*",
-                                        "redshift:*",
-                                        "rekognition:*",
-                                        "route53:*",
-                                        "route53domains:*",
-                                        "ses:*",
-                                        "sqs:*",
-                                        "ssm:*",
-                                        "swf:*",
-                                        "sdb:*",
-                                        "application-autoscaling:*",
-                                        "autoscaling:*",
-                                        "datapipeline:*",
-                                        "elasticloadbalancing:*",
-                                        "apigateway:*"
-                                    ],
-                                    "Resource": "*",
                                     "Effect": "Allow",
-                                    "Sid": "Stmt1499755745759"
+                                    "Action": [
+                                        "s3:GetBucketLocation",
+                                        "s3:ListAllMyBuckets"
+                                    ],
+                                    "Resource": "arn:aws:s3:::*"
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "s3:ListBucket"
+                                    ],
+                                    "Resource": [
+                                        {
+                                            "Fn::Join": [
+                                                "",
+                                                [
+                                                    "arn:aws:s3:::",
+                                                    {
+                                                        "Ref": "CostCentre"
+                                                    },
+                                                    "*"
+                                                ]
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "s3:PutObject",
+                                        "s3:GetObject",
+                                        "s3:DeleteObject"
+                                    ],
+                                    "Resource": [
+                                        {
+                                            "Fn::Join": [
+                                                "",
+                                                [
+                                                    "arn:aws:s3:::",
+                                                    {
+                                                        "Ref": "CostCentre"
+                                                    },
+                                                    "*/*"
+                                                ]
+                                            ]
+                                        }
+                                    ]
+                                },
+                                {
+                                    "Sid": "Stmt1499755685993",
+                                    "Action": "sns:*",
+                                    "Effect": "Allow",
+                                    "Resource": "arn:aws:sns:*"
+                                },
+                                {
+                                    "Sid": "Stmt1499755745759",
+                                    "Action": "acm:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499755805504",
+                                    "Action": "cloudformation:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499755821114",
+                                    "Action": "cloudhsm:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499755834053",
+                                    "Action": "cloudtrail:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499755847753",
+                                    "Action": "codebuild:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499755856179",
+                                    "Action": "codecommit:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499755866119",
+                                    "Action": "codedeploy:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499755879416",
+                                    "Action": "codepipeline:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499755895947",
+                                    "Action": "codestar:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499755908834",
+                                    "Action": "config:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756047235",
+                                    "Action": "elasticbeanstalk:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756068581",
+                                    "Action": "iot:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756083297",
+                                    "Action": "kms:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756092791",
+                                    "Action": "lambda:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756105378",
+                                    "Action": "aws-marketplace:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756126439",
+                                    "Action": "opsworks:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756137402",
+                                    "Action": "opsworks-cm:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756155147",
+                                    "Action": "servicecatalog:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756168815",
+                                    "Action": "shield:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756193812",
+                                    "Action": "states:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756205744",
+                                    "Action": "trustedadvisor:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756214674",
+                                    "Action": "waf:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756232087",
+                                    "Action": "waf-regional:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756248904",
+                                    "Action": "execute-api:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756274769",
+                                    "Action": "cloudfront:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756282749",
+                                    "Action": "cloudwatch:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756293199",
+                                    "Action": "events:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756304514",
+                                    "Action": "logs:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756321746",
+                                    "Action": "dynamodb:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756347507",
+                                    "Action": "elasticache:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756356074",
+                                    "Action": "elasticfilesystem:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756375101",
+                                    "Action": "elasticmapreduce:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756382622",
+                                    "Action": "elastictranscoder:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756450059",
+                                    "Action": "es:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756461060",
+                                    "Action": "glacier:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756493274",
+                                    "Action": "inspector:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756508072",
+                                    "Action": "kinesis:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756524887",
+                                    "Action": "lex:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756578975",
+                                    "Action": "lightsail:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756705395",
+                                    "Action": "machinelearning:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756771236",
+                                    "Action": "mechanicalturk:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756813577",
+                                    "Action": "mobileanalytics:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756822678",
+                                    "Action": "mobiletargeting:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756835707",
+                                    "Action": "polly:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756865973",
+                                    "Action": "rds:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756876671",
+                                    "Action": "redshift:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756887469",
+                                    "Action": "rekognition:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756899918",
+                                    "Action": "route53:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756913781",
+                                    "Action": "route53domains:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756924414",
+                                    "Action": "ses:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756942727",
+                                    "Action": "sqs:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756964241",
+                                    "Action": "ssm:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756976277",
+                                    "Action": "swf:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499756986741",
+                                    "Action": "sdb:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499757024199",
+                                    "Action": "application-autoscaling:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499757030101",
+                                    "Action": "autoscaling:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499757042201",
+                                    "Action": "datapipeline:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499757055847",
+                                    "Action": "elasticloadbalancing:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "Stmt1499757081443",
+                                    "Action": "apigateway:*",
+                                    "Effect": "Allow",
+                                    "Resource": "*"
                                 },
                                 {
                                     "Sid": "Stmt1499761197764",

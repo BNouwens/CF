@@ -1014,6 +1014,27 @@
                     },
                     {
                         "IpProtocol": "tcp",
+                        "FromPort": "22",
+                        "ToPort": "22",
+                        "CidrIp": "147.200.0.0/16",
+                        "Description": "Transport Network - SSH"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "22",
+                        "ToPort": "22",
+                        "CidrIp": "163.189.0.0/16",
+                        "Description": "Transport Network - SSH"
+                    },
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": "22",
+                        "ToPort": "22",
+                        "CidrIp": "192.168.0.0/16",
+                        "Description": "Transport Network - SSH"
+                    },
+                    {
+                        "IpProtocol": "tcp",
                         "FromPort": "5985",
                         "ToPort": "5985",
                         "SourceSecurityGroupId": {

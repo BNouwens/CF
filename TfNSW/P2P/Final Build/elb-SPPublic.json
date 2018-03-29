@@ -62,13 +62,13 @@
                 "Scheme": "internal",
                 "Subnets": [
                     {
-                        "Fn::ImportValue": "RestrictedASubnet"
+                        "Fn::ImportValue": "ControlledASubnet"
                     },
                     {
-                        "Fn::ImportValue": "RestrictedBSubnet"
+                        "Fn::ImportValue": "ControlledASubnet"
                     },
                     {
-                        "Fn::ImportValue": "RestrictedCSubnet"
+                        "Fn::ImportValue": "ControlledASubnet"
                     }
                 ],
                 "LoadBalancerAttributes": [
