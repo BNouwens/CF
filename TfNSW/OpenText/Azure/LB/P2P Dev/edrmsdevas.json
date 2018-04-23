@@ -1,0 +1,112 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "name": {
+            "type": "string"
+        },
+        "location": {
+            "type": "string"
+        },
+        "subnetId": {
+            "type": "string"
+        },
+        "privateIPAllocationMethod": {
+            "type": "string"
+        }
+    },
+    "variables": {
+        "loadBalancerID": "[resourceId('Microsoft.Network/loadBalancers', parameters('name'))]"
+    },
+    "resources": [
+            
+        {
+            "comments": "Load Balancer for Content Server Admin",
+            "type": "Microsoft.Network/loadBalancers",
+            "sku": {
+                "name": "Basic"
+            },
+            "name": "[parameters('name')]",
+            "apiVersion": "2017-10-01",
+            "location": "australiaeast",
+            "scale": null,
+            "properties": {
+                "frontendIPConfigurations": [
+                    {
+                        "name": "[concat(parameters('name'),'lbfrontend')]",
+                        "properties": {
+                            "privateIPAllocationMethod": "[parameters('privateIPAllocationMethod')]",
+                            "subnet": {
+                                "id": "[parameters('subnetId')]"
+                            }
+                        }
+                    }
+                ],
+                "backendAddressPools": [
+                    {
+                        "name": "[concat(parameters('name'),'lbbackend')]",
+                        "properties": {}
+                    }
+                ],
+                "loadBalancingRules": [
+                    {
+                        "name": "[concat(parameters('name'),'lbrules')]",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[concat(variables('loadBalancerID'), '/frontendIPConfigurations/', parameters('name'),'lbfrontend')]"
+                            },
+                            "frontendPort": 80,
+                            "backendPort": 80,
+                            "enableFloatingIP": false,
+                            "idleTimeoutInMinutes": 4,
+                            "protocol": "Tcp",
+                            "loadDistribution": "SourceIP",
+                            "backendAddressPool": {
+                                "id": "[concat(variables('loadBalancerID'), '/backendAddressPools/', parameters('name'),'lbbackend')]"
+                            },
+                            "probe": {
+                                "id": "[concat(variables('loadBalancerID'), '/probes/', parameters('name'),'lbprobe')]"
+                            }
+                        }
+                    },
+                    {
+                        "name": "[concat(parameters('name'),'lbrules443')]",
+                        "properties": {
+                            "frontendIPConfiguration": {
+                                "id": "[concat(variables('loadBalancerID'), '/frontendIPConfigurations/', parameters('name'),'lbfrontend')]"
+                            },
+                            "frontendPort": 443,
+                            "backendPort": 443,
+                            "enableFloatingIP": false,
+                            "idleTimeoutInMinutes": 4,
+                            "protocol": "Tcp",
+                            "loadDistribution": "SourceIP",
+                            "backendAddressPool": {
+                                "id": "[concat(variables('loadBalancerID'), '/backendAddressPools/', parameters('name'),'lbbackend')]"
+                            },
+                            "probe": {
+                                "id": "[concat(variables('loadBalancerID'), '/probes/', parameters('name'),'lbprobe')]"
+                            }
+                        }
+                    }
+                ],
+                "probes": [
+                    {
+                        "name": "[concat(parameters('name'),'lbprobe')]",
+                        
+                        "properties": {
+                            "protocol": "Tcp",
+                            "port": 80,
+                            "intervalInSeconds": 5,
+                            "numberOfProbes": 2
+                        }
+                    }
+                ],
+                "inboundNatRules": [],
+                "outboundNatRules": [],
+                "inboundNatPools": []
+            },
+            "dependsOn": []
+        }
+    ]
+}

@@ -1,0 +1,33 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "value": "australiaeast"
+        },
+        "applicationGatewayName": {
+            "value": "eotppdcs"
+        },
+        "tier": {
+            "value": "Standard"
+        },
+        "skuSize": {
+            "value": "Standard_Medium"
+        },
+        "capacity": {
+            "value": 2
+        },
+        "frontEndPort": {
+            "value": 80
+        },
+        "subnetName": {
+            "value": "SN-SYD-NonPRD-OpenText-WORKLOAD-WEB01"
+        },
+        "publicIpAddressName": {
+            "value": "edrmsdevcs"
+        },
+        "subnetRef": {
+            "value": "/subscriptions/f7be4146-afe0-4790-835e-5443cbab62f3/resourceGroups/RG-SYD-NonPRD-OPENTEXT-WORKLOAD-VNET01/providers/Microsoft.Network/virtualNetworks/VNET-SYD-NonPRD-OPENTEXT-WORKLOAD-NETWORK01/subnets/SN-SYD-NonPRD-OpenText-WORKLOAD-WEB01"
+        }
+    }
+}

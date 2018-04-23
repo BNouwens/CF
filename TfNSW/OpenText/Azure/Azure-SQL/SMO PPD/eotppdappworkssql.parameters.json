@@ -1,0 +1,37 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "administratorLogin": {
+            "value": "eotadmin"
+        },
+        
+        "collation": {
+            "value": "SQL_Latin1_General_CP1_CI_AS"
+        },
+        "databaseName": {
+            "value": "appworks"
+        },
+        "edition": {
+            "value": "Standard"
+        },
+        "location": {
+            "value": "australiaeast"
+        },
+        "maxSizeBytes": {
+            "value": "53687091200"
+        },
+        "requestedServiceObjectiveId": {
+            "value": "1b1ebd4d-d903-4baa-97f9-4ea675f5e928"
+        },
+        "sampleName": {
+            "value": ""
+        },
+        "serverName": {
+            "value": "eotppdappworkssql"
+        },
+        "zoneRedundant": {
+            "value": false
+        }
+    }
+}

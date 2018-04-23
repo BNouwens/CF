@@ -33,6 +33,7 @@ function describeInstancePatchForGroup(results, token) {
 
         // console.log(objGroups.PatchGroup);
 
+        
         var params = {
             PatchGroup: PatchGroup,
             MaxResults: 2

@@ -1,0 +1,51 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "value": "australiaeast"
+        },
+        "virtualMachineName": {
+            "value": "eotppdotcs02"
+        },
+        "virtualMachineSize": {
+            "value": "Standard_D8s_v3"
+        },
+        "adminUsername": {
+            "value": "eotadmin"
+        },
+        "virtualNetworkNameResourceGroup": {
+            "value": "RG-SYD-NonPRD-OPENTEXT-WORKLOAD-VNET01"
+        },
+        "virtualNetworkName": {
+            "value": "VNET-SYD-NonPRD-OPENTEXT-WORKLOAD-NETWORK01"
+        },
+        "networkInterfaceName": {
+            "value": "eotppdotcs02"
+        },
+        "networkSecurityGroupName": {
+            "value": "NSG-eotppdotcs01"
+        },
+        "diagnosticsStorageAccountName": {
+            "value": "eotppdworkloaddiag"
+        },
+        "diagnosticsStorageAccountType": {
+            "value": "Standard_LRS"
+        },
+        "diagnosticsStorageAccountId": {
+            "value": "Microsoft.Storage/storageAccounts/eotppdworkloaddiag"
+        },
+        "subnetName": {
+            "value": "SN-SYD-NonPRD-OpenText-WORKLOAD-APP01"
+        },
+        "imageReferenceId": {
+            "value": "/subscriptions/f7be4146-afe0-4790-835e-5443cbab62f3/resourceGroups/rg-images/providers/Microsoft.Compute/images/Server2012R2-13-02-2018"
+        },
+        "modulesUrl": {
+            "value": "https://github.com/BNouwens/CF/raw/develop/TfNSW/OpenText/Azure/VM/SMDO-PPD/set-storage.zip"
+        },
+        "configurationFunction": {
+            "value": "set-storage.ps1\\disks"
+        }
+    }
+}
