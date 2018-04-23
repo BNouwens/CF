@@ -1,0 +1,88 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "SSM Document - Play Ansible",
+    "Resources": {
+        "document": {
+            "Type": "AWS::SSM::Document",
+            "Properties": {
+                "DocumentType": "Command",
+                "Content": {
+                    "schemaVersion": "2.0",
+                    "description": "Use this document to run Ansible playbooks on Amazon EC2 managed instances. Specify either YAML text or URL. If you specify both, the URL parameter will be used. Use the extravar parameter to send runtime variables to the Ansible execution. Use the check parameter to perform a dry run of the Ansible execution. The output of the dry run shows the changes that will be made when the playbook is executed.",
+                    "parameters": {
+                        "playbook": {
+                            "type": "String",
+                            "description": "(Required) Ansible PlayBook",
+                            "default": "00-webservices.yml",
+                            "displayType": "textarea"
+                        },
+                        "playbookurl": {
+                            "type": "String",
+                            "description": "(Required) Specify S3 Bucket. Example: s3://examplebucket/playbook.url.",
+                            "default": "s3://ptipstransdev01/ptipstransdev01",
+                            "allowedPattern": "^\\s*$|^(http|https|s3):\/\/[^']*$"
+                        },
+                        "extravars": {
+                            "type": "String",
+                            "description": "(Optional) Additional variables to pass to Ansible at runtime. Enter a space separated list of key/value pairs. For example: color=red flavor=lime",
+                            "default": "SSM=True env=transdev01",
+                            "displayType": "textarea",
+                            "allowedPattern": "^$|^\\w+\\=\\w+(\\s\\w+\\=\\w+)*$"
+                        },
+                        "check": {
+                            "type": "String",
+                            "description": " (Optional) Use the check parameter to perform a dry run of the Ansible execution.",
+                            "allowedValues": [
+                                "True",
+                                "False"
+                            ],
+                            "default": "False"
+                        }
+                    },
+                    "mainSteps": [
+                        {
+                            "action": "aws:runShellScript",
+                            "name": "runShellScript",
+                            "inputs": {
+                                "runCommand": [
+                                    "#!/bin/bash",
+                                    "ansible --version",
+                                    "if [ $? -ne 0 ]; then",
+                                    " echo \"Ansible is not installed. Please install Ansible and rerun the command\" >&2",
+                                    " exit 1",
+                                    "fi",
+                                    "if [[ \"{{playbook}}\" == *.yml ]] ; then",
+                                    " if [[ \"{{playbookurl}}\" == http* ]]; then",
+                                    "       echo \"You must use S3 URL not HTTP\" >&2",
+                                    "       exit 1",
+                                    " elif [[ \"{{playbookurl}}\" == s3* ]] ; then",
+                                    "   aws --version",
+                                    "   if [ $? -ne 0 ]; then",
+                                    "       echo \"The AWS CLI is not installed. The CLI is required to process Amazon S3 URLs. Install the AWS CLI and run the command again.\" >&2",
+                                    "       exit 1",
+                                    "   fi",
+                                    "   aws s3 cp '{{playbookurl}}' . --recursive",
+                                    " else",
+                                    "  echo \"The playbook URL is not valid. Verify the URL and try again.\" >&2",
+                                    "  exit 1",
+                                    " fi",
+                                    "else",
+                                    " echo \"You must specify Both Playbook S3 URl and Playbook YML file and try again\" >&2",
+                                    " exit 1",
+                                    "fi",
+                                    "pip install --upgrade pip",
+                                    "pip install -U boto",
+                                    "if  [[ \"{{check}}\" == True ]] ; then",
+                                    "   ansible-playbook -i inventory/ec2.py --check -c local -e \"{{extravars}}\" \"{{playbook}}\" -l localhost",
+                                    "else",
+                                    "   ansible-playbook -i inventory/ec2.py -c local -e \"{{extravars}}\" \"{{playbook}}\" -l localhost",
+                                    "fi"
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    }
+}

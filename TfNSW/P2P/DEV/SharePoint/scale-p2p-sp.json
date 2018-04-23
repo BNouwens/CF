@@ -1,0 +1,863 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Auto Scaling Group for SharePoint function",
+    "Parameters": {
+        "InstanceType": {
+            "Description": "WebServer EC2 instance type",
+            "Type": "String",
+            "Default": "t2.small",
+            "AllowedValues": [
+                "t1.micro",
+                "t2.nano",
+                "t2.micro",
+                "t2.small",
+                "t2.medium",
+                "t2.large",
+                "m1.small",
+                "m1.medium",
+                "m1.large",
+                "m1.xlarge",
+                "m2.xlarge",
+                "m2.2xlarge",
+                "m2.4xlarge",
+                "m3.medium",
+                "m3.large",
+                "m3.xlarge",
+                "m3.2xlarge",
+                "m4.large",
+                "m4.xlarge",
+                "m4.2xlarge",
+                "m4.4xlarge",
+                "m4.10xlarge",
+                "c1.medium",
+                "c1.xlarge",
+                "c3.large",
+                "c3.xlarge",
+                "c3.2xlarge",
+                "c3.4xlarge",
+                "c3.8xlarge",
+                "c4.large",
+                "c4.xlarge",
+                "c4.2xlarge",
+                "c4.4xlarge",
+                "c4.8xlarge",
+                "g2.2xlarge",
+                "g2.8xlarge",
+                "r3.large",
+                "r3.xlarge",
+                "r3.2xlarge",
+                "r3.4xlarge",
+                "r3.8xlarge",
+                "i2.xlarge",
+                "i2.2xlarge",
+                "i2.4xlarge",
+                "i2.8xlarge",
+                "d2.xlarge",
+                "d2.2xlarge",
+                "d2.4xlarge",
+                "d2.8xlarge",
+                "hi1.4xlarge",
+                "hs1.8xlarge",
+                "cr1.8xlarge",
+                "cc2.8xlarge",
+                "cg1.4xlarge"
+            ],
+            "ConstraintDescription": "must be a valid EC2 instance type."
+        },
+        "OperatorEMail": {
+            "Description": "EMail address to notify if there are any scaling operations",
+            "Type": "String",
+            "AllowedPattern": "([a-zA-Z0-9_\\-\\.]+)@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.)|(([a-zA-Z0-9\\-]+\\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\\]?)",
+            "ConstraintDescription": "must be a valid email address."
+        },
+        "KeyName": {
+            "Description": "The EC2 Key Pair to allow SSH access to the instances",
+            "Type": "AWS::EC2::KeyPair::KeyName",
+            "ConstraintDescription": "must be the name of an existing EC2 KeyPair."
+        },
+        "SecurityGroupIds": {
+            "Description": "Security Group for Datacom Management",
+            "Default": "",
+            "Type": "AWS::EC2::SecurityGroup::Id"
+        },
+        "SecurityGroupRemoteAccess": {
+            "Description": "Security Group for TfNSW Management",
+            "Default": "",
+            "Type": "AWS::EC2::SecurityGroup::Id"
+        },
+        "AMI": {
+            "Description": "AMI ID for Server",
+            "Default": "ami-32312751",
+            "Type": "String"
+        },
+        "Subnet": {
+            "Description": "Select a private subnet for the instance",
+            "Type": "List<AWS::EC2::Subnet::Id>"
+        },
+        "Environment": {
+            "Description": "Environment Code",
+            "Default": "ppd",
+            "Type": "String"
+        },
+        "Solution": {
+            "Description": "Solution Code",
+            "Default": "ppd",
+            "Type": "String"
+        },
+        "CostCentre": {
+            "Description": "Cost Code",
+            "Default": "template",
+            "Type": "String"
+        },
+        "NameCode": {
+            "Description": "Server Name code",
+            "Default": "ap",
+            "Type": "String"
+        },
+        "iamProfile": {
+            "Description": "IAM Profile to associate with instance",
+            "Default": "",
+            "Type": "String"
+        },
+        "CertificateArn": {
+            "Description": "Arn of ACM Certificate",
+            "Type": "String"
+        }
+    },
+    "Resources": {
+        "NotificationTopic": {
+            "Type": "AWS::SNS::Topic",
+            "Properties": {
+                "Subscription": [
+                    {
+                        "Endpoint": {
+                            "Ref": "OperatorEMail"
+                        },
+                        "Protocol": "email"
+                    },
+                    {
+                        "Endpoint": {
+                            "Fn::GetAtt": [
+                                "ASGSuspendUnhealthyReplace",
+                                "Arn"
+                            ]
+                        },
+                        "Protocol": "lambda"
+                    }
+                ]
+            },
+            "DependsOn": [
+                "ASGSuspendUnhealthyReplace"
+            ]
+        },
+        "WebServerGroup": {
+            "Type": "AWS::AutoScaling::AutoScalingGroup",
+            "Properties": {
+                "VPCZoneIdentifier": {
+                    "Ref": "Subnet"
+                },
+                "NotificationConfigurations": [
+                    {
+                        "NotificationTypes": [
+                            "autoscaling:EC2_INSTANCE_LAUNCH",
+                            "autoscaling:EC2_INSTANCE_LAUNCH_ERROR",
+                            "autoscaling:EC2_INSTANCE_TERMINATE",
+                            "autoscaling:EC2_INSTANCE_TERMINATE_ERROR",
+                            "autoscaling:TEST_NOTIFICATION"
+                        ],
+                        "TopicARN": {
+                            "Ref": "NotificationTopic"
+                        }
+                    }
+                ],
+                "HealthCheckType": "EC2",
+                "HealthCheckGracePeriod": "1200",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    {
+                                        "Ref": "Solution"
+                                    },
+                                    {
+                                        "Ref": "Environment"
+                                    },
+                                    {
+                                        "Ref": "NameCode"
+                                    }
+                                ]
+                            ]
+                        },
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "CostCentre",
+                        "Value": {
+                            "Ref": "CostCentre"
+                        },
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "Environment",
+                        "Value": {
+                            "Ref": "Environment"
+                        },
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "Solution",
+                        "Value": {
+                            "Ref": "Solution"
+                        },
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "cpm backup",
+                        "Value": "no-backup",
+                        "PropagateAtLaunch": "true"
+                    }
+                ],
+                "LaunchConfigurationName": {
+                    "Ref": "LaunchConfig"
+                },
+                "MinSize": "1",
+                "MaxSize": "2",
+                "TargetGroupARNs": [
+                    {
+                        "Ref": "spLbTG"
+                    }
+                ]
+            },
+            "CreationPolicy": {
+                "AutoScalingCreationPolicy": {
+                    "MinSuccessfulInstancesPercent": "0"
+                },
+                "ResourceSignal": {
+                    "Timeout": "PT20M",
+                    "Count": "0"
+                }
+            },
+            "UpdatePolicy": {
+                "AutoScalingRollingUpdate": {
+                    "MinInstancesInService": "0",
+                    "MaxBatchSize": "1",
+                    "PauseTime": "PT20M",
+                    "WaitOnResourceSignals": "false"
+                }
+            }
+        },
+        "LaunchConfig": {
+            "Type": "AWS::AutoScaling::LaunchConfiguration",
+            "Metadata": {
+                "Comment": "Install a simple application",
+                "AWS::CloudFormation::Init": {
+                    "config": {
+                        "files": {
+                            "c:\\cfn\\cfn-hup.conf": {
+                                "content": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "[main]\n",
+                                            "stack=",
+                                            {
+                                                "Ref": "AWS::StackId"
+                                            },
+                                            "\n",
+                                            "region=",
+                                            {
+                                                "Ref": "AWS::Region"
+                                            },
+                                            "\n"
+                                        ]
+                                    ]
+                                }
+                            }
+                        },
+                        "commands": {
+                            "a-setexecutionpolicy": {
+                                "command": "powershell -Command Set-ExecutionPolicy Unrestricted -Force"
+                            },
+                            "b-installIIS": {
+                                "command": {
+                                    "Fn::Join": [
+                                        "",
+                                        [
+                                            "rem powershell -Command install-windowsfeature Web-Server, Web-WebServer, Web-Common-Http, Web-Default-Doc, Web-Dir-Browsing, Web-Http-Errors, Web-Static-Content, Web-Health, Web-Http-Logging, Web-Request-Monitor, Web-Performance, Web-Stat-Compression, Web-Dyn-Compression, Web-Filtering, Web-Basic-Auth, Web-App-Dev, Web-Net-Ext, Web-Net-Ext45, Web-Asp-Net45, Web-CGI, Web-ISAPI-Ext, Web-ISAPI-Filter, Web-Mgmt-Tools, Web-Mgmt-Console, Web-Mgmt-Compat, Web-Metabase, Web-Lgcy-Mgmt-Console, Web-Lgcy-Scripting, Web-WMI, Web-Scripting-Tools, Web-Mgmt-Service"
+                                        ]
+                                    ]
+                                }
+                            },
+                            "c-restart": {
+                                "command": "rem powershell -Command Shutdown /r /t 00"
+                            }
+                        }
+                    },
+                    "Finalize": {
+                        "commands": {
+                            "a-signal-success": {
+                                "command": "powershell -Command \"Write-AWSQuickStartStatus\""
+                            }
+                        }
+                    }
+                }
+            },
+            "Properties": {
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
+                "ImageId": {
+                    "Ref": "AMI"
+                },
+                "SecurityGroups": [
+                    {
+                        "Ref": "SecurityGroupIds"
+                    },
+                    {
+                        "Ref": "SecurityGroupRemoteAccess"
+                    },
+                    {
+                        "Ref": "spSG"
+                    }
+                ],
+                "InstanceType": {
+                    "Ref": "InstanceType"
+                },
+                "InstanceMonitoring": "false",
+                "IamInstanceProfile": {
+                    "Ref": "iamProfile"
+                },
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "<script>\n",
+                                "cfn-init.exe -v -s ",
+                                {
+                                    "Ref": "AWS::StackName"
+                                },
+                                " -r LaunchConfig",
+                                " --region ",
+                                {
+                                    "Ref": "AWS::Region"
+                                },
+                                "\n",
+                                "cfn-signal -e %ERRORLEVEL% --stack ",
+                                {
+                                    "Ref": "AWS::StackName"
+                                },
+                                " --resource WebServerGroup --region ",
+                                {
+                                    "Ref": "AWS::Region"
+                                },
+                                "</script>"
+                            ]
+                        ]
+                    }
+                }
+            }
+        },
+        "WebServerScaleUpPolicy": {
+            "Type": "AWS::AutoScaling::ScalingPolicy",
+            "Properties": {
+                "AdjustmentType": "ChangeInCapacity",
+                "AutoScalingGroupName": {
+                    "Ref": "WebServerGroup"
+                },
+                "Cooldown": "60",
+                "ScalingAdjustment": "1"
+            }
+        },
+        "WebServerScaleDownPolicy": {
+            "Type": "AWS::AutoScaling::ScalingPolicy",
+            "Properties": {
+                "AdjustmentType": "ChangeInCapacity",
+                "AutoScalingGroupName": {
+                    "Ref": "WebServerGroup"
+                },
+                "Cooldown": "60",
+                "ScalingAdjustment": "-1"
+            }
+        },
+        "CPUAlarmHigh": {
+            "Type": "AWS::CloudWatch::Alarm",
+            "Properties": {
+                "AlarmDescription": "Scale-up if CPU > 90% for 10 minutes",
+                "MetricName": "CPUUtilization",
+                "Namespace": "AWS/EC2",
+                "Statistic": "Average",
+                "Period": "300",
+                "EvaluationPeriods": "2",
+                "Threshold": "90",
+                "AlarmActions": [
+                    {
+                        "Ref": "WebServerScaleUpPolicy"
+                    }
+                ],
+                "Dimensions": [
+                    {
+                        "Name": "AutoScalingGroupName",
+                        "Value": {
+                            "Ref": "WebServerGroup"
+                        }
+                    }
+                ],
+                "ComparisonOperator": "GreaterThanThreshold"
+            }
+        },
+        "CPUAlarmLow": {
+            "Type": "AWS::CloudWatch::Alarm",
+            "Properties": {
+                "AlarmDescription": "Scale-down if CPU < 70% for 10 minutes",
+                "MetricName": "CPUUtilization",
+                "Namespace": "AWS/EC2",
+                "Statistic": "Average",
+                "Period": "300",
+                "EvaluationPeriods": "2",
+                "Threshold": "70",
+                "AlarmActions": [
+                    {
+                        "Ref": "WebServerScaleDownPolicy"
+                    }
+                ],
+                "Dimensions": [
+                    {
+                        "Name": "AutoScalingGroupName",
+                        "Value": {
+                            "Ref": "WebServerGroup"
+                        }
+                    }
+                ],
+                "ComparisonOperator": "LessThanThreshold"
+            }
+        },
+        "LambdaExecutionRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "lambda.amazonaws.com"
+                                ]
+                            },
+                            "Action": [
+                                "sts:AssumeRole"
+                            ]
+                        }
+                    ]
+                },
+                "Path": "/",
+                "Policies": [
+                    {
+                        "PolicyName": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    {
+                                        "Ref": "NameCode"
+                                    }
+                                ]
+                            ]
+                        },
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Action": [
+                                        "*"
+                                    ],
+                                    "Resource": [
+                                        "*"
+                                    ],
+                                    "Effect": "Allow"
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "ASGSuspendUnhealthyReplace": {
+            "Type": "AWS::Lambda::Function",
+            "Properties": {
+                "Handler": "index.handler",
+                "Role": {
+                    "Fn::GetAtt": [
+                        "LambdaExecutionRole",
+                        "Arn"
+                    ]
+                },
+                "Code": {
+                    "ZipFile": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "var aws = require(\"aws-sdk\");\n",
+                                "var autoscaling = new aws.AutoScaling({ apiVersion: '2011-01-01' });\n",
+                                "var ec2 = new aws.EC2();\n",
+                                "\n",
+                                "exports.handler = function (event, context, callback) {\n",
+                                "\n",
+                                "    console.log(\"REQUEST RECEIVED:\\n\" + JSON.stringify(event));\n",
+                                "\n",
+                                "    // For Delete requests, immediately send a SUCCESS response.\n",
+                                "    if (event.RequestType == \"Delete\") {\n",
+                                "        sendResponse(event, context, \"SUCCESS\");\n",
+                                "        return;\n",
+                                "    }\n",
+                                "    var responseStatus = \"FAILED\";\n",
+                                "    var responseData = {};\n",
+                                "\n",
+                                "    // --------- Building EVENT data ---------    \n",
+                                "    var message = event['Records'][0]['Sns']['Message']\n",
+                                "\n",
+                                "    var asgName = JSON.parse(message);\n",
+                                "    console.log(asgName.AutoScalingGroupName);\n",
+                                "\n",
+                                "    var paramsASG = {\n",
+                                "        AutoScalingGroupNames: [\n",
+                                "            asgName.AutoScalingGroupName\n",
+                                "        ],\n",
+                                "    };\n",
+                                "\n",
+                                "    var paramsSetSuspendReplace = {\n",
+                                "        AutoScalingGroupName: asgName.AutoScalingGroupName,\n",
+                                "        ScalingProcesses: [\n",
+                                "            \"ReplaceUnhealthy\"\n",
+                                "        ]\n",
+                                "    };\n",
+                                "    autoscaling.suspendProcesses(paramsSetSuspendReplace, function (err, data) {\n",
+                                "        if (err) console.log(err, err.stack); // an error occurred\n",
+                                "        else console.log(data);           // successful response\n",
+                                "    });\n",
+                                "\n",
+                                "    var paramsSetProtected = {\n",
+                                "        AutoScalingGroupName: asgName.AutoScalingGroupName,\n",
+                                "        NewInstancesProtectedFromScaleIn: true\n",
+                                "    };\n",
+                                "    autoscaling.updateAutoScalingGroup(paramsSetProtected, function (err, data) {\n",
+                                "        if (err) console.log(err, err.stack); // an error occurred\n",
+                                "        else console.log(data);           // successful response\n",
+                                "    });\n",
+                                "};\n"
+                            ]
+                        ]
+                    }
+                },
+                "Runtime": "nodejs6.10",
+                "Timeout": "30",
+                "TracingConfig": {
+                    "Mode": "Active"
+                }
+            }
+        },
+        "LambdaInvokePermission": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+                "Action": "lambda:InvokeFunction",
+                "Principal": "sns.amazonaws.com",
+                "SourceArn": {
+                    "Ref": "NotificationTopic"
+                },
+                "FunctionName": {
+                    "Fn::GetAtt": [
+                        "ASGSuspendUnhealthyReplace",
+                        "Arn"
+                    ]
+                }
+            }
+        },
+        "spLb": {
+            "Type": "AWS::ElasticLoadBalancingV2::LoadBalancer",
+            "Properties": {
+                "Scheme": "internet-facing",
+                "Subnets": [
+                    {
+                        "Fn::ImportValue": "ControlledASubnet"
+                    },
+                    {
+                        "Fn::ImportValue": "ControlledBSubnet"
+                    },
+                    {
+                        "Fn::ImportValue": "ControlledCSubnet"
+                    }
+                ],
+                "LoadBalancerAttributes": [
+                    {
+                        "Key": "idle_timeout.timeout_seconds",
+                        "Value": "60"
+                    }
+                ],
+                "SecurityGroups": [
+                    {
+                        "Ref": "spLbSG"
+                    }
+                ],
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "p2p",
+                                    {
+                                        "Ref": "Environment"
+                                    },
+                                    "splb"
+                                ]
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "spLbSG": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "SharePoint Load Balancer Security Group",
+                "VpcId": {
+                    "Fn::ImportValue": "VPC"
+                },
+                "SecurityGroupIngress": [
+                    {
+                        "CidrIp": "0.0.0.0/0",
+                        "IpProtocol": "tcp",
+                        "FromPort": "443",
+                        "ToPort": "443"
+                    },
+                    {
+                        "CidrIp": "0.0.0.0/0",
+                        "IpProtocol": "tcp",
+                        "FromPort": "80",
+                        "ToPort": "80"
+                    }
+                ],
+                "SecurityGroupEgress": [
+                    {
+                        "CidrIp": "0.0.0.0/0",
+                        "FromPort": "0",
+                        "IpProtocol": "TCP",
+                        "ToPort": "65535"
+                    }
+                ],
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "p2p",
+                                    {
+                                        "Ref": "Environment"
+                                    },
+                                    "splb"
+                                ]
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "spSG": {
+            "Type": "AWS::EC2::SecurityGroup",
+            "Properties": {
+                "GroupDescription": "SharePoint Instance Security Group",
+                "VpcId": {
+                    "Fn::ImportValue": "VPC"
+                },
+                "SecurityGroupIngress": [
+                    {
+                        "CidrIp": {
+                            "Fn::ImportValue": "VPCCidrBlock"
+                        },
+                        "IpProtocol": "tcp",
+                        "FromPort": "80",
+                        "ToPort": "80"
+                    }
+                ],
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "p2p",
+                                    {
+                                        "Ref": "Environment"
+                                    },
+                                    "splb"
+                                ]
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "spSGIngress": {
+            "Type": "AWS::EC2::SecurityGroupIngress",
+            "Properties": {
+                "GroupId": {
+                    "Ref": "spSG"
+                },
+                "IpProtocol": "tcp",
+                "FromPort": "80",
+                "ToPort": "80",
+                "SourceSecurityGroupId": {
+                    "Fn::GetAtt": [
+                        "spLbSG",
+                        "GroupId"
+                    ]
+                }
+            }
+        },
+        "spLbListener": {
+            "Type": "AWS::ElasticLoadBalancingV2::Listener",
+            "Properties": {
+                "DefaultActions": [
+                    {
+                        "Type": "forward",
+                        "TargetGroupArn": {
+                            "Ref": "spLbTG"
+                        }
+                    }
+                ],
+                "LoadBalancerArn": {
+                    "Ref": "spLb"
+                },
+                "Port": "80",
+                "Protocol": "HTTP"
+            }
+        },
+        "spLbListener80": {
+            "Type": "AWS::ElasticLoadBalancingV2::Listener",
+            "Properties": {
+                "DefaultActions": [
+                    {
+                        "Type": "forward",
+                        "TargetGroupArn": {
+                            "Ref": "spLbTG"
+                        }
+                    }
+                ],
+                "LoadBalancerArn": {
+                    "Ref": "spLb"
+                },
+                "Port": "80",
+                "Protocol": "HTTP"
+            }
+        },
+        "contentLbListener443": {
+            "Type": "AWS::ElasticLoadBalancingV2::Listener",
+            "Properties": {
+                "DefaultActions": [
+                    {
+                        "Type": "forward",
+                        "TargetGroupArn": {
+                            "Ref": "spLbTG"
+                        }
+                    }
+                ],
+                "LoadBalancerArn": {
+                    "Ref": "spLb"
+                },
+                "Port": "443",
+                "Protocol": "HTTPS",
+                "Certificates": [
+                    {
+                        "CertificateArn": {
+                            "Ref": "CertificateArn"
+                        }
+                    }
+                ]
+            }
+        },
+        "spLbTG": {
+            "Type": "AWS::ElasticLoadBalancingV2::TargetGroup",
+            "Properties": {
+                "HealthCheckIntervalSeconds": 30,
+                "HealthCheckProtocol": "HTTP",
+                "HealthCheckPort": 80,
+                "HealthCheckPath": "/",
+                "HealthCheckTimeoutSeconds": 5,
+                "HealthyThresholdCount": 5,
+                "Matcher": {
+                    "HttpCode": "200"
+                },
+                "Name": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "p2p",
+                            {
+                                "Ref": "Environment"
+                            },
+                            "splbnew"
+                        ]
+                    ]
+                },
+                "Port": 80,
+                "Protocol": "HTTP",
+                "TargetGroupAttributes": [
+                    {
+                        "Key": "deregistration_delay.timeout_seconds",
+                        "Value": "20"
+                    },
+                    {
+                        "Key": "stickiness.enabled",
+                        "Value": "true"
+                    },
+                    {
+                        "Key": "stickiness.lb_cookie.duration_seconds",
+                        "Value": 86400
+                    }
+                ],
+                "UnhealthyThresholdCount": 2,
+                "VpcId": {
+                    "Fn::ImportValue": "VPC"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "SharePoint"
+                    }
+                ]
+            }
+        }
+    },
+    "Outputs": {
+        "ALB": {
+            "Description": "SharePoint DNS Name",
+            "Value": {
+                "Fn::GetAtt": [
+                    "spLb",
+                    "DNSName"
+                ]
+            },
+            "Export": {
+                "Name": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "p2p",
+                            {
+                                "Ref": "Environment"
+                            },
+                            "splbDNS"
+                        ]
+                    ]
+                }
+            }
+        }
+    }
+}

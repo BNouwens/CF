@@ -1,0 +1,184 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Creates an AWS CloudFront Distribution",
+    "Parameters": {
+        "Solution": {
+            "Description": "Solution Name",
+            "Default": "p2p",
+            "Type": "String"
+        },
+        "Environment": {
+            "Description": "Environment Code",
+            "Default": "dev",
+            "Type": "String"
+        },
+        "Alias": {
+            "Description": "Alternate Domain Name",
+            "Default": "sp.p2p-dev.aws.hosting.transport.nsw.gov.au",
+            "Type": "String"
+        },
+        "SharePointLoadBalancer": {
+            "Description": "SharePoint Load Balancer DNS Address",
+            "Type": "String"
+        },        
+        "CertificateArn": {
+            "Description": "Arn of ACM Certificate",
+            "Type": "String"
+        },
+        "HostedZoneResource": {
+            "Description": "Name of Hosted Zone",
+            "Type": "String"
+        }
+    },
+    "Resources": {
+        "CloudFront": {
+            "Type": "AWS::CloudFront::Distribution",
+            "Properties": {
+                "DistributionConfig": {
+                    "Aliases": [
+                        {
+                            "Ref": "Alias"
+                        }
+                    ],
+                    "Origins": [
+                        {
+                            "DomainName": {
+                                "Ref": "SharePointLoadBalancer"
+                            },
+                            "Id": {
+                                "Fn::Join": [
+                                    "",
+                                    [
+                                        {
+                                            "Ref": "Solution"
+                                        },
+                                        {
+                                            "Ref": "Environment"
+                                        },
+                                        "SPOrigin"
+                                    ]
+                                ]
+                            },
+                            "CustomOriginConfig": {
+                                "HTTPPort": "80",
+                                "HTTPSPort": "443",
+                                "OriginProtocolPolicy": "https-only",
+                                "OriginSSLProtocols": [
+                                    "SSLv3",
+                                    "TLSv1",
+                                    "TLSv1.1",
+                                    "TLSv1.2"
+                                ]
+                            }
+                        }
+                    ],
+                    "Enabled": "true",
+                    "Comment": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                {
+                                    "Ref": "Environment"
+                                },
+                                " SharePoint"
+                            ]
+                        ]
+                    },
+                    "CustomErrorResponses": [
+                        {
+                            "ErrorCode": "404",
+                            "ResponsePagePath": "/error.html",
+                            "ResponseCode": "404",
+                            "ErrorCachingMinTTL": "30"
+                        }
+                    ],
+                    "PriceClass": "PriceClass_All",
+                    "HttpVersion": "http2",
+                    "Restrictions": {
+                        "GeoRestriction": {
+                            "RestrictionType": "whitelist",
+                            "Locations": [
+                                "AU"
+                            ]
+                        }
+                    },
+                    "ViewerCertificate": {
+                        "AcmCertificateArn": {
+                            "Ref": "CertificateArn"
+                        },
+                        "SslSupportMethod": "sni-only"
+                    },
+                    "DefaultCacheBehavior": {
+                        "AllowedMethods": [
+                            "HEAD",
+                            "GET",
+                            "OPTIONS",
+                            "PUT",
+                            "POST",
+                            "PATCH",
+                            "DELETE"
+                        ],
+                        "CachedMethods": [
+                            "HEAD",
+                            "GET"
+                        ],
+                        "DefaultTTL": "60",
+                        "ForwardedValues": {
+                            "Headers": [
+                                "*"
+                            ],
+                            "Cookies": {
+                                "Forward": "all"
+                            },
+                            "QueryString": "true"
+                        },
+                        "MaxTTL": "120",
+                        "MinTTL": "0",
+                        "SmoothStreaming": "false",
+                        "TargetOriginId": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    {
+                                        "Ref": "Solution"
+                                    },
+                                    {
+                                        "Ref": "Environment"
+                                    },
+                                    "SPOrigin"
+                                ]
+                            ]
+                        },
+                        "ViewerProtocolPolicy": "allow-all"
+                    }
+                }
+            }
+        },
+        "myDNSRecord": {
+            "Type": "AWS::Route53::RecordSetGroup",
+            "Properties": {
+                "HostedZoneName": {
+                    "Ref": "HostedZoneResource"
+                },
+                "Comment": "Zone apex alias targeted to SharePoint CloudFront.",
+                "RecordSets": [
+                    {
+                        "Name": {
+                            "Ref": "Alias"
+                        },
+                        "Type": "A",
+                        "AliasTarget": {
+                            "HostedZoneId": "Z2FDTNDATAQYW2",
+                            "DNSName": {
+                                "Fn::GetAtt": [
+                                    "CloudFront",
+                                    "DomainName"
+                                ]
+                            }
+                        }
+                    }
+                ]
+            }
+        }
+    }
+}

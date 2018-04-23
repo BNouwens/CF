@@ -1,0 +1,74 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Create Maintenance Window",
+    "Parameters": {
+        "Solution": {
+            "Type": "String"
+        },
+        "CostCentre": {
+            "Type": "String"
+        },
+        "Environment": {
+            "Description": "Environment Code",
+            "Default": "dev",
+            "Type": "String"
+        }
+    },
+    "Resources": {
+        "scanWindow": {
+            "Type": "AWS::SSM::MaintenanceWindow",
+            "Properties": {
+                "Description": "Daily Scan",
+                "AllowUnassociatedTargets": "False",
+                "Cutoff": 1,
+                "Schedule": "cron(0 0 9 ? * 1#3 *)",
+                "Duration": 3,
+                "Name": "Daily"
+            }
+        },
+        "scanTarget": {
+            "Type": "AWS::SSM::MaintenanceWindowTarget",
+            "Properties": {
+                "Description": "All Servers",
+                "WindowId": {
+                    "Ref": "scanWindow"
+                },
+                "ResourceType": "INSTANCE",
+                "Targets": [
+                    {
+                        "Key": "tag:Solution",
+                        "Values": [
+                            "ptips"
+                        ]
+                    }
+                ],
+                "Name": "ptips"
+            }
+        },
+        "scanTask": {
+            "Type": "AWS::SSM::MaintenanceWindowTask",
+            "Properties": {
+                "MaxErrors": "10",
+                "Description": "Daily Scan",
+                "ServiceRoleArn": {"Ref":"iamRole"},
+                "Priority": 1,
+                "MaxConcurrency": "10",
+                "Targets": [
+                    {
+                        "Key": "tag:Solution",
+                        "Values": [
+                            "ptips"
+                        ]
+                    }
+                ],
+                "Name": "DailyScan",
+                "TaskArn": "AWS-RunPatchBaseline",
+                "TaskInvocationParameters": TaskInvocationParameters,
+                "WindowId": String,
+                "TaskParameters": JSON object,
+                "TaskType": String,
+                "LoggingInfo": LoggingInfo
+            }
+        }
+    }
+}
