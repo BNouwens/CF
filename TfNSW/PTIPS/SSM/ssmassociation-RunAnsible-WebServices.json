@@ -1,0 +1,78 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Creates an SSM Association",
+    "Parameters": {
+        "ServerType": {
+            "Description": "Server Type",
+            "Default": "Webservices",
+            "Type": "String"
+        },
+        "Document": {
+            "Description": "SSM Document to associatiate",
+            "Default": "Webservices",
+            "Type": "String"
+        },
+        "playbook": {
+            "Type": "String",
+            "Description": "(Required) Ansible PlayBook",
+            "Default": "00-webservices.yml"
+            
+        },
+        "playbookurl": {
+            "Type": "String",
+            "Description": "(Required) Specify S3 Bucket. Example: s3://examplebucket/playbook.url.",
+            "Default": "s3://ptipstransdev01/ptipstransdev01",
+            "AllowedPattern": "^\\s*$|^(http|https|s3):\/\/[^']*$"
+        },
+        "extravars": {
+            "Type": "String",
+            "Description": "(Optional) Additional variables to pass to Ansible at runtime. Enter a space separated list of key/value pairs. For example: color=red flavor=lime",
+            "Default": "SSM=True env=transdev01",
+            
+            "AllowedPattern": "^$|^\\w+\\=\\w+(\\s\\w+\\=\\w+)*$"
+        },
+        "check": {
+            "Type": "String",
+            "Description": " (Optional) Use the check parameter to perform a dry run of the Ansible execution.",
+            "AllowedValues": [
+                "True",
+                "False"
+            ],
+            "Default": "False"
+        }
+    },
+    "Resources": {
+        "association": {
+            "Type": "AWS::SSM::Association",
+            "Properties": {
+                "Name": {
+                    "Ref": "Document"
+                },
+                "Parameters": {
+                    "playbook": [{
+                        "Ref": "playbook"
+                    }],
+                    "playbookurl": [{
+                        "Ref": "playbookurl"
+                    }],
+                    "extravars": [{
+                        "Ref": "extravars"
+                    }],
+                    "check": [{
+                        "Ref": "check"
+                    }]
+                },
+                "Targets": [
+                    {
+                        "Key": "tag:type",
+                        "Values": [
+                            {
+                                "Ref": "ServerType"
+                            }
+                        ]
+                    }
+                ]
+            }
+        }
+    }
+}
