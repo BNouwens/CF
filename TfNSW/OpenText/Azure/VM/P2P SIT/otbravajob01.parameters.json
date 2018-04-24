@@ -18,7 +18,7 @@
             "value": "australiaeast"
         },
         "virtualMachineName": {
-            "value": "edrmssitbravajb01"
+            "value": "edrmssitbrjb01"
         },
         "availabilitySetName": {
             "value": "edrmssitbravajb"
@@ -30,7 +30,7 @@
             "value": "edrmsadmin"
         },
         "networkInterfaceName": {
-            "value": "edrmssitbravajb01"
+            "value": "edrmssitbrjb01"
         },
         "networkSecurityGroupName": {
             "value": "NSG-edrmssitbravajob"

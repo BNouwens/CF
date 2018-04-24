@@ -1,0 +1,18 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "value": "australiaeast"
+        },
+        "name": {
+            "value": "edrmssitcsadmin"
+        },
+        "subnetId": {
+            "value": "/subscriptions/ce2600a2-727c-4f73-a82a-053114379175/resourceGroups/RG-NonPRD-P2P-VNET01/providers/Microsoft.Network/virtualNetworks/Vnet-SYD-Non-PRD-P2P-EEDRMS-Workload-01/subnets/SN-WORKLOAD-LB01"
+        },
+        "privateIPAllocationMethod": {
+            "value": "Dynamic"
+        }
+    }
+}
