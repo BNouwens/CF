@@ -26,11 +26,14 @@ var aws = require("aws-sdk");
 var ssm = new aws.SSM();
 var ec2 = new aws.EC2();
 
+
+
 function describeInstancePatchForGroup(results, token) {
     return new Promise((resolve, reject) => {
         var ssm = new aws.SSM();
 
-        PatchGroup = "Development";
+        // PatchGroup = "Development";
+        var PatchGroup = process.env.PatchGroup;
 
         var groupParams = {
             MaxResults: 1
@@ -111,20 +114,13 @@ function patchGroups(results, token) {
 
 function sendSMS(message) {
     var sns = new aws.SNS();
+
+    var topicArn = process.env.TopicArn;
+
     var params = {
         Message: JSON.stringify(message), /* required */
-        // MessageAttributes: {
-        //     '<String>': {
-        //         DataType: 'String', /* required */
-        //         BinaryValue: new Buffer('...') || 'STRING_VALUE' /* Strings will be Base-64 encoded on your behalf */,
-        //         StringValue: 'STRING_VALUE'
-        //     },
-        //     /* '<String>': ... */
-        // },
-        PhoneNumber: '+61410417922',
         Subject: 'TEST',
-        // TargetArn: 'STRING_VALUE',
-        // TopicArn: 'STRING_VALUE'
+        TopicArn: topicArn
     };
     sns.publish(params, function (err, data) {
         if (err) console.log(err, err.stack); // an error occurred
@@ -275,10 +271,13 @@ exports.handler = function (event, context, callback) {
         console.log(err);
     }
     var promises = [];
-    var sum = [];
+    // var sum = []; TBD
+
+    // Query AWS Account ID for report
+    ACCOUNT_ID = context.invokedFunctionArn.split(":")[4];
+    const accountNumber = ACCOUNT_ID;
 
 
-    // sendSMS("This is a test");
     /*    getInventory([])
            .then(function (data) {
                data.forEach(value => {
@@ -339,7 +338,7 @@ exports.handler = function (event, context, callback) {
 
             data.forEach(value => {
                 var objDetail = new Object();
-
+                objDetail.Account = accountNumber;
                 objDetail.InstanceId = value.InstanceId;
                 objDetail.PatchGroup = value.PatchGroup;
                 objDetail.InstalledCount = value.InstalledCount;
