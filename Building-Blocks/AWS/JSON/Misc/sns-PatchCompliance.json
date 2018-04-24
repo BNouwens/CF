@@ -1,0 +1,40 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Create SNS Topic for Patch Compliance",
+    "Parameters": {
+        "Solution": {
+            "Type": "String"
+        },
+        "CostCentre": {
+            "Type": "String"
+        },
+        "Environment": {
+            "Description": "Environment Code",
+            "Default": "dev",
+            "Type": "String"
+        },
+        "OperatorEMail": {
+            "Description": "EMail address to notify if there are any scaling operations",
+            "Type": "String",
+            "AllowedPattern": "([a-zA-Z0-9_\\-\\.]+)@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.)|(([a-zA-Z0-9\\-]+\\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\\]?)",
+            "ConstraintDescription": "must be a valid email address."
+        }
+    },
+    "Resources": {
+        "NotificationTopic": {
+            "Type": "AWS::SNS::Topic",
+            "Properties": {
+                "DisplayName": "Patch Compliance",
+                "TopicName": "PatchCompliance",
+                "Subscription": [
+                    {
+                        "Endpoint": {
+                            "Ref": "OperatorEMail"
+                        },
+                        "Protocol": "email"
+                    }
+                ]
+            }
+        }
+    }
+}
