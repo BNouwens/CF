@@ -29,14 +29,18 @@ var ec2 = new aws.EC2();
 function describeInstancePatchForGroup(results, token) {
     return new Promise((resolve, reject) => {
         var ssm = new aws.SSM();
+
         PatchGroup = "Development";
 
-        // console.log(objGroups.PatchGroup);
+        var groupParams = {
+            MaxResults: 1
+        };
 
-        
+        // PatchGroup = ssm.describePatchGroups(groupParams);
+        // console.log(PatchGroup);
         var params = {
             PatchGroup: PatchGroup,
-            MaxResults: 2
+            MaxResults: 1
         };
 
         if (token) {
@@ -60,18 +64,10 @@ function describeInstancePatchForGroup(results, token) {
                 else {
                     resolve(results.concat(data.InstancePatchStates))
                 }
-                // resolve(data);
             }
-
         });
-
-
     })
 }
-
-
-
-
 
 /* describePatchGroups(params = {}, callback) ⇒ AWS.Request
 Lists all patch groups that have been registered with patch baselines. */
@@ -113,8 +109,28 @@ function patchGroups(results, token) {
 }
 
 
-
-
+function sendSMS(message) {
+    var sns = new aws.SNS();
+    var params = {
+        Message: JSON.stringify(message), /* required */
+        // MessageAttributes: {
+        //     '<String>': {
+        //         DataType: 'String', /* required */
+        //         BinaryValue: new Buffer('...') || 'STRING_VALUE' /* Strings will be Base-64 encoded on your behalf */,
+        //         StringValue: 'STRING_VALUE'
+        //     },
+        //     /* '<String>': ... */
+        // },
+        PhoneNumber: '+61410417922',
+        Subject: 'TEST',
+        // TargetArn: 'STRING_VALUE',
+        // TopicArn: 'STRING_VALUE'
+    };
+    sns.publish(params, function (err, data) {
+        if (err) console.log(err, err.stack); // an error occurred
+        else console.log(data);           // successful response
+    });
+}
 
 /*describePatchGroupState(params = {}, callback) ⇒ AWS.Request
 Returns high-level aggregated patch compliance state for a patch group. */
@@ -246,10 +262,6 @@ exports.handler = function (event, context, callback) {
 
     var invData;
 
-    // global.invNextInvetory = "B";
-
-    //GET INVENTORY
-
     var paramsInv = {
         MaxResults: 10,
         ResultAttributes: [
@@ -265,9 +277,8 @@ exports.handler = function (event, context, callback) {
     var promises = [];
     var sum = [];
 
-    // promises.push(console.log("TEST"));
-    promises.push(listComplianceSummary(paramsSummary));
 
+    // sendSMS("This is a test");
     /*    getInventory([])
            .then(function (data) {
                data.forEach(value => {
@@ -285,51 +296,44 @@ exports.handler = function (event, context, callback) {
            }).catch(function (err) { console.log(err) });
     */
 
-
-    patchGroups([])
+    /* patchGroups([])
         .then(function (data) {
             var allGroups = []
-            var objGroups = new Object();       
-
+            var objGroups = new Object();
+ 
             data.forEach(value => {
                 objGroups.PatchGroup = value;
-
+ 
+                // console.log(objGroups.PatchGroup);
                 // Looking to try and send through to the function the Patch Group
+                // allGroups.concat(objGroups.PatchGroup);
+                // console.log(allGroups);
+ 
                 describeInstancePatchForGroup([])
                     .then(function (data) {
                         var allDetail = []
-
+ 
                         data.forEach(value => {
                             var objDetail = new Object();
-
+ 
                             objDetail.InstanceId = value.InstanceId;
                             objDetail.PatchGroup = value.PatchGroup;
                             objDetail.InstalledCount = value.InstalledCount;
                             objDetail.MissingCount = value.MissingCount;
-
+ 
                             if (value.MissingCount > 0) {
                                 objDetail.Compliant = "False";
                             }
                             else { objDetail.Compliant = "True"; }
                             allDetail.push(objDetail);
                         });
-
-                        // console.log(data);
                         console.log(allDetail);
-                        // console.log(data.InstancePatchStates);
-                        // console.log(data.MissingCount);
-                        // if(data.InstancePatchStates.MissingCount > 0) {
-                        //     console.log("NON COMPLIANT")
-                        // }
                     }).catch(function (err) { console.log(err) });
-
             });
-
-            // console.log(objGroups);
             return objGroups;
         }).catch(function (err) { console.log(err) });
-
- /*    describeInstancePatchForGroup([])
+ */
+    describeInstancePatchForGroup([])
         .then(function (data) {
             var allDetail = []
 
@@ -346,17 +350,13 @@ exports.handler = function (event, context, callback) {
                 }
                 else { objDetail.Compliant = "True"; }
                 allDetail.push(objDetail);
+                // console.log(allDetail);
+                promises.push(objDetail);
             });
-
-            // console.log(data);
-            console.log(allDetail);
-            // console.log(data.InstancePatchStates);
-            // console.log(data.MissingCount);
-            // if(data.InstancePatchStates.MissingCount > 0) {
-            //     console.log("NON COMPLIANT")
-            // }
+            Promise.all(promises);
+            console.log(promises);
+            sendSMS(promises);
         }).catch(function (err) { console.log(err) });
- */
-
-
+    // Promise.all(promises);
+    // console.log(promises);
 };
