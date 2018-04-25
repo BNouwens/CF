@@ -1,0 +1,352 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Create SNS Topic for Patch Compliance",
+    "Parameters": {
+        "Solution": {
+            "Type": "String"
+        },
+        "CostCentre": {
+            "Type": "String"
+        },
+        "PatchGroup": {
+            "Description": "Patch Group",
+            "Default": "dev",
+            "Type": "String"
+        },
+        "OperatorEMail": {
+            "Description": "EMail address to notify if there are any scaling operations",
+            "Type": "String",
+            "AllowedPattern": "([a-zA-Z0-9_\\-\\.]+)@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.)|(([a-zA-Z0-9\\-]+\\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\\]?)",
+            "ConstraintDescription": "must be a valid email address."
+        }
+    },
+    "Resources": {
+        "NotificationTopic": {
+            "Type": "AWS::SNS::Topic",
+            "Properties": {
+                "DisplayName": "Patch Compliance",
+                "TopicName": {
+                    "Fn::Join": [
+                        "",
+                        [
+                            "PatchCompliance",
+                            {
+                                "Ref": "PatchGroup"
+                            }
+                        ]
+                    ]
+                },
+                "Subscription": [
+                    {
+                        "Endpoint": {
+                            "Ref": "OperatorEMail"
+                        },
+                        "Protocol": "email"
+                    }
+                ]
+            }
+        },
+        "ssmRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "lambda.amazonaws.com"
+                                ]
+                            },
+                            "Action": [
+                                "sts:AssumeRole"
+                            ]
+                        }
+                    ]
+                },
+                "Policies": [
+                    {
+                        "PolicyName": {
+                            "Fn::Join": [
+                                "",
+                                [
+                                    "PatchCompliance",
+                                    {
+                                        "Ref": "PatchGroup"
+                                    }
+                                ]
+                            ]
+                        },
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Sid": "AllowaccesstoSSM",
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "ssm:DescribeAssociations",
+                                        "ssm:ListAssociations",
+                                        "ssm:GetDocument",
+                                        "ssm:UpdateAssociationStatus",
+                                        "ds:CreateComputer",
+                                        "ec2:DescribeInstanceStatus",
+                                        "ssm:DescribeAssociation",
+                                        "ssm:GetDeployablePatchSnapshotForInstance",
+                                        "ssm:GetDocument",
+                                        "ssm:GetParameters",
+                                        "ssm:ListAssociations",
+                                        "ssm:ListInstanceAssociations",
+                                        "ssm:PutInventory",
+                                        "ssm:PutComplianceItems",
+                                        "ssm:UpdateAssociationStatus",
+                                        "ssm:UpdateInstanceAssociationStatus",
+                                        "ssm:UpdateInstanceInformation",
+                                        "ec2messages:AcknowledgeMessage",
+                                        "ec2messages:DeleteMessage",
+                                        "ec2messages:FailMessage",
+                                        "ec2messages:GetEndpoint",
+                                        "ec2messages:GetMessages",
+                                        "ec2messages:SendReply",
+                                        "cloudwatch:PutMetricData",
+                                        "ds:CreateComputer",
+                                        "ds:DescribeDirectories",
+                                        "logs:CreateLogGroup",
+                                        "logs:CreateLogStream",
+                                        "logs:DescribeLogGroups",
+                                        "logs:DescribeLogStreams",
+                                        "logs:PutLogEvents",
+                                        "s3:PutObject",
+                                        "s3:GetObject",
+                                        "s3:AbortMultipartUpload",
+                                        "s3:ListMultipartUploadParts",
+                                        "s3:ListBucketMultipartUploads"
+                                    ],
+                                    "Resource": [
+                                        "*"
+                                    ]
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "s3:ListBucket"
+                                    ],
+                                    "Resource": "arn:aws:s3:::amazon-ssm-packages-*"
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "lambda:InvokeFunction"
+                                    ],
+                                    "Resource": [
+                                        "arn:aws:lambda:*:*:function:Automation*"
+                                    ]
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "ec2:CreateImage",
+                                        "ec2:CopyImage",
+                                        "ec2:DeregisterImage",
+                                        "ec2:DescribeImages",
+                                        "ec2:DeleteSnapshot",
+                                        "ec2:StartInstances",
+                                        "ec2:RunInstances",
+                                        "ec2:StopInstances",
+                                        "ec2:TerminateInstances",
+                                        "ec2:DescribeInstanceStatus",
+                                        "ec2:CreateTags",
+                                        "ec2:DeleteTags",
+                                        "ec2:DescribeTags",
+                                        "cloudformation:CreateStack",
+                                        "cloudformation:DescribeStackEvents",
+                                        "cloudformation:DescribeStacks",
+                                        "cloudformation:UpdateStack",
+                                        "cloudformation:DeleteStack"
+                                    ],
+                                    "Resource": [
+                                        "*"
+                                    ]
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "ssm:*"
+                                    ],
+                                    "Resource": [
+                                        "*"
+                                    ]
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "sns:Publish"
+                                    ],
+                                    "Resource": [
+                                        "*"
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "PatchComplianceLamda": {
+            "Type": "AWS::Lambda::Function",
+            "DependsOn": [
+                "ssmRole"
+            ],
+            "Properties": {
+                "Code": {
+                    "ZipFile": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "var aws = require(\"aws-sdk\");\n",
+                                "// var ssm = new aws.SSM();\n",
+                                "// var ec2 = new aws.EC2();\n",
+                                "function describeInstancePatchForGroup(results, token) {\n",
+                                "    return new Promise((resolve, reject) => {\n",
+                                "        var ssm = new aws.SSM();\n",
+                                "        var PatchGroup = process.env.PatchGroup;\n",
+                                "        var params = {\n",
+                                "            PatchGroup: PatchGroup,\n",
+                                "            MaxResults: 1\n",
+                                "        };\n",
+                                "        if (token) {\n",
+                                "            params.NextToken = token\n",
+                                "        }\n",
+                                "        ssm.describeInstancePatchStatesForPatchGroup(params, function (err, data) {\n",
+                                "            if (err) {\n",
+                                "                if (err.code === 'ThrottlingException' || err.code === 'TooManyRequestsException') {\n",
+                                "                    setTimeout(() => {\n",
+                                "                        resolve(describeInstancePatchForGroup(results, token));\n",
+                                "                    }, 1000);\n",
+                                "                } else {\n",
+                                "                    reject(err);\n",
+                                "                }\n",
+                                "            }\n",
+                                "            else {\n",
+                                "                if (data.NextToken) {\n",
+                                "                    resolve(describeInstancePatchForGroup(results.concat(data.InstancePatchStates), data.NextToken))\n",
+                                "                }\n",
+                                "                else {\n",
+                                "                    resolve(results.concat(data.InstancePatchStates))\n",
+                                "                }\n",
+                                "            }\n",
+                                "        });\n",
+                                "    })\n",
+                                "}\n",
+                                "\n",
+                                "function patchGroups(results, token) {\n",
+                                "    return new Promise((resolve, reject) => {\n",
+                                "        var ssm = new aws.SSM();\n",
+                                "        var params = {\n",
+                                "            MaxResults: 50,\n",
+                                "        };\n",
+                                "        if (token) {\n",
+                                "            params.NextToken = token\n",
+                                "        }\n",
+                                "        ssm.describePatchGroups(params, function (err, data) {\n",
+                                "            if (err) {\n",
+                                "                if (err.code === 'ThrottlingException' || err.code === 'TooManyRequestsException') {\n",
+                                "                    setTimeout(() => {\n",
+                                "                        resolve(patchGroups(results, token));\n",
+                                "                    }, 1000);\n",
+                                "                } else {\n",
+                                "                    reject(err);\n",
+                                "                }\n",
+                                "\n",
+                                "            }\n",
+                                "            else {\n",
+                                "                if (data.NextToken) {\n",
+                                "                    resolve(patchGroups(results.concat(data.Mappings[0].PatchGroup), data.NextToken))\n",
+                                "                }\n",
+                                "                else {\n",
+                                "                    resolve(results.concat(data.Mappings[0].PatchGroup))\n",
+                                "                }\n",
+                                "            }\n",
+                                "        });\n",
+                                "    })\n",
+                                "}\n",
+                                "\n",
+                                "function sendSMS(message) {\n",
+                                "    var sns = new aws.SNS();\n",
+                                "    var topicArn = process.env.TopicArn;\n",
+                                "    var params = {\n",
+                                "        Message: JSON.stringify(message),\n",
+                                "        Subject: 'TEST',\n",
+                                "        TopicArn: topicArn\n",
+                                "    };\n",
+                                "    sns.publish(params, function (err, data) {\n",
+                                "        if (err) console.log(err, err.stack);\n",
+                                "        else console.log(data);\n",
+                                "    });\n",
+                                "}\n",
+                                "\n",
+                                "exports.handler = function (event, context, callback) {\n",
+                                "    var invData;\n",
+                                "    \n",
+                                "\n",
+                                "    var err = function (err) {\n",
+                                "        console.log(err);\n",
+                                "    }\n",
+                                "    var promises = [];\n",
+                                "    // Query AWS Account ID for report\n",
+                                "    ACCOUNT_ID = context.invokedFunctionArn.split(\":\")[4];\n",
+                                "    const accountNumber = ACCOUNT_ID;\n",
+                                "\n",
+                                "  \n",
+                                "    describeInstancePatchForGroup([])\n",
+                                "        .then(function (data) {\n",
+                                "            var allDetail = []\n",
+                                "\n",
+                                "            data.forEach(value => {\n",
+                                "                var objDetail = new Object();\n",
+                                "                objDetail.Account = accountNumber;\n",
+                                "                objDetail.InstanceId = value.InstanceId;\n",
+                                "                objDetail.PatchGroup = value.PatchGroup;\n",
+                                "                objDetail.InstalledCount = value.InstalledCount;\n",
+                                "                objDetail.MissingCount = value.MissingCount;\n",
+                                "\n",
+                                "                if (value.MissingCount > 0) {\n",
+                                "                    objDetail.Compliant = \"False\";\n",
+                                "                }\n",
+                                "                else { objDetail.Compliant = \"True\"; }\n",
+                                "                allDetail.push(objDetail);\n",
+                                "                promises.push(objDetail);\n",
+                                "            });\n",
+                                "            Promise.all(promises);\n",
+                                "            console.log(promises);\n",
+                                "            sendSMS(promises);\n",
+                                "        }).catch(function (err) { console.log(err) });\n",
+                                "};\n"
+                            ]
+                        ]
+                    }
+                },
+                "Role": {
+                    "Fn::GetAtt": [
+                        "ssmRole",
+                        "Arn"
+                    ]
+                },
+                "Timeout": 60,
+                "Handler": "index.handler",
+                "Runtime": "nodejs6.10",
+                "MemorySize": 128,
+                "Environment": {
+                    "Variables": {
+                        "TopicArn": {
+                            "Ref": "NotificationTopic"
+                        },
+                        "PatchGroup": {
+                            "Ref": "PatchGroup"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
