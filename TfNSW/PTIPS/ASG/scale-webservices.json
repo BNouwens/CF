@@ -188,8 +188,6 @@
                             "Ref": "Solution"
                         },
                         "PropagateAtLaunch": "true"
-<<<<<<< HEAD
-=======
                     },
                     {
                         "Key": "Environment",
@@ -207,7 +205,6 @@
                         "Key": "type",
                         "Value": "webservices",
                         "PropagateAtLaunch": "true"
->>>>>>> develop
                     }
                 ],
                 "LaunchConfigurationName": {
@@ -253,12 +250,9 @@
                         "packages": {
                             "rpm": {
                                 "ssm": "https://s3-ap-southeast-2.amazonaws.com/amazon-ssm-ap-southeast-2/latest/linux_amd64/amazon-ssm-agent.rpm"
-<<<<<<< HEAD
-=======
                             },
                             "yum": {
                                 "ansible": []
->>>>>>> develop
                             }
                         },
                         "services": {
@@ -298,20 +292,14 @@
                                 "yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm\n",
                                 "yum -y install python-pip\n",
                                 "cd /usr/bin\n",
-<<<<<<< HEAD
-=======
                                 "pip install --upgrade pip",
->>>>>>> develop
                                 "pip install pystache\n",
                                 "pip install argparse\n",
                                 "pip install python-daemon\n",
                                 "pip install requests\n",
                                 "cd /opt\n",
-<<<<<<< HEAD
                                 "Curl –O  https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-1.0-4.noarch.rpm\n",
                                 "rpm –Uvh aws*.rpm\n",
-=======
->>>>>>> develop
                                 "curl -O https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n",
                                 "tar -xvpf aws-cfn-bootstrap-latest.tar.gz\n",
                                 "cd aws-cfn-bootstrap-1.4/\n",
@@ -330,13 +318,10 @@
                                 "ln -s /usr/bin/cfn-get-metadata /opt/aws/bin/cfn-get-metadata\n",
                                 "ln -s /usr/bin/cfn-send-cmd-event /opt/aws/bin/cfn-send-cmd-event\n",
                                 "ln -s /usr/bin/cfn-send-cmd-result /opt/aws/bin/cfn-send-cmd-result\n",
-<<<<<<< HEAD
-=======
                                 "pip install awscli --upgrade\n",
                                 "export PATH=~/.local/bin:$PATH\n",
                                 "source ~/.bash_profile\n",
                                 "chmod u+x /usr/bin/aws\n",
->>>>>>> develop
                                 "# Install the files and packages from the metadata\n",
                                 "/opt/aws/bin/cfn-init -v ",
                                 "         --stack ",
