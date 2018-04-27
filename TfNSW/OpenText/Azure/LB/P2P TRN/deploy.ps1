@@ -46,17 +46,7 @@ param(
 
     [Parameter(Mandatory = $True)]
     [string]
-    $parametersFilePath,
-
-    [Parameter(Mandatory = $True)]
-    [string]
-    $username,
-
-    [Parameter(Mandatory = $True)]
-    [securestring]
-    $password
-
-
+    $parametersFilePath
 )
 #$templateFilePath = "template.json",
 <#
@@ -80,11 +70,7 @@ $ErrorActionPreference = "Stop"
 
 # sign in
 Write-Host "Logging in...";
-
-$secpasswd = ConvertTo-SecureString $password -AsPlainText -Force
-$mycreds = New-Object System.Management.Automation.PSCredential ($username, $password)
-
-Login-AzureRmAccount -Credential $mycreds
+Login-AzureRmAccount;
 
 # select subscription
 Write-Host "Selecting subscription '$subscriptionId'";

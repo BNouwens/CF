@@ -1,0 +1,33 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "subnetName": {
+            "value": "SN-WORKLOAD-WEB01"
+        },
+        "subnetRef": {
+            "value": "/subscriptions/ce2600a2-727c-4f73-a82a-053114379175/resourceGroups/RG-NonPRD-P2P-VNET01/providers/Microsoft.Network/virtualNetworks/Vnet-SYD-Non-PRD-P2P-EEDRMS-Workload-01/subnets/SN-WORKLOAD-WEB01"
+        },
+        "applicationGatewayName": {
+            "value": "edrmstrnotag"
+        },
+        "publicIpAddressName": {
+            "value": "edrmstrnotag"
+        },
+        "location": {
+            "value": "australiaeast"
+        },
+        "tier": {
+            "value": "Standard"
+        },
+        "skuSize": {
+            "value": "Standard_Medium"
+        },
+        "capacity": {
+            "value": 2
+        },
+        "frontEndPort": {
+            "value": 80
+        }
+    }
+}
