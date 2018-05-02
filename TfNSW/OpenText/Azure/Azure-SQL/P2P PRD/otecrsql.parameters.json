@@ -31,7 +31,7 @@
             "value": "edrmsprdecrsql"
         },
         "zoneRedundant": {
-            "value": false
+            "value": true
         }
     }
 }

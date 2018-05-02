@@ -7,10 +7,10 @@
         },
         
         "collation": {
-            "value": "SQL_Latin1_General_CP1_CS_AS"
+            "value": "SQL_Latin1_General_CP1_CI_AS"
         },
         "databaseName": {
-            "value": "ecr"
+            "value": "otcs"
         },
         "edition": {
             "value": "Standard"
@@ -28,10 +28,10 @@
             "value": ""
         },
         "serverName": {
-            "value": "edrmsprdecrsql"
+            "value": "edrmsprdotcssql"
         },
         "zoneRedundant": {
-            "value": false
+            "value": true
         }
     }
 }

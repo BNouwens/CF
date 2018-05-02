@@ -3,46 +3,46 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "virtualNetworkNameResourceGroup": {
-            "value": "RG-NonPRD-P2P-VNET01"
+            "value": "RG-PRD-P2P-VNET01"
         },
         "virtualNetworkName": {
-            "value": "Vnet-SYD-Non-PRD-P2P-EEDRMS-Workload-01"
+            "value": "Vnet-SYD-PRD-P2P-EEDRMS-Workload-01"
         },
         "subnetName": {
             "value": "SN-WORKLOAD-App01"
         },
         "imageReferenceId": {
-            "value": "/subscriptions/ce2600a2-727c-4f73-a82a-053114379175/resourceGroups/RG-SYD-NonPRD-P2P-IM/providers/Microsoft.Compute/images/Server2012R2-13-02-2018"
+            "value": "/subscriptions/d80b77c3-2db7-450f-af5f-a194280a87af/resourceGroups/RG-SYD-PRD-P2P-IM/providers/Microsoft.Compute/images/Server2012R2-13-02-2018"
+        },
+        "virtualMachineName": {
+            "value": "edrmsprdotcsa01"
+        },
+        "availabilitySetName": {
+            "value": "edrmsprdotcsa"
         },
         "location": {
             "value": "australiaeast"
         },
-        "virtualMachineName": {
-            "value": "edrmsppdbfe01"
-        },
-        "availabilitySetName": {
-            "value": "edrmsppdbravafe"
-        },
         "virtualMachineSize": {
-            "value": "Standard_F4s"
+            "value": "Standard_D8s_v3"
         },
         "adminUsername": {
             "value": "edrmsadmin"
         },
         "networkInterfaceName": {
-            "value": "edrmsppdbfe01"
+            "value": "edrmsprdotcsa01"
         },
         "networkSecurityGroupName": {
-            "value": "NSG-edrmsppdbravafe"
+            "value": "NSG-edrmsprdotcsa"
         },
         "diagnosticsStorageAccountName": {
-            "value": "edrmsppdworkloaddiag"
+            "value": "edrmsprdworkloaddiag"
         },
         "diagnosticsStorageAccountType": {
             "value": "Standard_LRS"
         },
         "diagnosticsStorageAccountId": {
-            "value": "Microsoft.Storage/storageAccounts/edrmsppdworkloaddiag"
+            "value": "Microsoft.Storage/storageAccounts/edrmsprdworkloaddiag"
         },
         "modulesUrl": {
             "value": "https://github.com/BNouwens/CF/raw/develop/TfNSW/OpenText/Azure/VM/SMDO-PPD/set-storage.zip"
