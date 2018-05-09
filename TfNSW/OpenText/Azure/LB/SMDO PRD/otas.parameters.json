@@ -1,0 +1,18 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "value": "australiaeast"
+        },
+        "name": {
+            "value": "eotprdas"
+        },
+        "subnetId": {
+            "value": "/subscriptions/e4a46db3-0ee4-414a-833f-1e2c42709e0b/resourceGroups/RG-PRD-SMDO-VNET01/providers/Microsoft.Network/virtualNetworks/Vnet-Syd-PRD-SMDO-EEDRMS-Workload-01/subnets/SN-WORKLOAD-LB01"
+        },
+        "privateIPAllocationMethod": {
+            "value": "Dynamic"
+        }
+    }
+}

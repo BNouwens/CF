@@ -1,0 +1,54 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "virtualNetworkNameResourceGroup": {
+            "value": "RG-PRD-SMDO-VNET01"
+        },
+        "virtualNetworkName": {
+            "value": "Vnet-Syd-PRD-SMDO-EEDRMS-Workload-01"
+        },
+        "subnetName": {
+            "value": "SN-WORKLOAD-App01"
+        },
+        "imageReferenceId": {
+            "value": "/subscriptions/e4a46db3-0ee4-414a-833f-1e2c42709e0b/resourceGroups/RG-SYD-PRD-SMDO-IM/providers/Microsoft.Compute/images/Server2012R2-13-02-2018"
+        },
+        "location": {
+            "value": "australiaeast"
+        },
+        "virtualMachineName": {
+            "value": "eotprdotcs02"
+        },
+        "virtualMachineSize": {
+            "value": "Standard_D8s_v3"
+        },
+        "availabilitySetName": {
+            "value": "eotprdotcs"
+        },
+        "adminUsername": {
+            "value": "edrmsadmin"
+        },
+        "networkInterfaceName": {
+            "value": "eotprdotcs02"
+        },
+        "networkSecurityGroupName": {
+            "value": "NSG-eotprdotcs01"
+        },
+        "diagnosticsStorageAccountName": {
+            "value": "eotprdworkloaddiag"
+        },
+        "diagnosticsStorageAccountType": {
+            "value": "Standard_LRS"
+        },
+        "diagnosticsStorageAccountId": {
+            "value": "Microsoft.Storage/storageAccounts/eotprdworkloaddiag"
+        },
+        "modulesUrl": {
+            "value": "https://github.com/BNouwens/CF/raw/develop/TfNSW/OpenText/Azure/VM/SMDO-PPD/set-storage.zip"
+        },
+        "configurationFunction": {
+            "value": "set-storage.ps1\\disks"
+        }
+    }
+}

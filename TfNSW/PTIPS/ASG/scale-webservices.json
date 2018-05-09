@@ -222,8 +222,8 @@
                 "LaunchConfigurationName": {
                     "Ref": "LaunchConfig"
                 },
-                "MinSize": "2",
-                "MaxSize": "2",
+                "MinSize": "0",
+                "MaxSize": "0",
                 "TargetGroupARNs": [
                     {
                         "Ref": "webServicesLbTG"
@@ -304,7 +304,7 @@
                                 "yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm\n",
                                 "yum -y install python-pip\n",
                                 "cd /usr/bin\n",
-                                "pip install --upgrade pip",
+                                "pip install --upgrade pip\n",
                                 "pip install pystache\n",
                                 "pip install argparse\n",
                                 "pip install python-daemon\n",
@@ -313,8 +313,8 @@
                                 "pip install botocore\n",
                                 "pip install boto3\n",
                                 "cd /opt\n",
-                                "Curl –O  https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-1.0-4.noarch.rpm\n",
-                                "rpm –Uvh aws*.rpm\n",
+                                "# curl –O  https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-1.0-4.noarch.rpm\n",
+                                "# rpm –Uvh aws*.rpm\n",
                                 "curl -O https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n",
                                 "tar -xvpf aws-cfn-bootstrap-latest.tar.gz\n",
                                 "cd aws-cfn-bootstrap-1.4/\n",
