@@ -1014,6 +1014,8 @@
                     },
                     {
                         "IpProtocol": "tcp",
+<<<<<<< HEAD
+=======
                         "FromPort": "22",
                         "ToPort": "22",
                         "CidrIp": "147.200.0.0/16",
@@ -1035,6 +1037,7 @@
                     },
                     {
                         "IpProtocol": "tcp",
+>>>>>>> develop
                         "FromPort": "5985",
                         "ToPort": "5985",
                         "SourceSecurityGroupId": {

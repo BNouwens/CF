@@ -1,0 +1,49 @@
+{
+                    ParameterKey: 'AMI',
+                    ParameterValue: responseData["Id"]
+                },
+                {
+                    ParameterKey: 'CostCentre',
+                    UsePreviousValue: true
+                },
+                {
+                    ParameterKey: 'Environment',
+                    UsePreviousValue: true
+                },
+                {
+                    ParameterKey: 'InstanceType',
+                    UsePreviousValue: true
+                },
+                {
+                    ParameterKey: 'KeyName',
+                    UsePreviousValue: true
+                },
+                {
+                    ParameterKey: 'LBSubnet',
+                    UsePreviousValue: true
+                },
+                {
+                    ParameterKey: 'NameCode',
+                    UsePreviousValue: true
+                },
+                {
+                    ParameterKey: 'OperatorEMail',
+                    UsePreviousValue: true
+                },
+                {
+                    ParameterKey: 'SecurityGroupIds',
+                    UsePreviousValue: true
+                },
+                {
+                    ParameterKey: 'Solution',
+                    UsePreviousValue: true
+                },
+                {
+                    ParameterKey: 'SSHLocation',
+                    UsePreviousValue: true
+                },
+
+                {
+                    ParameterKey: 'Subnet',
+                    UsePreviousValue: true
+                },

@@ -1,0 +1,43 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "value": "australiaeast"
+        },
+        "virtualMachineName": {
+            "value": "eotdevdc01"
+        },
+        "virtualMachineSize": {
+            "value": "Standard_F4s"
+        },
+        "adminUsername": {
+            "value": "eotadmin"
+        },
+        "virtualNetworkNameResourceGroup": {
+            "value": "RG-SYD-NonPRD-OPENTEXT-WORKLOAD-VNET01"
+        },
+        "virtualNetworkName": {
+            "value": "VNET-SYD-NonPRD-OPENTEXT-WORKLOAD-NETWORK01"
+        },
+        "networkInterfaceName": {
+            "value": "eotdevdc01"
+        },
+        "networkSecurityGroupName": {
+            "value": "NSG-eotdevdc"
+        },
+        
+        "diagnosticsStorageAccountName": {
+            "value": "opentextdevworkloaddiag"
+        },
+        "diagnosticsStorageAccountType": {
+            "value": "Standard_LRS"
+        },
+        "diagnosticsStorageAccountId": {
+            "value": "Microsoft.Storage/storageAccounts/opentextdevworkloaddiag"
+        },
+        "subnetName": {
+            "value": "SN-SYD-NonPRD-OpenText-WORKLOAD-APP01"
+        }
+    }
+}

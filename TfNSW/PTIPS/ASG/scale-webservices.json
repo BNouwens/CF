@@ -130,6 +130,11 @@
             "Description": "IAM Profile to associate with instance",
             "Default": "",
             "Type": "String"
+        },
+        "PatchGroup": {
+            "Description": "Name of Patch Group",
+            "Default": "",
+            "Type": "String"
         }
     },
     "Resources": {
@@ -190,7 +195,7 @@
                         "PropagateAtLaunch": "true"
                     },
                     {
-                        "Key": "Environment",
+                        "Key": "ptipsenv",
                         "Value": {
                             "Ref": "Environment"
                         },
@@ -204,6 +209,13 @@
                     {
                         "Key": "type",
                         "Value": "webservices",
+                        "PropagateAtLaunch": "true"
+                    },
+                    {
+                        "Key": "Patch Group",
+                        "Value": {
+                            "Ref": "PatchGroup"
+                        },
                         "PropagateAtLaunch": "true"
                     }
                 ],
@@ -223,7 +235,7 @@
                     "MinSuccessfulInstancesPercent": "0"
                 },
                 "ResourceSignal": {
-                    "Timeout": "PT3M",
+                    "Timeout": "PT5M",
                     "Count": "0"
                 }
             },
@@ -231,7 +243,7 @@
                 "AutoScalingRollingUpdate": {
                     "MinInstancesInService": "0",
                     "MaxBatchSize": "1",
-                    "PauseTime": "PT3M",
+                    "PauseTime": "PT5M",
                     "WaitOnResourceSignals": "true"
                 }
             }
@@ -292,12 +304,17 @@
                                 "yum -y install https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm\n",
                                 "yum -y install python-pip\n",
                                 "cd /usr/bin\n",
-                                "pip install --upgrade pip",
+                                "pip install --upgrade pip\n",
                                 "pip install pystache\n",
                                 "pip install argparse\n",
                                 "pip install python-daemon\n",
                                 "pip install requests\n",
+                                "pip install boto\n",
+                                "pip install botocore\n",
+                                "pip install boto3\n",
                                 "cd /opt\n",
+                                "# curl –O  https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-1.0-4.noarch.rpm\n",
+                                "# rpm –Uvh aws*.rpm\n",
                                 "curl -O https://s3.amazonaws.com/cloudformation-examples/aws-cfn-bootstrap-latest.tar.gz\n",
                                 "tar -xvpf aws-cfn-bootstrap-latest.tar.gz\n",
                                 "cd aws-cfn-bootstrap-1.4/\n",

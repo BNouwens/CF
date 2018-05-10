@@ -1,0 +1,1 @@
+Publish-AzureVMDscConfiguration -ConfigurationPath "\Users\bryan.nouwens\Documents\CF\TfNSW\OpenText\Azure\VM\P2P Dev\iis-dsc.ps1" -ConfigurationArchivePath "\Users\bryan.nouwens\Documents\CF\TfNSW\OpenText\Azure\VM\P2P Dev\iis-dsc.zip" -force
