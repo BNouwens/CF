@@ -1,0 +1,1887 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Create Patch Baselinse",
+    "Parameters": {
+        "OperatorEMail": {
+            "Description": "EMail address to notify if there are any scaling operations",
+            "Type": "String",
+            "AllowedPattern": "([a-zA-Z0-9_\\-\\.]+)@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.)|(([a-zA-Z0-9\\-]+\\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\\]?)",
+            "ConstraintDescription": "must be a valid email address."
+        },
+        "AutoDeploy": {
+            "Description": "Auto Deploy Patches?",
+            "Type": "String",
+            "AllowedValues": [
+                "true",
+                "false"
+            ],
+            "Default": "false",
+            "ConstraintDescription": "must specify true or false."
+        },
+        "DEV": {
+            "Description": "Development Environment?",
+            "Type": "String",
+            "AllowedValues": [
+                "true",
+                "false"
+            ],
+            "Default": "false",
+            "ConstraintDescription": "must specify true or false."
+        },
+        "DEVPatchAge": {
+            "Type": "String"
+        },
+        "DEVSchedule": {
+            "Type": "String"
+        },
+        "PRD": {
+            "Description": "Production Environment?",
+            "Type": "String",
+            "AllowedValues": [
+                "true",
+                "false"
+            ],
+            "Default": "false",
+            "ConstraintDescription": "must specify true or false."
+        },
+        "PRDPatchAge": {
+            "Type": "String"
+        },
+        "PRDSchedule": {
+            "Type": "String"
+        },
+        "PPD": {
+            "Description": "PreProduction Environment?",
+            "Type": "String",
+            "AllowedValues": [
+                "true",
+                "false"
+            ],
+            "Default": "false",
+            "ConstraintDescription": "must specify true or false."
+        },
+        "PPDPatchAge": {
+            "Type": "String"
+        },
+        "PPDSchedule": {
+            "Type": "String"
+        },
+        "Test": {
+            "Description": "Test Environment?",
+            "Type": "String",
+            "AllowedValues": [
+                "true",
+                "false"
+            ],
+            "Default": "false",
+            "ConstraintDescription": "must specify true or false."
+        },
+        "TestPatchAge": {
+            "Type": "String"
+        },
+        "TestSchedule": {
+            "Type": "String"
+        },
+        "RHEL": {
+            "Description": "RedHat Enterprise Linux required",
+            "Type": "String",
+            "AllowedValues": [
+                "true",
+                "false"
+            ],
+            "Default": "false",
+            "ConstraintDescription": "must specify true or false."
+        },
+        "Windows": {
+            "Description": "Windows required",
+            "Type": "String",
+            "AllowedValues": [
+                "true",
+                "false"
+            ],
+            "Default": "false",
+            "ConstraintDescription": "must specify true or false."
+        }
+    },
+    "Metadata": {
+        "AWS::CloudFormation::Interface": {
+            "ParameterGroups": [
+                {
+                    "Label": {
+                        "default": "Options"
+                    },
+                    "Parameters": [
+                        "AutoDeploy"
+                    ]
+                },
+                {
+                    "Label": {
+                        "default": "Patch Environments Required"
+                    },
+                    "Parameters": [
+                        "DEV",
+                        "DEVPatchAge",
+                        "DEVSchedule",
+                        "PPD",
+                        "PPDPatchAge",
+                        "PPDSchedule",
+                        "Test",
+                        "TestPatchAge",
+                        "TestSchedule",
+                        "PRD",
+                        "PRDPatchAge",
+                        "PRDSchedule"
+                    ]
+                },
+                {
+                    "Label": {
+                        "default": "Operating Systems"
+                    },
+                    "Parameters": [
+                        "RHEL",
+                        "Windows"
+                    ]
+                }
+            ],
+            "ParameterLabels": {
+                "DEV": {
+                    "default": "Development?"
+                },
+                "PPD": {
+                    "default": "PreProduction"
+                },
+                "Test": {
+                    "default": "Test"
+                },
+                "PRD": {
+                    "default": "Production"
+                },
+                "RHEL": {
+                    "default": "Is RedHat Enterprise Linux required?"
+                },
+                "Windows": {
+                    "default": "Is Windows required?"
+                }
+            }
+        }
+    },
+    "Conditions": {
+        "CreateDevRHEL": {
+            "Fn::And": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "DEV"
+                        },
+                        "true"
+                    ]
+                },
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "RHEL"
+                        },
+                        "true"
+                    ]
+                }
+            ]
+        },
+        "CreatePreProductionRHEL": {
+            "Fn::And": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "PPD"
+                        },
+                        "true"
+                    ]
+                },
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "RHEL"
+                        },
+                        "true"
+                    ]
+                }
+            ]
+        },
+        "CreateTestRHEL": {
+            "Fn::And": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "Test"
+                        },
+                        "true"
+                    ]
+                },
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "RHEL"
+                        },
+                        "true"
+                    ]
+                }
+            ]
+        },
+        "CreateProductionRHEL": {
+            "Fn::And": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "PRD"
+                        },
+                        "true"
+                    ]
+                },
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "RHEL"
+                        },
+                        "true"
+                    ]
+                }
+            ]
+        },
+        "CreateDevWin": {
+            "Fn::And": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "DEV"
+                        },
+                        "true"
+                    ]
+                },
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "Windows"
+                        },
+                        "true"
+                    ]
+                }
+            ]
+        },
+        "CreatePreProductionWin": {
+            "Fn::And": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "PPD"
+                        },
+                        "true"
+                    ]
+                },
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "Windows"
+                        },
+                        "true"
+                    ]
+                }
+            ]
+        },
+        "CreateTestWin": {
+            "Fn::And": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "Test"
+                        },
+                        "true"
+                    ]
+                },
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "Windows"
+                        },
+                        "true"
+                    ]
+                }
+            ]
+        },
+        "CreateProductionWin": {
+            "Fn::And": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "PRD"
+                        },
+                        "true"
+                    ]
+                },
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "Windows"
+                        },
+                        "true"
+                    ]
+                }
+            ]
+        },
+        "CreateDev": {
+            "Fn::Equals": [
+                {
+                    "Ref": "DEV"
+                },
+                "true"
+            ]
+        },
+        "CreatePreProduction": {
+            "Fn::Equals": [
+                {
+                    "Ref": "PPD"
+                },
+                "true"
+            ]
+        },
+        "CreateTest": {
+            "Fn::Equals": [
+                {
+                    "Ref": "Test"
+                },
+                "true"
+            ]
+        },
+        "CreateProduction": {
+            "Fn::Equals": [
+                {
+                    "Ref": "PRD"
+                },
+                "true"
+            ]
+        },
+        "CreateDevScan": {
+            "Fn::And": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "DEV"
+                        },
+                        "true"
+                    ]
+                },
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "AutoDeploy"
+                        },
+                        "false"
+                    ]
+                }
+            ]
+        },
+        "CreatePreProductionScan": {
+            "Fn::And": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "PPD"
+                        },
+                        "true"
+                    ]
+                },
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "AutoDeploy"
+                        },
+                        "false"
+                    ]
+                }
+            ]
+        },
+        "CreateTestScan": {
+            "Fn::And": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "Test"
+                        },
+                        "true"
+                    ]
+                },
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "AutoDeploy"
+                        },
+                        "false"
+                    ]
+                }
+            ]
+        },
+        "CreateProductionScan": {
+            "Fn::And": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "PRD"
+                        },
+                        "true"
+                    ]
+                },
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "AutoDeploy"
+                        },
+                        "false"
+                    ]
+                }
+            ]
+        },
+        "CreateDevDeploy": {
+            "Fn::And": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "DEV"
+                        },
+                        "true"
+                    ]
+                },
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "AutoDeploy"
+                        },
+                        "true"
+                    ]
+                }
+            ]
+        },
+        "CreatePreProductionDeploy": {
+            "Fn::And": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "PPD"
+                        },
+                        "true"
+                    ]
+                },
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "AutoDeploy"
+                        },
+                        "true"
+                    ]
+                }
+            ]
+        },
+        "CreateTestDeploy": {
+            "Fn::And": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "Test"
+                        },
+                        "true"
+                    ]
+                },
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "AutoDeploy"
+                        },
+                        "true"
+                    ]
+                }
+            ]
+        },
+        "CreateProductionDeploy": {
+            "Fn::And": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "PRD"
+                        },
+                        "true"
+                    ]
+                },
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "AutoDeploy"
+                        },
+                        "true"
+                    ]
+                }
+            ]
+        }
+    },
+    "Resources": {
+        "RHELBaseDevelopment": {
+            "Type": "AWS::SSM::PatchBaseline",
+            "Condition": "CreateDevRHEL",
+            "Properties": {
+                "OperatingSystem": "REDHAT_ENTERPRISE_LINUX",
+                "PatchGroups": [
+                    "RHEL-Dev"
+                ],
+                "Description": "Dev_RHEL_Baseline",
+                "ApprovedPatchesComplianceLevel": "CRITICAL",
+                "ApprovalRules": {
+                    "PatchRules": [
+                        {
+                            "PatchFilterGroup": {
+                                "PatchFilters": [
+                                    {
+                                        "Key": "SEVERITY",
+                                        "Values": [
+                                            "Critical",
+                                            "Important"
+                                        ]
+                                    }
+                                ]
+                            },
+                            "ApproveAfterDays": {
+                                "Ref": "DEVPatchAge"
+                            }
+                        }
+                    ]
+                },
+                "Name": "Dev_RHEL_Baseline"
+            }
+        },
+        "RHELBasePreProduction": {
+            "Type": "AWS::SSM::PatchBaseline",
+            "Condition": "CreatePreProductionRHEL",
+            "Properties": {
+                "OperatingSystem": "REDHAT_ENTERPRISE_LINUX",
+                "PatchGroups": [
+                    "RHEL-PPD"
+                ],
+                "Description": "Ppd_RHEL_Baseline",
+                "ApprovedPatchesComplianceLevel": "CRITICAL",
+                "ApprovalRules": {
+                    "PatchRules": [
+                        {
+                            "PatchFilterGroup": {
+                                "PatchFilters": [
+                                    {
+                                        "Key": "SEVERITY",
+                                        "Values": [
+                                            "Critical",
+                                            "Important"
+                                        ]
+                                    }
+                                ]
+                            },
+                            "ApproveAfterDays": {
+                                "Ref": "PPDPatchAge"
+                            }
+                        }
+                    ]
+                },
+                "Name": "Ppd_RHEL_Baseline"
+            }
+        },
+        "RHELBaseTest": {
+            "Type": "AWS::SSM::PatchBaseline",
+            "Condition": "CreateTestRHEL",
+            "Properties": {
+                "OperatingSystem": "REDHAT_ENTERPRISE_LINUX",
+                "PatchGroups": [
+                    "RHEL-Test"
+                ],
+                "Description": "Test_RHEL_Baseline",
+                "ApprovedPatchesComplianceLevel": "CRITICAL",
+                "ApprovalRules": {
+                    "PatchRules": [
+                        {
+                            "PatchFilterGroup": {
+                                "PatchFilters": [
+                                    {
+                                        "Key": "SEVERITY",
+                                        "Values": [
+                                            "Critical",
+                                            "Important"
+                                        ]
+                                    }
+                                ]
+                            },
+                            "ApproveAfterDays": {
+                                "Ref": "TestPatchAge"
+                            }
+                        }
+                    ]
+                },
+                "Name": "Test_RHEL_Baseline"
+            }
+        },
+        "RHELBaseProduction": {
+            "Type": "AWS::SSM::PatchBaseline",
+            "Condition": "CreateProductionRHEL",
+            "Properties": {
+                "OperatingSystem": "REDHAT_ENTERPRISE_LINUX",
+                "PatchGroups": [
+                    "RHEL-PRD"
+                ],
+                "Description": "Production_RHEL_Baseline",
+                "ApprovedPatchesComplianceLevel": "CRITICAL",
+                "ApprovalRules": {
+                    "PatchRules": [
+                        {
+                            "PatchFilterGroup": {
+                                "PatchFilters": [
+                                    {
+                                        "Key": "SEVERITY",
+                                        "Values": [
+                                            "Critical",
+                                            "Important"
+                                        ]
+                                    }
+                                ]
+                            },
+                            "ApproveAfterDays": {
+                                "Ref": "PRDPatchAge"
+                            }
+                        }
+                    ]
+                },
+                "Name": "Production_RHEL_Baseline"
+            }
+        },
+        "WinBaseDevelopment": {
+            "Type": "AWS::SSM::PatchBaseline",
+            "Condition": "CreateDevWin",
+            "Properties": {
+                "OperatingSystem": "WINDOWS",
+                "PatchGroups": [
+                    "Windows-Dev"
+                ],
+                "Description": "Dev_Win_Baseline",
+                "ApprovedPatchesComplianceLevel": "CRITICAL",
+                "ApprovalRules": {
+                    "PatchRules": [
+                        {
+                            "PatchFilterGroup": {
+                                "PatchFilters": [
+                                    {
+                                        "Key": "CLASSIFICATION",
+                                        "Values": [
+                                            "CriticalUpdates",
+                                            "SecurityUpdates",
+                                            "UpdateRollups"
+                                        ]
+                                    }
+                                ]
+                            },
+                            "ApproveAfterDays": {
+                                "Ref": "DEVPatchAge"
+                            }
+                        }
+                    ]
+                },
+                "Name": "Dev_Win_Baseline"
+            }
+        },
+        "WinBasePreProduction": {
+            "Type": "AWS::SSM::PatchBaseline",
+            "Condition": "CreatePreProductionWin",
+            "Properties": {
+                "OperatingSystem": "WINDOWS",
+                "PatchGroups": [
+                    "Windows-PPD"
+                ],
+                "Description": "Ppd_Win_Baseline",
+                "ApprovedPatchesComplianceLevel": "CRITICAL",
+                "ApprovalRules": {
+                    "PatchRules": [
+                        {
+                            "PatchFilterGroup": {
+                                "PatchFilters": [
+                                    {
+                                        "Key": "CLASSIFICATION",
+                                        "Values": [
+                                            "CriticalUpdates",
+                                            "SecurityUpdates",
+                                            "UpdateRollups"
+                                        ]
+                                    }
+                                ]
+                            },
+                            "ApproveAfterDays": {
+                                "Ref": "PPDPatchAge"
+                            }
+                        }
+                    ]
+                },
+                "Name": "Ppd_Win_Baseline"
+            }
+        },
+        "WinBaseTest": {
+            "Type": "AWS::SSM::PatchBaseline",
+            "Condition": "CreateTestWin",
+            "Properties": {
+                "OperatingSystem": "WINDOWS",
+                "PatchGroups": [
+                    "Windows-Test"
+                ],
+                "Description": "Test_Win_Baseline",
+                "ApprovedPatchesComplianceLevel": "CRITICAL",
+                "ApprovalRules": {
+                    "PatchRules": [
+                        {
+                            "PatchFilterGroup": {
+                                "PatchFilters": [
+                                    {
+                                        "Key": "CLASSIFICATION",
+                                        "Values": [
+                                            "CriticalUpdates",
+                                            "SecurityUpdates",
+                                            "UpdateRollups"
+                                        ]
+                                    }
+                                ]
+                            },
+                            "ApproveAfterDays": {
+                                "Ref": "TestPatchAge"
+                            }
+                        }
+                    ]
+                },
+                "Name": "Test_Win_Baseline"
+            }
+        },
+        "WinBaseProduction": {
+            "Type": "AWS::SSM::PatchBaseline",
+            "Condition": "CreateProductionWin",
+            "Properties": {
+                "OperatingSystem": "WINDOWS",
+                "PatchGroups": [
+                    "Windows-PRD"
+                ],
+                "Description": "Prd_Win_Baseline",
+                "ApprovedPatchesComplianceLevel": "CRITICAL",
+                "ApprovalRules": {
+                    "PatchRules": [
+                        {
+                            "PatchFilterGroup": {
+                                "PatchFilters": [
+                                    {
+                                        "Key": "CLASSIFICATION",
+                                        "Values": [
+                                            "CriticalUpdates",
+                                            "SecurityUpdates",
+                                            "UpdateRollups"
+                                        ]
+                                    }
+                                ]
+                            },
+                            "ApproveAfterDays": {
+                                "Ref": "PRDPatchAge"
+                            }
+                        }
+                    ]
+                },
+                "Name": "Prd_Win_Baseline"
+            }
+        },
+        "scanWindowDev": {
+            "Type": "AWS::SSM::MaintenanceWindow",
+            "Condition": "CreateDev",
+            "Properties": {
+                "Description": "Development Environment",
+                "AllowUnassociatedTargets": "False",
+                "Cutoff": 0,
+                "Schedule": {
+                    "Ref": "DEVSchedule"
+                },
+                "Duration": 1,
+                "Name": "DEV"
+            }
+        },
+        "scanTargetDev": {
+            "Type": "AWS::SSM::MaintenanceWindowTarget",
+            "Condition": "CreateDev",
+            "Properties": {
+                "Description": "Development Servers",
+                "WindowId": {
+                    "Ref": "scanWindowDev"
+                },
+                "ResourceType": "INSTANCE",
+                "Targets": [
+                    {
+                        "Key": "tag:Patch Group",
+                        "Values": [
+                            "Development",
+                            "RHEL-Dev",
+                            "Windows-Dev",
+                            "tmp"
+                        ]
+                    }
+                ],
+                "Name": "DEV"
+            }
+        },
+        "scanTaskDev": {
+            "Type": "AWS::SSM::MaintenanceWindowTask",
+            "Condition": "CreateDevScan",
+            "DependsOn": [
+                "serviceRole"
+            ],
+            "Properties": {
+                "MaxErrors": "10",
+                "Description": "Scan Patch Status",
+                "ServiceRoleArn": {
+                    "Fn::GetAtt": [
+                        "serviceRole",
+                        "Arn"
+                    ]
+                },
+                "Priority": 1,
+                "MaxConcurrency": "10",
+                "Targets": [
+                    {
+                        "Key": "WindowTargetIds",
+                        "Values": [
+                            {
+                                "Ref": "scanTargetDev"
+                            }
+                        ]
+                    }
+                ],
+                "Name": "Scan",
+                "TaskArn": "AWS-RunPatchBaseline",
+                "TaskInvocationParameters": {
+                    "MaintenanceWindowRunCommandParameters": {
+                        "ServiceRoleArn": {
+                            "Fn::GetAtt": [
+                                "serviceRole",
+                                "Arn"
+                            ]
+                        },
+                        "NotificationConfig": {
+                            "NotificationArn": {
+                                "Ref": "TriggerPatchNotification"
+                            },
+                            "NotificationType": "Command",
+                            "NotificationEvents": [
+                                "Success",
+                                "TimedOut",
+                                "Cancelled",
+                                "Failed"
+                            ]
+                        },
+                        "Parameters": {
+                            "Operation": [
+                                "Scan"
+                            ]
+                        }
+                    }
+                },
+                "WindowId": {
+                    "Ref": "scanWindowDev"
+                },
+                "TaskType": "RUN_COMMAND"
+            }
+        },
+        "deployTaskDev": {
+            "Type": "AWS::SSM::MaintenanceWindowTask",
+            "Condition": "CreateDevDeploy",
+            "DependsOn": [
+                "serviceRole"
+            ],
+            "Properties": {
+                "MaxErrors": "10",
+                "Description": "Deploy Patch",
+                "ServiceRoleArn": {
+                    "Fn::GetAtt": [
+                        "serviceRole",
+                        "Arn"
+                    ]
+                },
+                "Priority": 10,
+                "MaxConcurrency": "10",
+                "Targets": [
+                    {
+                        "Key": "WindowTargetIds",
+                        "Values": [
+                            {
+                                "Ref": "scanTargetDev"
+                            }
+                        ]
+                    }
+                ],
+                "Name": "Deploy",
+                "TaskArn": "AWS-RunPatchBaseline",
+                "TaskInvocationParameters": {
+                    "MaintenanceWindowRunCommandParameters": {
+                        "ServiceRoleArn": {
+                            "Fn::GetAtt": [
+                                "serviceRole",
+                                "Arn"
+                            ]
+                        },
+                        "NotificationConfig": {
+                            "NotificationArn": {
+                                "Ref": "TriggerPatchNotification"
+                            },
+                            "NotificationType": "Command",
+                            "NotificationEvents": [
+                                "Success",
+                                "TimedOut",
+                                "Cancelled",
+                                "Failed"
+                            ]
+                        },
+                        "Parameters": {
+                            "Operation": [
+                                "Install"
+                            ]
+                        }
+                    }
+                },
+                "WindowId": {
+                    "Ref": "scanWindowDev"
+                },
+                "TaskType": "RUN_COMMAND"
+            }
+        },
+        "scanWindowPPD": {
+            "Type": "AWS::SSM::MaintenanceWindow",
+            "Condition": "CreatePreProduction",
+            "Properties": {
+                "Description": "PreProduction Environment",
+                "AllowUnassociatedTargets": "False",
+                "Cutoff": 0,
+                "Schedule": {
+                    "Ref": "PPDSchedule"
+                },
+                "Duration": 2,
+                "Name": "PPD"
+            }
+        },
+        "scanTargetPPD": {
+            "Type": "AWS::SSM::MaintenanceWindowTarget",
+            "Condition": "CreatePreProduction",
+            "Properties": {
+                "Description": "PreProduction Servers",
+                "WindowId": {
+                    "Ref": "scanWindowPPD"
+                },
+                "ResourceType": "INSTANCE",
+                "Targets": [
+                    {
+                        "Key": "tag:Patch Group",
+                        "Values": [
+                            "RHEL-PPD",
+                            "Windows-PPD"
+                        ]
+                    }
+                ],
+                "Name": "PPD"
+            }
+        },
+        "scanTaskPPD": {
+            "Type": "AWS::SSM::MaintenanceWindowTask",
+            "Condition": "CreatePreProductionScan",
+            "DependsOn": [
+                "serviceRole"
+            ],
+            "Properties": {
+                "MaxErrors": "10",
+                "Description": "Scan Patch Status",
+                "ServiceRoleArn": {
+                    "Fn::GetAtt": [
+                        "serviceRole",
+                        "Arn"
+                    ]
+                },
+                "Priority": 1,
+                "MaxConcurrency": "10",
+                "Targets": [
+                    {
+                        "Key": "WindowTargetIds",
+                        "Values": [
+                            {
+                                "Ref": "scanTargetPPD"
+                            }
+                        ]
+                    }
+                ],
+                "Name": "Scan",
+                "TaskArn": "AWS-RunPatchBaseline",
+                "TaskInvocationParameters": {
+                    "MaintenanceWindowRunCommandParameters": {
+                        "ServiceRoleArn": {
+                            "Fn::GetAtt": [
+                                "serviceRole",
+                                "Arn"
+                            ]
+                        },
+                        "NotificationConfig": {
+                            "NotificationArn": {
+                                "Ref": "TriggerPatchNotification"
+                            },
+                            "NotificationType": "Command",
+                            "NotificationEvents": [
+                                "Success",
+                                "TimedOut",
+                                "Cancelled",
+                                "Failed"
+                            ]
+                        },
+                        "Parameters": {
+                            "Operation": [
+                                "Scan"
+                            ]
+                        }
+                    }
+                },
+                "WindowId": {
+                    "Ref": "scanWindowPPD"
+                },
+                "TaskType": "RUN_COMMAND"
+            }
+        },
+        "deployTaskPPD": {
+            "Type": "AWS::SSM::MaintenanceWindowTask",
+            "Condition": "CreatePreProductionDeploy",
+            "DependsOn": [
+                "serviceRole"
+            ],
+            "Properties": {
+                "MaxErrors": "10",
+                "Description": "Deploy Patch",
+                "ServiceRoleArn": {
+                    "Fn::GetAtt": [
+                        "serviceRole",
+                        "Arn"
+                    ]
+                },
+                "Priority": 10,
+                "MaxConcurrency": "10",
+                "Targets": [
+                    {
+                        "Key": "WindowTargetIds",
+                        "Values": [
+                            {
+                                "Ref": "scanTargetPPD"
+                            }
+                        ]
+                    }
+                ],
+                "Name": "Deploy",
+                "TaskArn": "AWS-RunPatchBaseline",
+                "TaskInvocationParameters": {
+                    "MaintenanceWindowRunCommandParameters": {
+                        "ServiceRoleArn": {
+                            "Fn::GetAtt": [
+                                "serviceRole",
+                                "Arn"
+                            ]
+                        },
+                        "NotificationConfig": {
+                            "NotificationArn": {
+                                "Ref": "TriggerPatchNotification"
+                            },
+                            "NotificationType": "Command",
+                            "NotificationEvents": [
+                                "Success",
+                                "TimedOut",
+                                "Cancelled",
+                                "Failed"
+                            ]
+                        },
+                        "Parameters": {
+                            "Operation": [
+                                "Install"
+                            ]
+                        }
+                    }
+                },
+                "WindowId": {
+                    "Ref": "scanWindowPPD"
+                },
+                "TaskType": "RUN_COMMAND"
+            }
+        },
+        "scanWindowTest": {
+            "Type": "AWS::SSM::MaintenanceWindow",
+            "Condition": "CreateTest",
+            "Properties": {
+                "Description": "Test Environment",
+                "AllowUnassociatedTargets": "False",
+                "Cutoff": 0,
+                "Schedule": {
+                    "Ref": "TestSchedule"
+                },
+                "Duration": 2,
+                "Name": "Test"
+            }
+        },
+        "scanTargetTest": {
+            "Type": "AWS::SSM::MaintenanceWindowTarget",
+            "Condition": "CreateTest",
+            "Properties": {
+                "Description": "Test Servers",
+                "WindowId": {
+                    "Ref": "scanWindowTest"
+                },
+                "ResourceType": "INSTANCE",
+                "Targets": [
+                    {
+                        "Key": "tag:Patch Group",
+                        "Values": [
+                            "RHEL-Test",
+                            "Windows-Test"
+                        ]
+                    }
+                ],
+                "Name": "Test"
+            }
+        },
+        "scanTaskTest": {
+            "Type": "AWS::SSM::MaintenanceWindowTask",
+            "Condition": "CreateTestScan",
+            "DependsOn": [
+                "serviceRole"
+            ],
+            "Properties": {
+                "MaxErrors": "10",
+                "Description": "Scan Patch Status",
+                "ServiceRoleArn": {
+                    "Fn::GetAtt": [
+                        "serviceRole",
+                        "Arn"
+                    ]
+                },
+                "Priority": 1,
+                "MaxConcurrency": "10",
+                "Targets": [
+                    {
+                        "Key": "WindowTargetIds",
+                        "Values": [
+                            {
+                                "Ref": "scanTargetTest"
+                            }
+                        ]
+                    }
+                ],
+                "Name": "Scan",
+                "TaskArn": "AWS-RunPatchBaseline",
+                "TaskInvocationParameters": {
+                    "MaintenanceWindowRunCommandParameters": {
+                        "ServiceRoleArn": {
+                            "Fn::GetAtt": [
+                                "serviceRole",
+                                "Arn"
+                            ]
+                        },
+                        "NotificationConfig": {
+                            "NotificationArn": {
+                                "Ref": "TriggerPatchNotification"
+                            },
+                            "NotificationType": "Command",
+                            "NotificationEvents": [
+                                "Success",
+                                "TimedOut",
+                                "Cancelled",
+                                "Failed"
+                            ]
+                        },
+                        "Parameters": {
+                            "Operation": [
+                                "Scan"
+                            ]
+                        }
+                    }
+                },
+                "WindowId": {
+                    "Ref": "scanWindowTest"
+                },
+                "TaskType": "RUN_COMMAND"
+            }
+        },
+        "deployTaskTest": {
+            "Type": "AWS::SSM::MaintenanceWindowTask",
+            "Condition": "CreateTestDeploy",
+            "DependsOn": [
+                "serviceRole"
+            ],
+            "Properties": {
+                "MaxErrors": "10",
+                "Description": "Deploy Patch",
+                "ServiceRoleArn": {
+                    "Fn::GetAtt": [
+                        "serviceRole",
+                        "Arn"
+                    ]
+                },
+                "Priority": 10,
+                "MaxConcurrency": "10",
+                "Targets": [
+                    {
+                        "Key": "WindowTargetIds",
+                        "Values": [
+                            {
+                                "Ref": "scanTargetTest"
+                            }
+                        ]
+                    }
+                ],
+                "Name": "Deploy",
+                "TaskArn": "AWS-RunPatchBaseline",
+                "TaskInvocationParameters": {
+                    "MaintenanceWindowRunCommandParameters": {
+                        "ServiceRoleArn": {
+                            "Fn::GetAtt": [
+                                "serviceRole",
+                                "Arn"
+                            ]
+                        },
+                        "NotificationConfig": {
+                            "NotificationArn": {
+                                "Ref": "TriggerPatchNotification"
+                            },
+                            "NotificationType": "Command",
+                            "NotificationEvents": [
+                                "Success",
+                                "TimedOut",
+                                "Cancelled",
+                                "Failed"
+                            ]
+                        },
+                        "Parameters": {
+                            "Operation": [
+                                "Install"
+                            ]
+                        }
+                    }
+                },
+                "WindowId": {
+                    "Ref": "scanWindowTest"
+                },
+                "TaskType": "RUN_COMMAND"
+            }
+        },
+        "scanWindowPRD": {
+            "Type": "AWS::SSM::MaintenanceWindow",
+            "Condition": "CreateProduction",
+            "Properties": {
+                "Description": "Production Environment",
+                "AllowUnassociatedTargets": "False",
+                "Cutoff": 0,
+                "Schedule": {
+                    "Ref": "PRDSchedule"
+                },
+                "Duration": 2,
+                "Name": "PRD"
+            }
+        },
+        "scanTargetPRD": {
+            "Type": "AWS::SSM::MaintenanceWindowTarget",
+            "Condition": "CreateProduction",
+            "Properties": {
+                "Description": "Production Servers",
+                "WindowId": {
+                    "Ref": "scanWindowPRD"
+                },
+                "ResourceType": "INSTANCE",
+                "Targets": [
+                    {
+                        "Key": "tag:Patch Group",
+                        "Values": [
+                            "RHEL-PRD",
+                            "Windows-PRD"
+                        ]
+                    }
+                ],
+                "Name": "PRD"
+            }
+        },
+        "scanTaskPRD": {
+            "Type": "AWS::SSM::MaintenanceWindowTask",
+            "Condition": "CreateProductionScan",
+            "DependsOn": [
+                "serviceRole"
+            ],
+            "Properties": {
+                "MaxErrors": "10",
+                "Description": "Scan Patch Status",
+                "ServiceRoleArn": {
+                    "Fn::GetAtt": [
+                        "serviceRole",
+                        "Arn"
+                    ]
+                },
+                "Priority": 1,
+                "MaxConcurrency": "10",
+                "Targets": [
+                    {
+                        "Key": "WindowTargetIds",
+                        "Values": [
+                            {
+                                "Ref": "scanTargetPRD"
+                            }
+                        ]
+                    }
+                ],
+                "Name": "Scan",
+                "TaskArn": "AWS-RunPatchBaseline",
+                "TaskInvocationParameters": {
+                    "MaintenanceWindowRunCommandParameters": {
+                        "ServiceRoleArn": {
+                            "Fn::GetAtt": [
+                                "serviceRole",
+                                "Arn"
+                            ]
+                        },
+                        "NotificationConfig": {
+                            "NotificationArn": {
+                                "Ref": "TriggerPatchNotification"
+                            },
+                            "NotificationType": "Command",
+                            "NotificationEvents": [
+                                "Success",
+                                "TimedOut",
+                                "Cancelled",
+                                "Failed"
+                            ]
+                        },
+                        "Parameters": {
+                            "Operation": [
+                                "Scan"
+                            ]
+                        }
+                    }
+                },
+                "WindowId": {
+                    "Ref": "scanWindowPRD"
+                },
+                "TaskType": "RUN_COMMAND"
+            }
+        },
+        "deployTaskPRD": {
+            "Type": "AWS::SSM::MaintenanceWindowTask",
+            "Condition": "CreateProductionDeploy",
+            "DependsOn": [
+                "serviceRole"
+            ],
+            "Properties": {
+                "MaxErrors": "10",
+                "Description": "Deploy Patch",
+                "ServiceRoleArn": {
+                    "Fn::GetAtt": [
+                        "serviceRole",
+                        "Arn"
+                    ]
+                },
+                "Priority": 10,
+                "MaxConcurrency": "10",
+                "Targets": [
+                    {
+                        "Key": "WindowTargetIds",
+                        "Values": [
+                            {
+                                "Ref": "scanTargetPRD"
+                            }
+                        ]
+                    }
+                ],
+                "Name": "Deploy",
+                "TaskArn": "AWS-RunPatchBaseline",
+                "TaskInvocationParameters": {
+                    "MaintenanceWindowRunCommandParameters": {
+                        "ServiceRoleArn": {
+                            "Fn::GetAtt": [
+                                "serviceRole",
+                                "Arn"
+                            ]
+                        },
+                        "NotificationConfig": {
+                            "NotificationArn": {
+                                "Ref": "TriggerPatchNotification"
+                            },
+                            "NotificationType": "Command",
+                            "NotificationEvents": [
+                                "Success",
+                                "TimedOut",
+                                "Cancelled",
+                                "Failed"
+                            ]
+                        },
+                        "Parameters": {
+                            "Operation": [
+                                "Install"
+                            ]
+                        }
+                    }
+                },
+                "WindowId": {
+                    "Ref": "scanWindowPRD"
+                },
+                "TaskType": "RUN_COMMAND"
+            }
+        },
+        "TriggerPatchNotification": {
+            "Type": "AWS::SNS::Topic",
+            "Properties": {
+                "DisplayName": "TriggerPatchNotification",
+                "TopicName": "TriggerPatchNotification",
+                "Subscription": [
+                    {
+                        "Endpoint": {
+                            "Fn::GetAtt": [
+                                "lambdaPatchCompliance",
+                                "Arn"
+                            ]
+                        },
+                        "Protocol": "lambda"
+                    }
+                ]
+            },
+            "DependsOn": [
+                "lambdaPatchCompliance"
+            ]
+        },
+        "LambdaInvokePermission": {
+            "Type": "AWS::Lambda::Permission",
+            "Properties": {
+                "Action": "lambda:InvokeFunction",
+                "Principal": "sns.amazonaws.com",
+                "SourceArn": {
+                    "Ref": "TriggerPatchNotification"
+                },
+                "FunctionName": {
+                    "Fn::GetAtt": [
+                        "lambdaPatchCompliance",
+                        "Arn"
+                    ]
+                }
+            }
+        },
+        "NotificationTopic": {
+            "Type": "AWS::SNS::Topic",
+            "Properties": {
+                "DisplayName": "Patch Compliance Report",
+                "TopicName": "Patch-Compliance-Report",
+                "Subscription": [
+                    {
+                        "Endpoint": {
+                            "Ref": "OperatorEMail"
+                        },
+                        "Protocol": "email"
+                    }
+                ]
+            }
+        },
+        "serviceRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "ec2.amazonaws.com",
+                                    "ssm.amazonaws.com"
+                                ]
+                            },
+                            "Action": [
+                                "sts:AssumeRole"
+                            ]
+                        }
+                    ]
+                },
+                "Policies": [
+                    {
+                        "PolicyName": "SSM-Maintenance-Service",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Sid": "AllowaccesstoSSM",
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "ssm:DescribeAssociation",
+                                        "ssm:ListAssociations",
+                                        "ssm:ListInstanceAssociations",
+                                        "ssm:ListResourceComplianceSummaries",
+                                        "ssm:ListCommands",
+                                        "ssm:GetAutomationExecution",
+                                        "ssm:GetDocument",
+                                        "ssm:GetDeployablePatchSnapshotForInstance",
+                                        "ssm:GetManifest",
+                                        "ssm:GetParameters",
+                                        "ssm:PutInventory",
+                                        "ssm:PutComplianceItems",
+                                        "ssm:PutConfigurePackageResult",
+                                        "ssm:UpdateAssociationStatus",
+                                        "ssm:UpdateInstanceAssociationStatus",
+                                        "ssm:UpdateInstanceInformation",
+                                        "ssm:SendCommand",
+                                        "ssm:StartAutomationExecution",
+                                        "states:DescribeExecution",
+                                        "states:StartExecution",
+                                        "ec2:DescribeTags",
+                                        "ec2:DescribeImages",
+                                        "ec2:DescribeInstanceStatus",
+                                        "ec2:CreateTags",
+                                        "ec2:CreateImage",
+                                        "ec2:DeleteSnapshot",
+                                        "ec2:DeleteTags",
+                                        "ec2:CopyImage",
+                                        "ec2:DeregisterImage",
+                                        "ec2:StartInstances",
+                                        "ec2:RunInstances",
+                                        "ec2:StopInstances",
+                                        "ec2:TerminateInstances",
+                                        "cloudwatch:PutMetricData",
+                                        "logs:CreateLogGroup",
+                                        "logs:CreateLogStream",
+                                        "logs:DescribeLogGroups",
+                                        "logs:DescribeLogStreams",
+                                        "logs:PutLogEvents",
+                                        "s3:PutObject",
+                                        "s3:GetObject",
+                                        "s3:AbortMultipartUpload",
+                                        "s3:ListMultipartUploadParts",
+                                        "s3:ListBucketMultipartUploads",
+                                        "cloudformation:CreateStack",
+                                        "cloudformation:DescribeStackEvents",
+                                        "cloudformation:DescribeStacks",
+                                        "cloudformation:UpdateStack",
+                                        "cloudformation:DeleteStack",
+                                        "sns:Publish",
+                                        "xray:PutTraceSegments",
+                                        "xray:PutTelemetryRecords"
+                                    ],
+                                    "Resource": [
+                                        "*"
+                                    ]
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "s3:ListBucket"
+                                    ],
+                                    "Resource": "arn:aws:s3:::amazon-ssm-packages-*"
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "lambda:InvokeFunction"
+                                    ],
+                                    "Resource": [
+                                        "arn:aws:lambda:*:*"
+                                    ]
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": "iam:PassRole",
+                                    "Resource": [
+                                        {
+                                            "Fn::Join": [
+                                                "",
+                                                [
+                                                    "arn:aws:iam::",
+                                                    {
+                                                        "Ref": "AWS::AccountId"
+                                                    },
+                                                    ":role/*"
+                                                ]
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "ssmRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "lambda.amazonaws.com"
+                                ]
+                            },
+                            "Action": [
+                                "sts:AssumeRole"
+                            ]
+                        }
+                    ]
+                },
+                "Policies": [
+                    {
+                        "PolicyName": "PatchComplianceReport",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Sid": "AllowaccesstoSSM",
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "ssm:DescribeAssociations",
+                                        "ssm:DescribeAssociation",
+                                        "ssm:ListAssociations",
+                                        "ssm:ListInstanceAssociations",
+                                        "ssm:ListResourceComplianceSummaries",
+                                        "ssm:GetDocument",
+                                        "ssm:GetDeployablePatchSnapshotForInstance",
+                                        "ssm:GetInventory",
+                                        "ssm:GetParameters",
+                                        "ssm:PutInventory",
+                                        "ssm:PutComplianceItems",
+                                        "ssm:UpdateAssociationStatus",
+                                        "ssm:UpdateInstanceAssociationStatus",
+                                        "ssm:UpdateInstanceInformation",
+                                        "ds:CreateComputer",
+                                        "ds:DescribeDirectories",
+                                        "ec2:DescribeInstanceStatus",
+                                        "ec2messages:AcknowledgeMessage",
+                                        "ec2messages:DeleteMessage",
+                                        "ec2messages:FailMessage",
+                                        "ec2messages:GetEndpoint",
+                                        "ec2messages:GetMessages",
+                                        "ec2messages:SendReply",
+                                        "ec2:DescribeTags",
+                                        "ec2:DescribeImages",
+                                        "ec2:DescribeInstanceStatus",
+                                        "ec2:CreateTags",
+                                        "ec2:CreateImage",
+                                        "ec2:DeleteSnapshot",
+                                        "ec2:DeleteTags",
+                                        "ec2:CopyImage",
+                                        "ec2:DeregisterImage",
+                                        "ec2:StartInstances",
+                                        "ec2:RunInstances",
+                                        "ec2:StopInstances",
+                                        "ec2:TerminateInstances",
+                                        "cloudwatch:PutMetricData",
+                                        "logs:CreateLogGroup",
+                                        "logs:CreateLogStream",
+                                        "logs:DescribeLogGroups",
+                                        "logs:DescribeLogStreams",
+                                        "logs:PutLogEvents",
+                                        "s3:PutObject",
+                                        "s3:GetObject",
+                                        "s3:AbortMultipartUpload",
+                                        "s3:ListMultipartUploadParts",
+                                        "s3:ListBucketMultipartUploads",
+                                        "cloudformation:CreateStack",
+                                        "cloudformation:DescribeStackEvents",
+                                        "cloudformation:DescribeStacks",
+                                        "cloudformation:UpdateStack",
+                                        "cloudformation:DeleteStack",
+                                        "sns:Publish",
+                                        "xray:PutTraceSegments",
+                                        "xray:PutTelemetryRecords"
+                                    ],
+                                    "Resource": [
+                                        "*"
+                                    ]
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "s3:ListBucket"
+                                    ],
+                                    "Resource": "arn:aws:s3:::amazon-ssm-packages-*"
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "lambda:InvokeFunction"
+                                    ],
+                                    "Resource": [
+                                        "arn:aws:lambda:*:*"
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "lambdaPatchCompliance": {
+            "Type": "AWS::Lambda::Function",
+            "DependsOn": [
+                "ssmRole"
+            ],
+            "Properties": {
+                "Handler": "index.handler",
+                "Role": {
+                    "Fn::GetAtt": [
+                        "ssmRole",
+                        "Arn"
+                    ]
+                },
+                "Code": {
+                    "ZipFile": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "var aws = require(\"aws-sdk\");\n",
+                                "\n",
+                                "function getInventory(results, token) {\n",
+                                "    return new Promise((resolve, reject) => {\n",
+                                "        var ssm = new aws.SSM();\n",
+                                "        var listInventory = [];\n",
+                                "\n",
+                                "        var paramsInv = {\n",
+                                "            MaxResults: 2,\n",
+                                "            ResultAttributes: [\n",
+                                "                {\n",
+                                "                    TypeName: 'AWS:InstanceInformation' /* required */\n",
+                                "                }\n",
+                                "            ]\n",
+                                "        };\n",
+                                "\n",
+                                "        if (token) {\n",
+                                "            paramsInv.NextToken = token\n",
+                                "        }\n",
+                                "        ssm.getInventory(paramsInv, function (err, data) {\n",
+                                "            if (err) {\n",
+                                "                if (err.code === 'ThrottlingException' || err.code === 'TooManyRequestsException') {\n",
+                                "                    setTimeout(() => {\n",
+                                "                        resolve(getInventory(results, token));\n",
+                                "                    }, 1000);\n",
+                                "                } else {\n",
+                                "                    reject(err);\n",
+                                "                }\n",
+                                "\n",
+                                "            }\n",
+                                "            else {\n",
+                                "\n",
+                                "                if (data.NextToken) {\n",
+                                "                    resolve(getInventory(results.concat(data.Entities), data.NextToken))\n",
+                                "                }\n",
+                                "                else {\n",
+                                "                    resolve(results.concat(data.Entities))\n",
+                                "                }\n",
+                                "            }\n",
+                                "        });\n",
+                                "    })\n",
+                                "}\n",
+                                "\n",
+                                "function getInstanceCompliance(instanceID) {\n",
+                                "    return new Promise((resolve, reject) => {\n",
+                                "        var ssm = new aws.SSM();\n",
+                                "\n",
+                                "        var params = {\n",
+                                "            Filters: [\n",
+                                "                {\n",
+                                "                    Key: 'ComplianceType',\n",
+                                "                    Type: 'EQUAL',\n",
+                                "                    Values: [\n",
+                                "                        'Patch',\n",
+                                "                    ]\n",
+                                "                },\n",
+                                "                {\n",
+                                "                    Key: 'InstanceId',\n",
+                                "                    Type: 'EQUAL',\n",
+                                "                    Values: [\n",
+                                "                        instanceID,\n",
+                                "                    ]\n",
+                                "                }\n",
+                                "            ],\n",
+                                "            MaxResults: 50,\n",
+                                "        };\n",
+                                "\n",
+                                "        ssm.listResourceComplianceSummaries(params, function (err, data) {\n",
+                                "            if (err) {\n",
+                                "                reject(err)\n",
+                                "            }\n",
+                                "            else {\n",
+                                "                const instanceSummary = data['ResourceComplianceSummaryItems'];\n",
+                                "                summaryData = instanceSummary[0];\n",
+                                "                resolve(summaryData);\n",
+                                "            }\n",
+                                "        });\n",
+                                "    })\n",
+                                "}\n",
+                                "\n",
+                                "function sendSNS(message) {\n",
+                                "    var sns = new aws.SNS();\n",
+                                "    var topicArn = process.env.TopicArn;\n",
+                                "    var params = {\n",
+                                "        Message: JSON.stringify(message),\n",
+                                "        Subject: 'Patch Details',\n",
+                                "        TopicArn: topicArn\n",
+                                "    };\n",
+                                "    sns.publish(params, function (err, data) {\n",
+                                "        if (err) console.log(err, err.stack);\n",
+                                "        else console.log(data);\n",
+                                "    });\n",
+                                "}\n",
+                                "\n",
+                                "exports.handler = function (event, context, callback) {\n",
+                                "    var invData;\n",
+                                "\n",
+                                "    var err = function (err) {\n",
+                                "        console.log(err);\n",
+                                "    }\n",
+                                "    var promises = [];\n",
+                                "    ACCOUNT_ID = context.invokedFunctionArn.split(\":\")[4];\n",
+                                "    const accountNumber = ACCOUNT_ID;\n",
+                                "    getInventory([])\n",
+                                "        .then(function (data) {\n",
+                                "            data.forEach(value => {\n",
+                                "                if (value.Data['AWS:InstanceInformation'].Content[0].InstanceStatus != \"Terminated\") {\n",
+                                "                    promises.push(getInstanceCompliance(value.Id));\n",
+                                "                }\n",
+                                "            });\n",
+                                "            Promise.all(promises)\n",
+                                "                .then(function (data) {\n",
+                                "                    // console.log(data);\n",
+                                "                    allDetail = [];\n",
+                                "                    data.forEach(value => {\n",
+                                "                       if (value != undefined) {\n",
+                                "                           var objDetail = new Object();\n",
+                                "                           objDetail.Account = accountNumber;\n",
+                                "                           objDetail.instanceId = value.ResourceId;\n",
+                                "                           objDetail.Status = value.Status;\n",
+                                "                           objDetail.InstalledCount = value.CompliantSummary.CompliantCount;\n",
+                                "                           objDetail.MissingCount = value.NonCompliantSummary.NonCompliantCount;\n",
+                                "                           allDetail.push(objDetail);\n",
+                                "                       }\n",
+                                "                    });\n",
+                                "                    console.log(allDetail);\n",
+                                "                    sendSNS(allDetail);\n",
+                                "                })\n",
+                                "        }).catch(function (err) { console.log(err) });\n",
+                                "};\n"
+                            ]
+                        ]
+                    }
+                },
+                "Runtime": "nodejs6.10",
+                "Timeout": "30",
+                "TracingConfig": {
+                    "Mode": "Active"
+                },
+                "MemorySize": 128,
+                "Environment": {
+                    "Variables": {
+                        "TopicArn": {
+                            "Ref": "NotificationTopic"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
