@@ -1,0 +1,83 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Routes",
+    "Parameters": {
+        "Name": {
+            "Type": "String",
+            "Default": "Customer Environment",
+            "Description": "Specify the customer name, environment & VPC ID (If multiple VPC's), e.g. Datacom Production"
+        },
+        "VPCIdentifier": {
+            "Type": "String",
+            "Description": "Specify the VPC Identifier - This is only to be used if more than one VPC is being deployed into the account"
+        }
+    },
+    "Resources": {
+        "RestrictedARouteTable": {
+            "Type": "AWS::EC2::RouteTable",
+            "Properties": {
+                "VpcId": {
+                    "Fn::ImportValue": {
+                        "Fn::Sub": "VPC${VPCIdentifier}"
+                    }
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": {
+                            "Fn::Join": [
+                                " ",
+                                [
+                                    {
+                                        "Ref": "Name"
+                                    },
+                                    "Restricted A Route Table"
+                                ]
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "RestrictedASubnetRouteTableAssociation": {
+            "Type": "AWS::EC2::SubnetRouteTableAssociation",
+            "Properties": {
+                "SubnetId": {
+                    "Fn::ImportValue": {
+                        "Fn::Sub": "RestrictedASubnet${VPCIdentifier}"
+                    }
+                },
+                "RouteTableId": {
+                    "Ref": "RestrictedARouteTable"
+                }
+            }
+        },
+        "RestrictedAInternetRoute": {
+            "Type": "AWS::EC2::Route",
+            "Properties": {
+                "RouteTableId": {
+                    "Ref": "RestrictedARouteTable"
+                },
+                "DestinationCidrBlock": "0.0.0.0/0",
+                "GatewayId": {
+                    "Fn::ImportValue": {
+                        "Fn::Sub": "InternetGateway${VPCIdentifier}"
+                    }
+                }
+            }
+        }
+    },
+    "Outputs": {
+        "RestrictedARouteTable": {
+            "Description": "RestrictedARouteTable Logical ID",
+            "Value": {
+                "Ref": "RestrictedARouteTable"
+            },
+            "Export": {
+                "Name": {
+                    "Fn::Sub": "RestrictedARouteTable${VPCIdentifier}"
+                }
+            }
+        }
+    }
+}

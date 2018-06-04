@@ -1,0 +1,222 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Create AutoShutdown Script",
+    "Resources": {
+        
+        "lambdaRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "lambda.amazonaws.com"
+                                ]
+                            },
+                            "Action": [
+                                "sts:AssumeRole"
+                            ]
+                        }
+                    ]
+                },
+                "Policies": [
+                    {
+                        "PolicyName": "ShutdownStartup",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "logs:CreateLogGroup",
+                                        "logs:CreateLogStream",
+                                        "logs:PutLogEvents"
+                                    ],
+                                    "Resource": "arn:aws:logs:*:*:*"
+                                },
+                                {
+                                    "Sid": "EC2",
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "ec2:Start*",
+                                        "ec2:Stop*",
+                                        "ec2:DescribeInstances",
+                                        "xray:PutTraceSegments",
+                                        "xray:PutTelemetryRecords"
+                                    ],
+                                    "Resource": [
+                                        "*"
+                                    ]
+                                },
+                                {
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "lambda:InvokeFunction"
+                                    ],
+                                    "Resource": [
+                                        "arn:aws:lambda:*:*"
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        },
+        "lambdaStop": {
+            "Type": "AWS::Lambda::Function",
+            "DependsOn": [
+                "lambdaRole"
+            ],
+            "Properties": {
+                "Handler": "index.handler",
+                "Role": {
+                    "Fn::GetAtt": [
+                        "lambdaRole",
+                        "Arn"
+                    ]
+                },
+                "Code": {
+                    "ZipFile": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "var aws = require(\"aws-sdk\");\n",
+                                "\n",
+                                "function stopEc2Instance(instanceParams) {\n",
+                                "    var ec2 = new aws.EC2();\n",
+                                "    ec2.stopInstances(instanceParams, function (err, data) {\n",
+                                "        if (err) console.log(err, err.stack); // an error occurred\n",
+                                "        else console.log(data);           // successful response\n",
+                                "    });\n",
+                                "}\n",
+                                "\n",
+                                "exports.handler = function (event, context, callback) {\n",
+                                "    var ec2 = new aws.EC2();\n",
+                                "    var instanceSearch = {\n",
+                                "        Filters: [\n",
+                                "            {\n",
+                                "                Name: 'tag:AutoOnOff',\n",
+                                "                Values: [\n",
+                                "                    'yes'\n",
+                                "                ]\n",
+                                "            },\n",
+                                "        ],\n",
+                                "        DryRun: false,\n",
+                                "        MaxResults: 50,\n",
+                                "    };\n",
+                                "    ec2.describeInstances(instanceSearch).promise()\n",
+                                "        .then((response) => {\n",
+                                "            const promises = [];\n",
+                                "            response.Reservations.forEach(value => {\n",
+                                "                var params = {\n",
+                                "                    InstanceIds: [\n",
+                                "                        value.Instances[0].InstanceId\n",
+                                "                    ],\n",
+                                "                    DryRun: false\n",
+                                "                };\n",
+                                "                promises.push(stopEc2Instance(params));\n",
+                                "            })\n",
+                                "            return Promise.all(promises)\n",
+                                "        }).then(() => {\n",
+                                "            console.log('Im all finished');\n",
+                                "            callback(null);\n",
+                                "        }).catch(err => {\n",
+                                "            console.log('Something went really wrong')\n",
+                                "            callback(err);\n",
+                                "        })\n",
+                                "\n",
+                                "};\n"
+                            ]
+                        ]
+                    }
+                },
+                "Runtime": "nodejs6.10",
+                "Timeout": "30",
+                "TracingConfig": {
+                    "Mode": "Active"
+                },
+                "MemorySize": 128
+            }
+        },
+        "lambdaStartup": {
+            "Type": "AWS::Lambda::Function",
+            "DependsOn": [
+                "lambdaRole"
+            ],
+            "Properties": {
+                "Handler": "index.handler",
+                "Role": {
+                    "Fn::GetAtt": [
+                        "lambdaRole",
+                        "Arn"
+                    ]
+                },
+                "Code": {
+                    "ZipFile": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "var aws = require(\"aws-sdk\");\n",
+                                "\n",
+                                "function startEc2Instance(instanceParams) {\n",
+                                "    var ec2 = new aws.EC2();\n",
+                                "    ec2.startInstances(instanceParams, function (err, data) {\n",
+                                "        if (err) console.log(err, err.stack); // an error occurred\n",
+                                "        else console.log(data);           // successful response\n",
+                                "    });\n",
+                                "}\n",
+                                "\n",
+                                "exports.handler = function (event, context, callback) {\n",
+                                "    var ec2 = new aws.EC2();\n",
+                                "    var instanceSearch = {\n",
+                                "        Filters: [\n",
+                                "            {\n",
+                                "                Name: 'tag:AutoOnOff',\n",
+                                "                Values: [\n",
+                                "                    'yes'\n",
+                                "                ]\n",
+                                "            },\n",
+                                "        ],\n",
+                                "        DryRun: false,\n",
+                                "        MaxResults: 50,\n",
+                                "    };\n",
+                                "    ec2.describeInstances(instanceSearch).promise()\n",
+                                "        .then((response) => {\n",
+                                "            const promises = [];\n",
+                                "            response.Reservations.forEach(value => {\n",
+                                "                var params = {\n",
+                                "                    InstanceIds: [\n",
+                                "                        value.Instances[0].InstanceId\n",
+                                "                    ],\n",
+                                "                    DryRun: false\n",
+                                "                };\n",
+                                "                promises.push(startEc2Instance(params));\n",
+                                "            })\n",
+                                "            return Promise.all(promises)\n",
+                                "        }).then(() => {\n",
+                                "            console.log('Im all finished');\n",
+                                "            callback(null);\n",
+                                "        }).catch(err => {\n",
+                                "            console.log('Something went really wrong')\n",
+                                "            callback(err);\n",
+                                "        })\n",
+                                "\n",
+                                "};\n"
+                            ]
+                        ]
+                    }
+                },
+                "Runtime": "nodejs6.10",
+                "Timeout": "30",
+                "TracingConfig": {
+                    "Mode": "Active"
+                },
+                "MemorySize": 128
+            }
+        }
+    }
+}
