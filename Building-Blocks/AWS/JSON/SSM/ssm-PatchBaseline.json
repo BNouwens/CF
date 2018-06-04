@@ -3,7 +3,7 @@
     "Description": "Create Patch Baselinse",
     "Parameters": {
         "OperatorEMail": {
-            "Description": "EMail address to notify if there are any scaling operations",
+            "Description": "EMail address to sent compliance report to",
             "Type": "String",
             "AllowedPattern": "([a-zA-Z0-9_\\-\\.]+)@((\\[[0-9]{1,3}\\.[0-9]{1,3}\\.[0-9]{1,3}\\.)|(([a-zA-Z0-9\\-]+\\.)+))([a-zA-Z]{2,4}|[0-9]{1,3})(\\]?)",
             "ConstraintDescription": "must be a valid email address."
@@ -101,6 +101,26 @@
             ],
             "Default": "false",
             "ConstraintDescription": "must specify true or false."
+        },
+        "AmazonLinux": {
+            "Description": "Amazon Linux required",
+            "Type": "String",
+            "AllowedValues": [
+                "true",
+                "false"
+            ],
+            "Default": "false",
+            "ConstraintDescription": "must specify true or false."
+        },
+        "Ubuntu": {
+            "Description": "Ubuntu Linux required",
+            "Type": "String",
+            "AllowedValues": [
+                "true",
+                "false"
+            ],
+            "Default": "false",
+            "ConstraintDescription": "must specify true or false."
         }
     },
     "Metadata": {
@@ -139,7 +159,9 @@
                     },
                     "Parameters": [
                         "RHEL",
-                        "Windows"
+                        "Windows",
+                        "AmazonLinux",
+                        "Ubuntu"
                     ]
                 }
             ],
@@ -161,6 +183,12 @@
                 },
                 "Windows": {
                     "default": "Is Windows required?"
+                },
+                "AmazonLinux": {
+                    "default": "Is Amazon Linux required?"
+                },
+                "Ubuntu": {
+                    "default": "Is Ubuntu required?"
                 }
             }
         }
@@ -320,6 +348,166 @@
                     "Fn::Equals": [
                         {
                             "Ref": "Windows"
+                        },
+                        "true"
+                    ]
+                }
+            ]
+        },
+        "CreateDevAmazonLinux": {
+            "Fn::And": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "DEV"
+                        },
+                        "true"
+                    ]
+                },
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "AmazonLinux"
+                        },
+                        "true"
+                    ]
+                }
+            ]
+        },
+        "CreatePreProductionAmazonLinux": {
+            "Fn::And": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "PPD"
+                        },
+                        "true"
+                    ]
+                },
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "AmazonLinux"
+                        },
+                        "true"
+                    ]
+                }
+            ]
+        },
+        "CreateTestAmazonLinux": {
+            "Fn::And": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "Test"
+                        },
+                        "true"
+                    ]
+                },
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "AmazonLinux"
+                        },
+                        "true"
+                    ]
+                }
+            ]
+        },
+        "CreateProductionAmazonLinux": {
+            "Fn::And": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "PRD"
+                        },
+                        "true"
+                    ]
+                },
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "AmazonLinux"
+                        },
+                        "true"
+                    ]
+                }
+            ]
+        },
+        "CreateDevUbuntu": {
+            "Fn::And": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "DEV"
+                        },
+                        "true"
+                    ]
+                },
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "Ubuntu"
+                        },
+                        "true"
+                    ]
+                }
+            ]
+        },
+        "CreatePreProductionUbuntu": {
+            "Fn::And": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "PPD"
+                        },
+                        "true"
+                    ]
+                },
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "Ubuntu"
+                        },
+                        "true"
+                    ]
+                }
+            ]
+        },
+        "CreateTestUbuntu": {
+            "Fn::And": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "Test"
+                        },
+                        "true"
+                    ]
+                },
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "Ubuntu"
+                        },
+                        "true"
+                    ]
+                }
+            ]
+        },
+        "CreateProductionUbuntu": {
+            "Fn::And": [
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "PRD"
+                        },
+                        "true"
+                    ]
+                },
+                {
+                    "Fn::Equals": [
+                        {
+                            "Ref": "Ubuntu"
                         },
                         "true"
                     ]
@@ -788,6 +976,270 @@
                 "Name": "Prd_Win_Baseline"
             }
         },
+        "AmazonLinuxBaseDevelopment": {
+            "Type": "AWS::SSM::PatchBaseline",
+            "Condition": "CreateDevAmazonLinux",
+            "Properties": {
+                "OperatingSystem": "AMAZON_LINUX",
+                "PatchGroups": [
+                    "AmazonLinux-Dev"
+                ],
+                "Description": "Dev_AmazonLinux_Baseline",
+                "ApprovedPatchesComplianceLevel": "CRITICAL",
+                "ApprovalRules": {
+                    "PatchRules": [
+                        {
+                            "PatchFilterGroup": {
+                                "PatchFilters": [
+                                    {
+                                        "Key": "SEVERITY",
+                                        "Values": [
+                                            "Critical",
+                                            "Important"
+                                        ]
+                                    }
+                                ]
+                            },
+                            "ApproveAfterDays": {
+                                "Ref": "DEVPatchAge"
+                            }
+                        }
+                    ]
+                },
+                "Name": "Dev_AmazonLinux_Baseline"
+            }
+        },
+        "AmazonLinuxBasePreProduction": {
+            "Type": "AWS::SSM::PatchBaseline",
+            "Condition": "CreatePreProductionAmazonLinux",
+            "Properties": {
+                "OperatingSystem": "AMAZON_LINUX",
+                "PatchGroups": [
+                    "AmazonLinux-PPD"
+                ],
+                "Description": "Ppd_AmazonLinux_Baseline",
+                "ApprovedPatchesComplianceLevel": "CRITICAL",
+                "ApprovalRules": {
+                    "PatchRules": [
+                        {
+                            "PatchFilterGroup": {
+                                "PatchFilters": [
+                                    {
+                                        "Key": "SEVERITY",
+                                        "Values": [
+                                            "Critical",
+                                            "Important"
+                                        ]
+                                    }
+                                ]
+                            },
+                            "ApproveAfterDays": {
+                                "Ref": "PPDPatchAge"
+                            }
+                        }
+                    ]
+                },
+                "Name": "Ppd_AmazonLinux_Baseline"
+            }
+        },
+        "AmazonLinuxBaseTest": {
+            "Type": "AWS::SSM::PatchBaseline",
+            "Condition": "CreateTestAmazonLinux",
+            "Properties": {
+                "OperatingSystem": "AMAZON_LINUX",
+                "PatchGroups": [
+                    "AmazonLinux-Test"
+                ],
+                "Description": "Test_AmazonLinux_Baseline",
+                "ApprovedPatchesComplianceLevel": "CRITICAL",
+                "ApprovalRules": {
+                    "PatchRules": [
+                        {
+                            "PatchFilterGroup": {
+                                "PatchFilters": [
+                                    {
+                                        "Key": "SEVERITY",
+                                        "Values": [
+                                            "Critical",
+                                            "Important"
+                                        ]
+                                    }
+                                ]
+                            },
+                            "ApproveAfterDays": {
+                                "Ref": "TestPatchAge"
+                            }
+                        }
+                    ]
+                },
+                "Name": "Test_AmazonLinux_Baseline"
+            }
+        },
+        "AmazonLinuxBaseProduction": {
+            "Type": "AWS::SSM::PatchBaseline",
+            "Condition": "CreateProductionAmazonLinux",
+            "Properties": {
+                "OperatingSystem": "AMAZON_LINUX",
+                "PatchGroups": [
+                    "AmazonLinux-PRD"
+                ],
+                "Description": "Production_AmazonLinux_Baseline",
+                "ApprovedPatchesComplianceLevel": "CRITICAL",
+                "ApprovalRules": {
+                    "PatchRules": [
+                        {
+                            "PatchFilterGroup": {
+                                "PatchFilters": [
+                                    {
+                                        "Key": "SEVERITY",
+                                        "Values": [
+                                            "Critical",
+                                            "Important"
+                                        ]
+                                    }
+                                ]
+                            },
+                            "ApproveAfterDays": {
+                                "Ref": "PRDPatchAge"
+                            }
+                        }
+                    ]
+                },
+                "Name": "Production_AmazonLinux_Baseline"
+            }
+        },
+        "UbuntuBaseDevelopment": {
+            "Type": "AWS::SSM::PatchBaseline",
+            "Condition": "CreateDevUbuntu",
+            "Properties": {
+                "OperatingSystem": "UBUNTU",
+                "PatchGroups": [
+                    "Ubuntu-Dev"
+                ],
+                "Description": "Dev_Ubuntu_Baseline",
+                "ApprovedPatchesComplianceLevel": "CRITICAL",
+                "ApprovalRules": {
+                    "PatchRules": [
+                        {
+                            "PatchFilterGroup": {
+                                "PatchFilters": [
+                                    {
+                                        "Key": "PRIORITY",
+                                        "Values": [
+                                            "Required",
+                                            "Important"
+                                        ]
+                                    }
+                                ]
+                            },
+                            "ApproveAfterDays": {
+                                "Ref": "DEVPatchAge"
+                            }
+                        }
+                    ]
+                },
+                "Name": "Dev_Ubuntu_Baseline"
+            }
+        },
+        "UbuntuBasePreProduction": {
+            "Type": "AWS::SSM::PatchBaseline",
+            "Condition": "CreatePreProductionUbuntu",
+            "Properties": {
+                "OperatingSystem": "UBUNTU",
+                "PatchGroups": [
+                    "Ubuntu-PPD"
+                ],
+                "Description": "Ppd_Ubuntu_Baseline",
+                "ApprovedPatchesComplianceLevel": "CRITICAL",
+                "ApprovalRules": {
+                    "PatchRules": [
+                        {
+                            "PatchFilterGroup": {
+                                "PatchFilters": [
+                                    {
+                                        "Key": "PRIORITY",
+                                        "Values": [
+                                            "Required",
+                                            "Important"
+                                        ]
+                                    }
+                                ]
+                            },
+                            "ApproveAfterDays": {
+                                "Ref": "PPDPatchAge"
+                            }
+                        }
+                    ]
+                },
+                "Name": "Ppd_Ubuntu_Baseline"
+            }
+        },
+        "UbuntuBaseTest": {
+            "Type": "AWS::SSM::PatchBaseline",
+            "Condition": "CreateTestUbuntu",
+            "Properties": {
+                "OperatingSystem": "UBUNTU",
+                "PatchGroups": [
+                    "Ubuntu-Test"
+                ],
+                "Description": "Test_Ubuntu_Baseline",
+                "ApprovedPatchesComplianceLevel": "CRITICAL",
+                "ApprovalRules": {
+                    "PatchRules": [
+                        {
+                            "PatchFilterGroup": {
+                                "PatchFilters": [
+                                    {
+                                        "Key": "PRIORITY",
+                                        "Values": [
+                                            "Required",
+                                            "Important"
+                                        ]
+                                    }
+                                ]
+                            },
+                            "ApproveAfterDays": {
+                                "Ref": "TestPatchAge"
+                            }
+                        }
+                    ]
+                },
+                "Name": "Test_Ubuntu_Baseline"
+            }
+        },
+        "UbuntuBaseProduction": {
+            "Type": "AWS::SSM::PatchBaseline",
+            "Condition": "CreateProductionUbuntu",
+            "Properties": {
+                "OperatingSystem": "UBUNTU",
+                "PatchGroups": [
+                    "Ubuntu-PRD"
+                ],
+                "Description": "Production_Ubuntu_Baseline",
+                "ApprovedPatchesComplianceLevel": "CRITICAL",
+                "ApprovalRules": {
+                    "PatchRules": [
+                        {
+                            "PatchFilterGroup": {
+                                "PatchFilters": [
+                                    {
+                                        "Key": "PRIORITY",
+                                        "Values": [
+                                            "Required",
+                                            "Important"
+                                        ]
+                                    }
+                                ]
+                            },
+                            "ApproveAfterDays": {
+                                "Ref": "PRDPatchAge"
+                            }
+                        }
+                    ]
+                },
+                "Name": "Production_Ubuntu_Baseline"
+            }
+        },
         "scanWindowDev": {
             "Type": "AWS::SSM::MaintenanceWindow",
             "Condition": "CreateDev",
@@ -815,10 +1267,10 @@
                     {
                         "Key": "tag:Patch Group",
                         "Values": [
-                            "Development",
                             "RHEL-Dev",
                             "Windows-Dev",
-                            "tmp"
+                            "AmazonLinux-Dev",
+                            "Ubuntu-Dev"
                         ]
                     }
                 ],
@@ -977,7 +1429,9 @@
                         "Key": "tag:Patch Group",
                         "Values": [
                             "RHEL-PPD",
-                            "Windows-PPD"
+                            "Windows-PPD",
+                            "AmazonLinux-PPD",
+                            "Ubuntu-PPD"
                         ]
                     }
                 ],
@@ -1136,7 +1590,9 @@
                         "Key": "tag:Patch Group",
                         "Values": [
                             "RHEL-Test",
-                            "Windows-Test"
+                            "Windows-Test",
+                            "AmazonLinux-Test",
+                            "Ubuntu-Test"
                         ]
                     }
                 ],
@@ -1295,7 +1751,9 @@
                         "Key": "tag:Patch Group",
                         "Values": [
                             "RHEL-PRD",
-                            "Windows-PRD"
+                            "Windows-PRD",
+                            "AmazonLinux-PRD",
+                            "Ubuntu-PRD"
                         ]
                     }
                 ],
@@ -1541,6 +1999,12 @@
                                         "ec2:RunInstances",
                                         "ec2:StopInstances",
                                         "ec2:TerminateInstances",
+                                        "ec2messages:AcknowledgeMessage",
+                                        "ec2messages:DeleteMessage",
+                                        "ec2messages:FailMessage",
+                                        "ec2messages:GetEndpoint",
+                                        "ec2messages:GetMessages",
+                                        "ec2messages:SendReply",
                                         "cloudwatch:PutMetricData",
                                         "logs:CreateLogGroup",
                                         "logs:CreateLogStream",
@@ -1712,6 +2176,17 @@
                                 }
                             ]
                         }
+                    }
+                ]
+            }
+        },
+        "RootInstanceProfile": {
+            "Type": "AWS::IAM::InstanceProfile",
+            "Properties": {
+                "Path": "/",
+                "Roles": [
+                    {
+                        "Ref": "serviceRole"
                     }
                 ]
             }

@@ -12,6 +12,9 @@
             "Description": "Environment Code",
             "Default": "dev",
             "Type": "String"
+        },
+        "iamRole": {
+            "Type": "String"
         }
     },
     "Resources": {
@@ -50,24 +53,34 @@
             "Properties": {
                 "MaxErrors": "10",
                 "Description": "Daily Scan",
-                "ServiceRoleArn": {"Ref":"iamRole"},
+                "ServiceRoleArn": {
+                    "Ref": "iamRole"
+                },
                 "Priority": 1,
                 "MaxConcurrency": "10",
                 "Targets": [
                     {
-                        "Key": "tag:Solution",
+                        "Key": "WindowTargetIds",
                         "Values": [
-                            "ptips"
+                            {"Ref":"scanTarget"}
                         ]
                     }
                 ],
                 "Name": "DailyScan",
                 "TaskArn": "AWS-RunPatchBaseline",
-                "TaskInvocationParameters": TaskInvocationParameters,
-                "WindowId": String,
-                "TaskParameters": JSON object,
-                "TaskType": String,
-                "LoggingInfo": LoggingInfo
+                "TaskInvocationParameters": {
+                    "MaintenanceWindowRunCommandParameters": {
+                        "Parameters": {
+                            "Operation": [
+                                "Install"
+                            ]
+                        }
+                    }
+                },
+                "WindowId": {
+                    "Ref": "scanWindow"
+                },
+                "TaskType": "RUN_COMMAND"
             }
         }
     }
